@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#090615">
+<title>شعرشو | دنیای شعر و رقابت</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800;900&family=Lalezar&display=swap" rel="stylesheet">
+<style>
+:root{
+ --bg:#090615;--panel:rgba(23,17,44,.68);--line:rgba(210,190,255,.17);
+ --purple:#a78bfa;--pink:#f472b6;--cyan:#67e8f9;--gold:#fcd34d;
+ --text:#faf7ff;--muted:#bdb4d4;--green:#86efac;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;min-height:100vh;overflow-x:hidden;background:var(--bg);color:var(--text);font-family:Vazirmatn,sans-serif}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer;color:inherit}
+button:disabled{opacity:.55;cursor:not-allowed}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
+::selection{background:#a78bfa55}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:-4;background:radial-gradient(ellipse at 15% 10%,#542a8c55,transparent 40%),radial-gradient(ellipse at 88% 35%,#164a7150,transparent 38%),radial-gradient(ellipse at 45% 100%,#55204e40,transparent 42%)}
+#particles{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:-2}
+.aurora{position:fixed;width:380px;height:380px;filter:blur(105px);opacity:.22;border-radius:50%;z-index:-3;pointer-events:none;animation:aurora 15s ease-in-out infinite alternate}
+.aurora.a{background:#8b5cf6;top:-130px;left:-130px}.aurora.b{background:#ec4899;right:-150px;top:35%;animation-delay:-5s}.aurora.c{background:#0891b2;bottom:-200px;left:35%;animation-delay:-8s}
+@keyframes aurora{to{transform:translate(70px,60px) scale(1.25)}}
+@keyframes rise{from{opacity:0;transform:translateY(24px) scale(.98)}to{opacity:1;transform:none}}
+@keyframes shine{to{background-position:250% center}}
+@keyframes rotate{to{transform:rotate(360deg)}}
+@keyframes glow{50%{filter:brightness(1.5);box-shadow:0 0 38px var(--glow,#a78bfa55)}}
+@keyframes float{50%{transform:translateY(-9px)}}
+@keyframes ripple{to{transform:scale(1.8);opacity:0}}
+@keyframes flicker{50%{opacity:.6}}
+@keyframes shake{25%{transform:translateX(4px)}75%{transform:translateX(-4px)}}
+.wrap{width:min(1200px,calc(100% - 30px));margin:auto}
+.glass{background:linear-gradient(135deg,rgba(255,255,255,.095),rgba(255,255,255,.025));border:1px solid var(--line);backdrop-filter:blur(24px) saturate(150%);-webkit-backdrop-filter:blur(24px) saturate(150%);box-shadow:0 25px 90px #0003,inset 0 1px 0 #ffffff0b;border-radius:24px}
+.topbar{position:sticky;top:0;z-index:40;background:#090615c9;backdrop-filter:blur(28px);border-bottom:1px solid #ffffff12}
+.nav{min-height:75px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:10px 0}
+.brand{font:32px Lalezar;display:flex;align-items:center;gap:10px;white-space:nowrap}
+.brand-symbol{width:44px;height:44px;display:grid;place-items:center;border-radius:16px;background:linear-gradient(140deg,#a78bfa,#ec4899 60%,#67e8f9);box-shadow:0 0 35px #a78bfa55;font-size:25px;position:relative}
+.brand-symbol:after{content:"";position:absolute;inset:-4px;border-radius:19px;border:1px solid #e9d5ff44;animation:glow 3s infinite}
+.navlinks{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.navlinks button,.ghost{border:1px solid transparent;border-radius:13px;background:transparent;padding:10px 12px;color:var(--muted);transition:.25s}
+.navlinks button:hover,.navlinks button.active,.ghost:hover{background:#ffffff0b;border-color:var(--line);color:white}
+.btn{border:1px solid #ffffff12;border-radius:14px;padding:12px 17px;font-weight:800;background:linear-gradient(110deg,#7c3aed,#c026d3,#ec4899,#7c3aed);background-size:250% 100%;box-shadow:0 8px 28px #a855f733;transition:transform .2s,filter .2s;animation:shine 9s linear infinite}
+.btn:hover{transform:translateY(-3px);filter:brightness(1.14)}
+.btn.secondary{background:linear-gradient(135deg,#28203f,#17132b);box-shadow:none;animation:none;border-color:#ffffff18}
+.btn.cyan{background:linear-gradient(120deg,#0891b2,#6366f1);animation:none}
+.btn.danger{background:linear-gradient(120deg,#be123c,#7f1d1d);animation:none}
+.btn.small{padding:8px 12px;font-size:13px;border-radius:11px}
+.pill{display:inline-flex;align-items:center;gap:7px;padding:7px 12px;border:1px solid var(--line);border-radius:99px;background:#ffffff08;color:#e9ddff;font-size:12px}
+.page{display:none;min-height:65vh;animation:rise .4s both}.page.active{display:block}
+.hero{display:grid;grid-template-columns:1.08fr .92fr;gap:35px;align-items:center;padding:62px 0 42px}
+.hero h1{font:clamp(52px,7.4vw,88px)/1.08 Lalezar;margin:22px 0}
+.gradient{background:linear-gradient(100deg,#c4b5fd,#f0abfc,#67e8f9,#f9a8d4,#c4b5fd);background-size:250%;background-clip:text;color:transparent;animation:shine 8s linear infinite}
+.hero p,.muted{color:var(--muted);font-size:14px;line-height:2.1}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:23px}
+.hero-art{position:relative;min-height:390px;display:grid;place-items:center}
+.orbit{position:absolute;width:300px;height:300px;border:1px solid #c4b5fd2e;border-radius:50%;box-shadow:inset 0 0 80px #8b5cf619,0 0 80px #8b5cf615;animation:rotate 30s linear infinite}
+.orbit:before,.orbit:after{content:"";position:absolute;border:1px solid #67e8f92e;border-radius:50%;inset:20px;transform:rotateX(65deg)}
+.orbit:after{inset:-20px;transform:rotateY(65deg)}
+.hero-card{position:relative;width:min(370px,94%);padding:25px;transform:rotate(-2deg);animation:float 6s ease-in-out infinite}
+.hero-card h3{font-size:19px;line-height:2}
+.fake-answer{padding:12px;border-radius:13px;border:1px solid #ffffff14;background:#ffffff06;margin-top:9px;font-size:13px}
+.fake-answer:first-of-type{border-color:#a78bfa99;background:#a78bfa18}
+.section{padding:28px 0 44px}
+.section-head{display:flex;align-items:end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:22px 0}
+.section-head h2,.page-title{font:34px Lalezar;margin:0}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.feature{padding:22px;min-height:190px;position:relative;overflow:hidden;transition:.3s}
+.feature:after{content:"";position:absolute;width:130px;height:130px;left:-75px;top:-70px;border-radius:50%;background:#a78bfa18;filter:blur(25px);transition:.3s}
+.feature:hover{transform:translateY(-6px);border-color:#c4b5fd70;box-shadow:0 22px 70px #8b5cf620}
+.feature:hover:after{transform:scale(1.8)}
+.feature-icon{width:51px;height:51px;display:grid;place-items:center;border:1px solid #ffffff19;border-radius:17px;background:linear-gradient(135deg,#a78bfa28,#ec489928);font-size:25px}
+.feature h3{margin:14px 0 5px}.feature p{color:var(--muted);font-size:13px;line-height:2}
+.page-head{padding:35px 0 15px}.page-head .pill{margin-bottom:12px}
+.content{padding:23px;margin:18px 0}
+.columns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}
+.field{display:flex;flex-direction:column;gap:8px;margin:12px 0}
+.field label{font-size:13px;color:#e5ddf9}
+.field input,.field select,.field textarea{width:100%;padding:13px;border-radius:13px;background:#100b20;color:white;border:1px solid #ffffff20;outline:none}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:#c4b5fd;box-shadow:0 0 0 3px #a78bfa19}
+.field option{background:#171128}
+.notice{padding:13px 15px;border-radius:14px;border:1px solid #c4b5fd36;background:#a78bfa0c;color:#e9ddff;font-size:12px;line-height:2;margin:13px 0}
+.notice.success{border-color:#86efac44;background:#86efac0c;color:#bbf7d0}
+.notice.error{border-color:#fb718544;background:#fb71850c;color:#fecdd3}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.stat{padding:16px;border:1px solid #ffffff12;background:#ffffff07;border-radius:17px}
+.stat b{display:block;font:28px Lalezar;color:#e9d5ff}.stat span{font-size:12px;color:var(--muted)}
+.price-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.price-card{padding:23px;position:relative;overflow:hidden;transition:.3s}
+.price-card:hover{transform:translateY(-5px);border-color:#c4b5fd88}
+.price-card.popular{border-color:#d8b4fe77;box-shadow:0 0 40px #a855f719}
+.price-card h3{margin:14px 0 6px}
+.price{font:32px Lalezar;margin:12px 0}.price small{font:13px Vazirmatn;color:var(--muted)}
+.price-card ul{padding-right:20px;color:var(--muted);font-size:13px;line-height:2.2}
+.price-card .btn{width:100%;margin-top:10px}
+.tag{position:absolute;left:12px;top:12px;border-radius:99px;padding:6px 9px;background:#c026d322;border:1px solid #e879f955;font-size:11px}
+.table-wrap{overflow:auto;border:1px solid #ffffff12;border-radius:15px}
+table{border-collapse:collapse;width:100%;min-width:510px;font-size:13px}
+th,td{text-align:right;padding:13px;border-bottom:1px solid #ffffff10}
+th{background:#ffffff08;color:#e9ddff}td{color:#eee8ff}
+.answer-list{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:20px 0}
+.answer{border:1px solid #ffffff18;border-radius:15px;padding:15px;text-align:right;background:#ffffff07;transition:.2s}
+.answer:hover:not(:disabled){background:#a78bfa19;border-color:#c4b5fd}
+.answer.correct{border-color:#86efac;background:#86efac18}
+.answer.wrong{border-color:#fb7185;background:#fb718518;animation:shake .25s}
+.progress{height:8px;border-radius:99px;background:#ffffff10;overflow:hidden;margin:15px 0}
+.progress span{display:block;width:0;height:100%;background:linear-gradient(90deg,#8b5cf6,#ec4899,#67e8f9);transition:width .3s}
+.empty{padding:20px;text-align:center;color:var(--muted);line-height:2}
+.toast{position:fixed;top:90px;left:50%;transform:translate(-50%,-20px);opacity:0;pointer-events:none;z-index:120;padding:14px 20px;border:1px solid var(--line);border-radius:15px;background:#171129f5;box-shadow:0 20px 65px #0008;transition:.25s;max-width:92vw;font-size:13px}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.modal-backdrop{display:none;position:fixed;inset:0;z-index:90;align-items:center;justify-content:center;padding:14px;background:#03020bd9;backdrop-filter:blur(18px)}
+.modal-backdrop.show{display:flex;animation:rise .2s}
+.modal{width:min(520px,100%);max-height:90vh;overflow:auto;padding:25px;position:relative}
+.modal h2{font:30px Lalezar;margin:0 0 8px}
+.modal p{font-size:13px;color:var(--muted);line-height:2}
+.close{position:absolute;left:12px;top:12px;width:36px;height:36px;border:1px solid #ffffff17;border-radius:12px;background:#ffffff09;font-size:23px}
+.admin-fab{position:fixed;left:17px;bottom:17px;z-index:50;width:53px;height:53px;border-radius:18px;background:#211638ed;border:1px solid #c4b5fd66;backdrop-filter:blur(20px);box-shadow:0 0 35px #a78bfa2b;display:grid;place-items:center;font-size:23px;transition:.25s}
+.admin-fab:hover{transform:rotate(12deg) scale(1.08)}
+.dashboard{display:none;position:fixed;inset:0;z-index:100;overflow:auto;padding:20px;background:#080512f7;backdrop-filter:blur(25px)}
+.dashboard.show{display:block;animation:rise .3s}
+.dash-inner{max-width:1200px;margin:auto}
+.footer{border-top:1px solid #ffffff12;padding:25px 0;margin-top:35px;color:var(--muted);font-size:12px}
+.footer-row{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.hidden{display:none!important}
+.avatar-wrap{--glow:#a78bfa66;position:relative;width:110px;height:110px;flex:none;display:grid;place-items:center;isolation:isolate}
+.avatar-core{width:76%;height:76%;border-radius:50%;display:grid;place-items:center;position:relative;z-index:1;overflow:hidden;border:2px solid #ffffff30;background:linear-gradient(135deg,#33254c,#0c0918);font:40px Lalezar}
+.avatar-frame{position:absolute;inset:-8px;z-index:2;pointer-events:none}
+.avatar-frame svg{width:100%;height:100%;overflow:visible}
+.frame-rgb{--glow:#fb7185;filter:drop-shadow(0 0 5px #fb7185) drop-shadow(0 0 14px #8b5cf6);animation:rotate 8s linear infinite}
+.frame-neon{--glow:#c084fc;filter:drop-shadow(0 0 7px #e879f9) drop-shadow(0 0 15px #8b5cf6);animation:glow 2.4s infinite}
+.frame-electric{--glow:#22d3ee;filter:drop-shadow(0 0 7px #22d3ee) drop-shadow(0 0 15px #0891b2);animation:glow 1.7s infinite}
+.frame-gold{--glow:#fcd34d;filter:drop-shadow(0 0 6px #fcd34d) drop-shadow(0 0 15px #d97706)}
+.frame-fire{--glow:#fb7185;filter:drop-shadow(0 0 7px #fb7185) drop-shadow(0 0 15px #f97316);animation:glow 1.2s infinite}
+.frame-crystal{--glow:#67e8f9;filter:drop-shadow(0 0 6px #67e8f9) drop-shadow(0 0 14px #c4b5fd);animation:glow 3s infinite}
+.frame-galaxy{--glow:#c084fc;filter:drop-shadow(0 0 7px #c084fc) drop-shadow(0 0 14px #6366f1);animation:rotate 22s linear infinite}
+.frame-cyber{--glow:#34d399;filter:drop-shadow(0 0 6px #34d399) drop-shadow(0 0 13px #0f766e)}
+.frame-mini{width:64px;height:64px}.frame-mini .avatar-core{font-size:24px}.frame-mini .avatar-frame{inset:-6px}
+.frame-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:15px}
+.frame-card{padding:19px;display:flex;align-items:center;text-align:center;flex-direction:column;gap:10px;transition:.3s}
+.frame-card:hover{transform:translateY(-5px);border-color:#c4b5fd77}
+.frame-card .avatar-wrap{margin:9px 0}
+.frame-card h3{margin:0;font-size:15px}
+.frame-card p{font-size:12px;color:var(--muted);line-height:1.9;min-height:47px;margin:0}
+.frame-card .price-label{font-size:13px;font-weight:800;color:#e9d5ff}
+.frame-card .status{font-size:11px;color:var(--green);min-height:18px}
+.frame-card .btn{width:100%;margin-top:auto}
+.frame-card.equipped{border-color:#67e8f988;box-shadow:0 0 32px #67e8f911}
+.frame-card.owned{border-color:#86efac55}
+@media(max-width:960px){.hero{grid-template-columns:1fr;padding-top:40px}.hero-art{min-height:330px}.navlinks{order:3;width:100%;overflow-x:auto;flex-wrap:nowrap}.navlinks button{white-space:nowrap}.frame-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:650px){.wrap{width:calc(100% - 22px)}.brand{font-size:27px}.hero h1{font-size:55px}.hero-art{min-height:300px}.orbit{width:245px;height:245px}.grid,.price-grid,.columns{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.answer-list{grid-template-columns:1fr}.section-head{align-items:flex-start;flex-direction:column}.page-title,.section-head h2{font-size:30px}.content{padding:16px}.frame-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.frame-card{padding:13px}.avatar-wrap{width:94px;height:94px}.navlinks button{font-size:12px;padding:8px}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<canvas id="particles"></canvas>
+<div class="aurora a"></div><div class="aurora b"></div><div class="aurora c"></div>
+
+<header class="topbar"><div class="wrap nav">
+<button class="ghost" onclick="go('home')" style="padding:0;border:0"><span class="brand"><span class="brand-symbol">ش</span>شعرشو</span></button>
+<nav class="navlinks">
+<button data-nav="home" class="active" onclick="go('home')">خانه</button>
+<button data-nav="solo" onclick="go('solo')">بازی</button>
+<button data-nav="tournaments" onclick="go('tournaments')">تورنمنت‌ها</button>
+<button data-nav="friends" onclick="go('friends')">دوستان</button>
+<button data-nav="store" onclick="go('store')">فروشگاه</button>
+<button data-nav="rank" onclick="go('rank')">رتبه‌بندی</button>
+</nav>
+<div style="display:flex;gap:8px;align-items:center">
+<span id="navBalance" class="pill hidden">🪙 <b id="navCoins">۰</b></span>
+<button id="navAuth" class="btn small" onclick="openAuth()">ورود / ثبت‌نام</button>
+<button id="navProfile" class="btn small secondary hidden" onclick="go('profile')">پروفایل</button>
+</div>
+</div></header>
+
+<main class="wrap">
+<section class="page active" id="page-home" data-page="home">
+<div class="hero">
+<div>
+<span class="pill">✦ دنیای شعر، دانایی و رقابت</span>
+<h1>بدرخش با<br><span class="gradient">قدرت دانایی!</span></h1>
+<p>وارد دنیای شعرشو شو؛ سؤال جواب بده، امتیاز بگیر، سکه جمع کن و با قاب‌های اختصاصی و متحرک، پروفایلت رو متفاوت کن.</p>
+<div class="actions"><button class="btn" onclick="go('solo')">شروع بازی ←</button><button class="btn secondary" onclick="go('store')">گشت‌وگذار در فروشگاه ✨</button></div>
+<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:22px"><span class="pill">📚 ادبیات فارسی</span><span class="pill">🧠 دانش عمومی</span><span class="pill">🌌 قاب‌های ویژه</span></div>
+</div>
+<div class="hero-art"><div class="orbit"></div><div class="glass hero-card">
+<span class="pill">✨ چالش امروز</span><h3>توانا بود هر که ... بود</h3>
+<div class="fake-answer">الف) دانا</div><div class="fake-answer">ب) دارا</div><div class="fake-answer">ج) زیبا</div><div class="fake-answer">د) پیدا</div>
+<p class="muted">دانشت رو امتحان کن و سکه جمع کن.</p>
+</div></div>
+</div>
+<div class="section"><div class="section-head"><div><h2>در شعرشو چه خبره؟</h2><p class="muted">همه‌چیز برای شروع یک رقابت جذاب آماده است.</p></div></div>
+<div class="grid">
+<article class="glass feature"><div class="feature-icon">🧠</div><h3>بازی تک‌نفره</h3><p>دسته‌بندی و تعداد سؤال‌ها را انتخاب کن و امتیاز بگیر.</p><button class="btn small" onclick="go('solo')">شروع بازی</button></article>
+<article class="glass feature"><div class="feature-icon">🏆</div><h3>تورنمنت‌ها</h3><p>در رویدادهای مختلف شرکت کن و رکورد بساز.</p><button class="btn small secondary" onclick="go('tournaments')">مشاهده تورنمنت‌ها</button></article>
+<article class="glass feature"><div class="feature-icon">🛍️</div><h3>فروشگاه قاب</h3><p>قاب‌های RGB، نئونی، طلایی، کریستالی و کهکشانی.</p><button class="btn small secondary" onclick="go('store')">دیدن قاب‌ها</button></article>
+<article class="glass feature"><div class="feature-icon">🤝</div><h3>دوستان</h3><p>کد دعوت خودت را با دوستانت به اشتراک بگذار.</p><button class="btn small secondary" onclick="go('friends')">دوستان</button></article>
+<article class="glass feature"><div class="feature-icon">🥇</div><h3>رتبه‌بندی</h3><p>امتیاز و سطح بازیکنان را مقایسه کن.</p><button class="btn small secondary" onclick="go('rank')">جدول رتبه‌ها</button></article>
+<article class="glass feature"><div class="feature-icon">👤</div><h3>پروفایل اختصاصی</h3><p>قاب فعال، امتیازها، سکه‌ها و تاریخچه بازی‌ها.</p><button class="btn small secondary" onclick="go('profile')">پروفایل من</button></article>
+</div></div>
+</section>
+
+<section class="page" id="page-solo" data-page="solo">
+<div class="page-head"><span class="pill">🧠 چالش دانایی</span><h1 class="page-title">بازی تک‌نفره</h1><p class="muted">هر پاسخ درست ۱۰ امتیاز دارد.</p></div>
+<div class="glass content" id="quizSetup">
+<div class="columns">
+<div class="field"><label for="category">دسته‌بندی</label><select id="category"><option value="all">همه دسته‌ها</option><option>شعر و ادبیات فارسی</option><option>شاعران و نویسندگان</option><option>ضرب‌المثل‌ها</option><option>تاریخ</option><option>جغرافیا</option><option>علم و فناوری</option><option>دانش عمومی</option><option>فرهنگ و هنر</option></select></div>
+<div class="field"><label for="difficulty">درجه سختی</label><select id="difficulty"><option value="all">همه درجه‌ها</option><option>آسان</option><option>متوسط</option><option>سخت</option></select></div>
+<div class="field"><label for="questionCount">تعداد سؤال</label><select id="questionCount"><option value="5">۵ سؤال</option><option value="10">۱۰ سؤال</option><option value="15">۱۵ سؤال</option></select></div>
+<div class="field"><label>پاداش پاسخ صحیح</label><span class="pill">✨ ۱۰ امتیاز و ۱ سکه</span></div>
+</div><button class="btn" onclick="startQuiz()">شروع چالش ✨</button>
+</div>
+<div class="glass content hidden" id="quizPlay"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><span id="quizCounter" class="pill"></span><span class="pill">امتیاز: <b id="quizScore">۰</b></span></div><div class="progress"><span id="quizProgress"></span></div><div id="quizContent"></div><button class="btn secondary small" onclick="skipQuestion()">رد کردن سؤال</button> <button class="ghost" onclick="endQuiz(true)">پایان بازی</button></div>
+<div class="glass content hidden" id="quizResult"></div>
+</section>
+
+<section class="page" id="page-tournaments" data-page="tournaments">
+<div class="page-head"><span class="pill">🏆 مسیر قهرمانی</span><h1 class="page-title">تورنمنت‌ها</h1><p class="muted">رویداد دلخواهت را انتخاب کن.</p></div>
+<div class="grid">
+<article class="glass feature"><div class="feature-icon">⚡</div><h3>جام دانایی</h3><p>رقابت پرسش‌وپاسخ با موضوع‌های گوناگون.</p><button class="btn small" onclick="joinTournament('جام دانایی')">ثبت‌نام</button></article>
+<article class="glass feature"><div class="feature-icon">📜</div><h3>نبرد ادبیات</h3><p>چالش شعر، شاعران و ادبیات فارسی.</p><button class="btn small secondary" onclick="joinTournament('نبرد ادبیات')">ثبت‌نام</button></article>
+<article class="glass feature"><div class="feature-icon">🌟</div><h3>چالش روزانه</h3><p>دانشت را هر روز محک بزن.</p><button class="btn small secondary" onclick="go('solo')">شروع تمرین</button></article>
+</div><div class="glass content"><h3>ثبت‌نام‌های من</h3><div id="myTournaments" class="empty">برای مشاهده ثبت‌نام‌ها وارد حساب شو.</div></div>
+</section>
+
+<section class="page" id="page-friends" data-page="friends">
+<div class="page-head"><span class="pill">🤝 ارتباطات</span><h1 class="page-title">دوستان و دعوت</h1></div>
+<div class="columns"><div class="glass content"><h3>کد دعوت من</h3><div id="inviteCode" class="pill">SH-0000</div><p class="muted">کد خودت را کپی کن و برای دوستت بفرست.</p><button class="btn small" onclick="copyInvite()">کپی کد دعوت</button></div>
+<div class="glass content"><h3>افزودن دوست</h3><div class="field"><label for="friendName">نام کاربری</label><input id="friendName" maxlength="24" placeholder="نام کاربری دوست"></div><button class="btn secondary" onclick="addFriend()">افزودن دوست</button></div></div>
+<div class="glass content"><h3>فهرست دوستان</h3><div id="friendsList" class="empty">هنوز دوستی اضافه نکرده‌ای.</div></div>
+</section>
+
+<section class="page" id="page-store" data-page="store">
+<div class="page-head"><span class="pill">🛍️ فروشگاه اختصاصی</span><h1 class="page-title">فروشگاه شعرشو</h1><p class="muted">قاب موردعلاقه‌ات را انتخاب کن و به پروفایلت جلوه بده.</p></div>
+<div class="section-head"><div><h2>بسته‌های سکه</h2><p class="muted">برای خرید بسته‌های پولی، درگاه پرداخت باید در سرور تنظیم شده باشد.</p></div></div>
+<div class="price-grid">
+<article class="glass price-card"><span class="pill">شروع</span><h3>۲۵ سکه</h3><div class="price">۲۰,۰۰۰ <small>تومان</small></div><ul><li>۲۵ سکه حساب</li><li>خرید قاب‌های فروشگاه</li><li>امکان شخصی‌سازی پروفایل</li></ul><button class="btn secondary" onclick="requestPaidPurchase('بسته ۲۵ سکه')">انتخاب بسته</button></article>
+<article class="glass price-card popular"><span class="tag">محبوب</span><span class="pill">پیشنهادی</span><h3>۱۰۰ سکه</h3><div class="price">۵۰,۰۰۰ <small>تومان</small></div><ul><li>۱۰۰ سکه حساب</li><li>انتخاب قاب‌های ویژه</li><li>دسترسی به فروشگاه قاب</li></ul><button class="btn" onclick="requestPaidPurchase('بسته ۱۰۰ سکه')">انتخاب بسته</button></article>
+<article class="glass price-card"><span class="pill">ویژه</span><h3>۵۰۰ سکه</h3><div class="price">۸۰,۰۰۰ <small>تومان</small></div><ul><li>۵۰۰ سکه حساب</li><li>مناسب قاب‌های کمیاب</li><li>امکان تغییر قاب پروفایل</li></ul><button class="btn secondary" onclick="requestPaidPurchase('بسته ۵۰۰ سکه')">انتخاب بسته</button></article>
+</div>
+<div class="section-head"><div><h2>اشتراک VIP</h2><p class="muted">مزایای هر پلن را قبل از انتخاب بخوان.</p></div></div>
+<div class="price-grid">
+<article class="glass price-card"><span class="pill">VIP پایه</span><h3>یک‌ماهه</h3><div class="price">۴۵,۰۰۰ <small>تومان</small></div><ul><li>۳۰ روز اشتراک VIP</li><li>انتخاب بیش از ۵۰ سؤال در دورهمی، پس از تکمیل آن بخش</li><li>نشان VIP در پروفایل</li><li>دسترسی به امکانات اختصاصی VIP</li></ul><button class="btn secondary" onclick="requestPaidPurchase('اشتراک VIP یک‌ماهه')">انتخاب اشتراک</button></article>
+<article class="glass price-card popular"><span class="tag">پیشنهادی</span><span class="pill">VIP حرفه‌ای</span><h3>سه‌ماهه</h3><div class="price">۱۵۰,۰۰۰ <small>تومان</small></div><ul><li>۹۰ روز اشتراک VIP</li><li>انتخاب بیش از ۵۰ سؤال در دورهمی، پس از تکمیل آن بخش</li><li>نشان VIP در پروفایل</li><li>دسترسی به امکانات اختصاصی VIP</li></ul><button class="btn" onclick="requestPaidPurchase('اشتراک VIP سه‌ماهه')">انتخاب اشتراک</button></article>
+<article class="glass price-card"><span class="pill">VIP ویژه</span><h3>یک‌ساله</h3><div class="price">۴۰۰,۰۰۰ <small>تومان</small></div><ul><li>۳۶۵ روز اشتراک VIP</li><li>انتخاب بیش از ۵۰ سؤال در دورهمی، پس از تکمیل آن بخش</li><li>نشان VIP در پروفایل</li><li>دسترسی به امکانات اختصاصی VIP</li></ul><button class="btn secondary" onclick="requestPaidPurchase('اشتراک VIP یک‌ساله')">انتخاب اشتراک</button></article>
+</div>
+<div class="section-head" style="margin-top:40px"><div><h2>✨ قاب‌های پروفایل</h2><p class="muted">طراحی اختصاصی با کد، SVG و افکت‌های زنده؛ بدون تصاویر آماده.</p></div><span class="pill">🪙 خرید با سکه</span></div>
+<div id="frameGrid" class="frame-grid"></div>
+<div class="glass content"><h3>🎒 دارایی‌های من</h3><div id="myFrames" class="empty">برای مشاهده دارایی‌ها وارد حساب شو.</div></div>
+</section>
+
+<section class="page" id="page-rank" data-page="rank">
+<div class="page-head"><span class="pill">🥇 جدول امتیازها</span><h1 class="page-title">رتبه‌بندی</h1><p class="muted">امتیاز و سطح بازیکنان را بررسی کن.</p></div>
+<div class="glass content"><div class="table-wrap"><table><thead><tr><th>رتبه</th><th>بازیکن</th><th>امتیاز</th><th>سطح</th><th>سکه</th></tr></thead><tbody id="rankRows"></tbody></table></div></div>
+</section>
+
+<section class="page" id="page-profile" data-page="profile">
+<div class="page-head"><span class="pill">👤 حساب بازیکن</span><h1 class="page-title">پروفایل من</h1></div>
+<div id="profileContent" class="glass content"></div>
+<div class="glass content"><h3>تاریخچه بازی‌ها</h3><div id="historyContent" class="empty">هنوز بازی‌ای ثبت نشده.</div></div>
+<button class="btn danger" onclick="logout()">خروج از حساب</button>
+</section>
+</main>
+
+<footer class="footer"><div class="wrap footer-row"><span>© شعرشو · بازی، یادگیری، پیشرفت</span><span>طراحی با افکت‌های شیشه‌ای و نورپردازی نئونی</span><button class="ghost" onclick="showAbout()">درباره شعرشو</button></div></footer>
+
+<button class="admin-fab" aria-label="پنل مدیریت" title="پنل مدیریت" onclick="openAdmin()">⌘</button>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<div class="modal-backdrop" id="authModal" onclick="if(event.target===this)closeModal('authModal')">
+<div class="modal glass"><button class="close" onclick="closeModal('authModal')">×</button>
+<h2 id="authTitle">ورود به شعرشو</h2><p id="authDesc">برای ورود به حساب خود اطلاعاتت را وارد کن.</p>
+<div id="registerFields" class="hidden"><div class="field"><label for="displayName">نام نمایشی</label><input id="displayName" maxlength="30" autocomplete="name" placeholder="نام شما"></div></div>
+<div class="field"><label for="username">نام کاربری</label><input id="username" maxlength="24" autocomplete="username" placeholder="مثلاً amir_player"></div>
+<div class="field"><label for="userPassword">رمز عبور</label><input id="userPassword" type="password" minlength="10" autocomplete="current-password" placeholder="حداقل ۱۰ نویسه"></div>
+<button class="btn" id="authSubmit" style="width:100%" onclick="submitAuth()">ورود</button>
+<p><button id="authSwitch" class="ghost" onclick="toggleAuthMode()">حساب نداری؟ ثبت‌نام کن</button></p>
+</div></div>
+
+<div class="modal-backdrop" id="adminModal" onclick="if(event.target===this)closeModal('adminModal')">
+<div class="modal glass"><button class="close" onclick="closeModal('adminModal')">×</button><h2>پنل مدیریت 🛡️</h2><p>رمز مدیریت را وارد کن.</p>
+<div class="field"><label for="adminPassword">رمز مدیریت</label><input id="adminPassword" type="password" autocomplete="current-password"></div>
+<button class="btn" style="width:100%" onclick="adminLogin()">ورود به پنل</button>
+</div></div>
+
+<div class="dashboard" id="adminDashboard"><div class="dash-inner">
+<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><div><span class="pill">مدیریت سامانه</span><h1 class="page-title">پنل مدیریت</h1></div><button class="btn secondary" onclick="closeAdmin()">بستن ×</button></div>
+<div id="adminStatus" class="notice">در حال آماده‌سازی...</div>
+<div class="stats"><div class="stat"><b id="adminUsersCount">۰</b><span>کاربران</span></div><div class="stat"><b id="adminTotalCoins">۰</b><span>مجموع سکه‌ها</span></div><div class="stat"><b id="adminVipCount">۰</b><span>VIP فعال</span></div><div class="stat"><b id="adminGamesCount">۰</b><span>بازی‌ها</span></div></div>
+<div class="glass content"><h3>مدیریت کاربران</h3><div class="field"><label for="adminSearch">جست‌وجو</label><input id="adminSearch" placeholder="نام یا نام کاربری" oninput="renderAdmin()"></div><div class="table-wrap"><table><thead><tr><th>نام</th><th>نام کاربری</th><th>سکه</th><th>پایان VIP</th><th>عملیات</th></tr></thead><tbody id="adminUsersRows"></tbody></table></div>
+<div id="adminUserActions" class="hidden"><h3 id="selectedUserTitle"></h3><div class="columns"><div><div class="field"><label for="coinDelta">تغییر سکه (+ یا -)</label><input id="coinDelta" type="number"><label for="coinReason">دلیل تغییر</label><input id="coinReason" placeholder="دلیل تغییر سکه"></div><button class="btn small" onclick="adjustCoins()">ثبت تغییر سکه</button></div><div><div class="field"><label for="vipDays">مدت VIP</label><select id="vipDays"><option value="30">۳۰ روز</option><option value="90">۹۰ روز</option><option value="180">۱۸۰ روز</option><option value="365">۳۶۵ روز</option><option value="0">لغو VIP</option></select><label for="vipReason">دلیل تغییر</label><input id="vipReason" placeholder="دلیل تغییر VIP"></div><button class="btn secondary small" onclick="setVip()">ثبت VIP</button></div></div></div>
+</div></div></div>
+
+<script>
+'use strict';
+const $=id=>document.getElementById(id);
+const fmt=n=>Number(n||0).toLocaleString('fa-IR');
+const SUPABASE_URL='https://tzrgixjjpkikiklkkrmh.supabase.co';
+const SUPABASE_KEY='sb_publishable_S2W66HL9Ry6m3eEcpEPF5g_aQz_NEaH';
+const AUTH_API=SUPABASE_URL+'/functions/v1/user-auth';
+const ADMIN_API=SUPABASE_URL+'/functions/v1/admin-api';
+const STATE_KEY='shearsho_local_state_v4';
+const TOKEN_KEY='shearsho_access_token';
+const REFRESH_KEY='shearsho_refresh_token';
+let state=loadState(),sessionUser=null,accessToken=localStorage.getItem(TOKEN_KEY)||'';
+let authMode='login',adminPasswordSession='',remoteUsers=[],selectedAdminUser='';
+let quiz=[],quizIndex=0,quizScore=0,quizAnswered=false;
+function loadState(){try{return JSON.parse(localStorage.getItem(STATE_KEY))||{players:[],history:[],friends:[],tournaments:[]}}catch{return{players:[],history:[],friends:[],tournaments:[]}}}
+function saveState(){localStorage.setItem(STATE_KEY,JSON.stringify(state))}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function toast(s){const t=$('toast');t.textContent=s;t.classList.add('show');clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>t.classList.remove('show'),3500)}
+function closeModal(id){$(id).classList.remove('show')}
+function openModal(id){$(id).classList.add('show')}
+async function api(url,payload,token){const headers={'Content-Type':'application/json','apikey':SUPABASE_KEY};if(token)headers.Authorization='Bearer '+token;const r=await fetch(url,{method:'POST',headers,body:JSON.stringify(payload)});let d={};try{d=await r.json()}catch{}if(!r.ok||d.error)throw new Error(d.error||d.message||'درخواست ناموفق بود.');return d}
+function getPlayer(){if(!sessionUser)return null;let p=state.players.find(x=>x.id===sessionUser.id);if(!p){p={id:sessionUser.id,displayName:sessionUser.display_name||sessionUser.user_metadata?.display_name||'بازیکن',username:sessionUser.username||sessionUser.user_metadata?.username||'',coins:0,score:0,level:1,games:0,invite:'SH-'+Math.random().toString(36).slice(2,6).toUpperCase(),ownedFrames:['default'],activeFrame:'default'};state.players.push(p);saveState()}ensureInventory(p);return p}
+function updateNav(){const p=getPlayer();$('navAuth').classList.toggle('hidden',!!p);$('navProfile').classList.toggle('hidden',!p);$('navBalance').classList.toggle('hidden',!p);$('navCoins').textContent=fmt(p?.coins||0);$('inviteCode').textContent=p?.invite||'SH-0000'}
+function go(name){if(name==='profile'&&!sessionUser){openAuth();toast('برای مشاهده پروفایل وارد حساب شو.');return}document.querySelectorAll('.page').forEach(p=>{p.classList.toggle('active',p.dataset.page===name);if(p.dataset.page===name)p.style.display=''});document.querySelectorAll('[data-nav]').forEach(b=>b.classList.toggle('active',b.dataset.nav===name));window.scrollTo({top:0,behavior:'smooth'});if(name==='profile')renderProfile();if(name==='rank')renderRanks();if(name==='friends')renderFriends();if(name==='tournaments')renderTournaments();if(name==='store')renderStore()}
+function openAuth(){authMode='login';updateAuthMode();openModal('authModal')}
+function toggleAuthMode(){authMode=authMode==='login'?'register':'login';updateAuthMode()}
+function updateAuthMode(){$('authTitle').textContent=authMode==='login'?'ورود به شعرشو':'ساخت حساب شعرشو';$('authDesc').textContent=authMode==='login'?'نام کاربری و رمز عبور خود را وارد کن.':'اطلاعات حساب جدیدت را وارد کن.';$('registerFields').classList.toggle('hidden',authMode!=='register');$('authSubmit').textContent=authMode==='login'?'ورود':'ثبت‌نام';$('authSwitch').textContent=authMode==='login'?'حساب نداری؟ ثبت‌نام کن':'حساب داری؟ وارد شو';$('userPassword').autocomplete=authMode==='login'?'current-password':'new-password'}
+async function submitAuth(){const username=$('username').value.trim().replace(/^@/,'').toLowerCase(),password=$('userPassword').value;const payload={action:authMode,username,password};if(authMode==='register')payload.display_name=$('displayName').value.trim();if(!/^[a-z0-9_.-]{3,24}$/.test(username))return toast('نام کاربری باید ۳ تا ۲۴ نویسه و شامل حروف انگلیسی، عدد، نقطه، خط تیره یا زیرخط باشد.');if(password.length<10||password.length>128)return toast('رمز عبور باید حداقل ۱۰ و حداکثر ۱۲۸ نویسه باشد.');if(authMode==='register'&&(payload.display_name.length<2||payload.display_name.length>30))return toast('نام نمایشی باید ۲ تا ۳۰ نویسه باشد.');$('authSubmit').disabled=true;try{const d=await api(AUTH_API,payload);const s=d.session||d;if(!s.access_token)throw Error('توکن ورود از سرور دریافت نشد.');accessToken=s.access_token;localStorage.setItem(TOKEN_KEY,s.access_token);if(s.refresh_token)localStorage.setItem(REFRESH_KEY,s.refresh_token);sessionUser=d.user||s.user||{id:s.user_id,username};if(!sessionUser.id)throw Error('شناسه کاربر از سرور دریافت نشد.');sessionUser.username=sessionUser.username||username;sessionUser.display_name=sessionUser.display_name||sessionUser.user_metadata?.display_name||payload.display_name||username;closeModal('authModal');updateNav();toast(authMode==='register'?'حساب ساخته شد و وارد شدی.':'با موفقیت وارد شدی.');renderProfile()}catch(e){toast(e.message||'ورود انجام نشد.')}finally{$('authSubmit').disabled=false}}
+function logout(){sessionUser=null;accessToken='';localStorage.removeItem(TOKEN_KEY);localStorage.removeItem(REFRESH_KEY);updateNav();go('home');toast('از حساب خارج شدی.')}
+async function restoreSession(){if(!accessToken)return;try{const r=await fetch(SUPABASE_URL+'/auth/v1/user',{headers:{apikey:SUPABASE_KEY,Authorization:'Bearer '+accessToken}});if(!r.ok)throw Error();sessionUser=await r.json();sessionUser.username=sessionUser.user_metadata?.username||sessionUser.username||'';sessionUser.display_name=sessionUser.user_metadata?.display_name||sessionUser.display_name||sessionUser.username;updateNav()}catch{accessToken='';localStorage.removeItem(TOKEN_KEY);localStorage.removeItem(REFRESH_KEY)}}
+function openAdmin(){openModal('adminModal');$('adminPassword').value=''}
+async function adminLogin(){const password=$('adminPassword').value;if(!password)return toast('رمز مدیریت را وارد کن.');try{await api(ADMIN_API,{action:'admin-login',password},SUPABASE_KEY);adminPasswordSession=password;closeModal('adminModal');$('adminDashboard').classList.add('show');await renderAdmin();toast('ورود به پنل مدیریت موفق بود.')}catch(e){toast('ورود ناموفق بود؛ رمز و تابع admin-api را بررسی کن.');adminPasswordSession=''}}
+function closeAdmin(){$('adminDashboard').classList.remove('show');adminPasswordSession='';remoteUsers=[];selectedAdminUser=''}
+async function renderAdmin(){if(!adminPasswordSession)return;try{const d=await api(ADMIN_API,{action:'admin-users',password:adminPasswordSession},SUPABASE_KEY);remoteUsers=d.users||[];const q=($('adminSearch').value||'').toLowerCase();const list=remoteUsers.filter(u=>((u.display_name||'')+' '+(u.username||'')).toLowerCase().includes(q));$('adminUsersCount').textContent=fmt(remoteUsers.length);$('adminTotalCoins').textContent=fmt(remoteUsers.reduce((s,u)=>s+(+u.coins||0),0));$('adminVipCount').textContent=fmt(remoteUsers.filter(u=>u.vip_until&&new Date(u.vip_until)>new Date()).length);$('adminGamesCount').textContent=fmt(remoteUsers.reduce((s,u)=>s+(+u.games||0),0));$('adminUsersRows').innerHTML=list.map(u=>`<tr><td>${esc(u.display_name)}</td><td>@${esc(u.username)}</td><td>${fmt(u.coins)}</td><td>${u.vip_until?new Date(u.vip_until).toLocaleDateString('fa-IR'):'—'}</td><td><button class="btn small secondary" onclick="selectAdminUser('${esc(u.id)}')">مدیریت</button></td></tr>`).join('')||'<tr><td colspan="5">کاربری پیدا نشد.</td></tr>';$('adminStatus').className='notice success';$('adminStatus').textContent='اطلاعات کاربران دریافت شد.'}catch(e){$('adminStatus').className='notice error';$('adminStatus').textContent='دریافت اطلاعات ناموفق بود. تنظیمات تابع admin-api را بررسی کن.'}}
+function selectAdminUser(id){selectedAdminUser=id;const u=remoteUsers.find(x=>x.id===id);if(!u)return;$('adminUserActions').classList.remove('hidden');$('selectedUserTitle').textContent=`${u.display_name} (@${u.username})`}
+async function adjustCoins(){const delta=Number($('coinDelta').value),reason=$('coinReason').value.trim();if(!selectedAdminUser)return toast('ابتدا کاربر را انتخاب کن.');if(!Number.isInteger(delta)||delta===0||!reason)return toast('مقدار معتبر و دلیل را وارد کن.');try{await api(ADMIN_API,{action:'admin-adjust-coins',password:adminPasswordSession,user_id:selectedAdminUser,delta,reason},SUPABASE_KEY);await renderAdmin();toast('درخواست تغییر سکه ارسال شد.')}catch(e){toast('تغییر سکه انجام نشد؛ خطای تابع admin-api را بررسی کن.')}}
+async function setVip(){const days=Number($('vipDays').value),reason=$('vipReason').value.trim();if(!selectedAdminUser)return toast('ابتدا کاربر را انتخاب کن.');if(!reason)return toast('دلیل تغییر VIP را وارد کن.');try{await api(ADMIN_API,{action:'admin-set-vip',password:adminPasswordSession,user_id:selectedAdminUser,days,reason},SUPABASE_KEY);await renderAdmin();toast('درخواست تغییر VIP ارسال شد.')}catch(e){toast('تغییر VIP انجام نشد؛ خطای تابع admin-api را بررسی کن.')}}
+
+/* قاب‌های اختصاصی: SVG و CSS */
+const FRAMES=[
+{id:'default',name:'کلاسیک',price:0,desc:'قاب پایه با طراحی مینیمال.',type:'default'},
+{id:'neon',name:'نئونی بنفش',price:100,desc:'نور بنفش و صورتی با درخشش متحرک.',type:'neon'},
+{id:'rgb',name:'RGB رینبو',price:250,desc:'حلقه رنگین‌کمانی چرخان.',type:'rgb'},
+{id:'electric',name:'الکتریکی',price:350,desc:'لبه‌های انرژی با نور فیروزه‌ای.',type:'electric'},
+{id:'gold',name:'سلطنتی طلایی',price:500,desc:'حلقه طلایی و نگین‌های درخشان.',type:'gold'},
+{id:'fire',name:'طوفان آتش',price:650,desc:'رنگ‌های آتشین با درخشش پویا.',type:'fire'},
+{id:'crystal',name:'کریستالی',price:750,desc:'برش‌های هندسی شفاف و آبی.',type:'crystal'},
+{id:'galaxy',name:'کهکشانی',price:900,desc:'حلقه فضایی و ستاره‌های نورانی.',type:'galaxy'},
+{id:'cyber',name:'سایبر',price:1100,desc:'هندسه سایبری و نور سبز.',type:'cyber'}
+];
+function frameSvg(type){if(type==='default')return '';let b='';
+if(type==='rgb')b='<defs><linearGradient id="rgbg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fb7185"/><stop offset=".25" stop-color="#facc15"/><stop offset=".5" stop-color="#4ade80"/><stop offset=".75" stop-color="#22d3ee"/><stop offset="1" stop-color="#c084fc"/></linearGradient></defs><circle cx="60" cy="60" r="49" fill="none" stroke="url(#rgbg)" stroke-width="5" stroke-dasharray="12 4"/><circle cx="60" cy="60" r="55" fill="none" stroke="url(#rgbg)" stroke-width="1.5" stroke-dasharray="3 8"/>';
+else if(type==='neon')b='<circle cx="60" cy="60" r="49" fill="none" stroke="#e879f9" stroke-width="5"/><circle cx="60" cy="60" r="55" fill="none" stroke="#8b5cf6" stroke-width="2"/><circle cx="60" cy="60" r="44" fill="none" stroke="#67e8f9" stroke-width="1.5" stroke-dasharray="2 7"/>';
+else if(type==='electric')b='<path d="M60 5 L70 14 84 9 86 23 101 29 98 43 110 53 102 65 106 80 91 85 84 100 70 96 60 111 49 98 33 102 28 87 13 80 19 65 8 55 18 42 13 29 29 23 34 9 48 14Z" fill="none" stroke="#22d3ee" stroke-width="3"/><circle cx="60" cy="60" r="48" fill="none" stroke="#818cf8" stroke-width="2" stroke-dasharray="5 7"/>';
+else if(type==='gold')b='<circle cx="60" cy="60" r="50" fill="none" stroke="#fcd34d" stroke-width="5"/><circle cx="60" cy="60" r="56" fill="none" stroke="#b45309" stroke-width="2"/><circle cx="60" cy="10" r="4" fill="#fff0a6"/><circle cx="60" cy="110" r="4" fill="#fff0a6"/><circle cx="10" cy="60" r="4" fill="#fff0a6"/><circle cx="110" cy="60" r="4" fill="#fff0a6"/><path d="M60 3 L65 10 60 17 55 10Z M60 103 L65 110 60 117 55 110Z" fill="#fef3c7"/>';
+else if(type==='fire')b='<circle cx="60" cy="60" r="49" fill="none" stroke="#fb7185" stroke-width="4" stroke-dasharray="14 5"/><circle cx="60" cy="60" r="55" fill="none" stroke="#f97316" stroke-width="2" stroke-dasharray="5 6"/><path d="M20 30Q30 18 27 10M90 26Q104 14 98 8M18 82Q7 93 16 103M97 87Q110 95 103 106" fill="none" stroke="#fbbf24" stroke-width="3" stroke-linecap="round"/>';
+else if(type==='crystal')b='<path d="M60 5 73 13 91 10 96 27 110 40 103 57 109 73 94 85 89 103 71 100 60 115 47 101 29 104 24 87 9 75 16 58 10 41 25 29 30 12 47 14Z" fill="none" stroke="#67e8f9" stroke-width="3"/><circle cx="60" cy="60" r="48" fill="none" stroke="#c4b5fd" stroke-width="2"/>';
+else if(type==='galaxy')b='<circle cx="60" cy="60" r="50" fill="none" stroke="#c084fc" stroke-width="4" stroke-dasharray="25 5 4 6"/><circle cx="60" cy="60" r="56" fill="none" stroke="#6366f1" stroke-width="1.5" stroke-dasharray="2 9"/><path d="M24 25l3 7 7 2-7 3-3 7-3-7-7-3 7-2zM91 77l3 6 6 2-6 2-3 6-2-6-6-2 6-2zM85 22l2 4 4 2-4 2-2 4-2-4-4-2 4-2z" fill="#e9d5ff"/>';
+else if(type==='cyber')b='<circle cx="60" cy="60" r="49" fill="none" stroke="#34d399" stroke-width="3" stroke-dasharray="20 5"/><path d="M60 3 71 14 86 14 86 28 103 36 96 49 106 60 96 72 101 87 84 91 79 105 64 99 52 110 43 97 27 99 27 83 13 76 20 61 12 48 26 39 25 24 41 25 48 11Z" fill="none" stroke="#0f766e" stroke-width="2"/>';
+return `<svg viewBox="0 0 120 120" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">${b}</svg>`}
+function ensureInventory(p){if(!Array.isArray(p.ownedFrames))p.ownedFrames=['default'];if(!p.ownedFrames.includes('default'))p.ownedFrames.unshift('default');if(!FRAMES.some(f=>f.id===p.activeFrame)||!p.ownedFrames.includes(p.activeFrame))p.activeFrame='default'}
+function avatarHtml(p,mini=false,frameOverride=null){const f=FRAMES.find(x=>x.id===(frameOverride||p?.activeFrame||'default'))||FRAMES[0];const ch=esc((p?.displayName||'ش').trim().charAt(0)||'ش');return `<div class="avatar-wrap ${mini?'frame-mini':''}" style="--glow:${f.type==='gold'?'#fcd34d':f.type==='electric'?'#22d3ee':f.type==='fire'?'#fb7185':'#c084fc'}"><div class="avatar-core">${ch}</div>${f.type!=='default'?`<div class="avatar-frame frame-${f.type}">${frameSvg(f.type)}</div>`:''}</div>`}
+function renderStore(){const p=getPlayer();$('frameGrid').innerHTML=FRAMES.map(f=>{const owned=!!p&&p.ownedFrames.includes(f.id),active=!!p&&p.activeFrame===f.id;let action=active?'<button class="btn secondary" disabled>✓ فعال است</button>':owned?`<button class="btn cyan" onclick="equipFrame('${f.id}')">فعال‌کردن</button>`:`<button class="btn" onclick="buyFrame('${f.id}')">${f.price===0?'انتخاب قاب رایگان':`خرید با 🪙 ${fmt(f.price)}`}</button>`;return `<article class="glass frame-card ${owned?'owned':''} ${active?'equipped':''}">${avatarHtml(p||{displayName:'ش'},false,f.id)}<h3>${esc(f.name)}</h3><p>${esc(f.desc)}</p><div class="price-label">${f.price?`🪙 ${fmt(f.price)} سکه`:'رایگان'}</div><div class="status">${active?'روی پروفایل فعال است':owned?'خریداری‌شده':'قابل خرید'}</div>${action}</article>`}).join('');$('myFrames').innerHTML=!p?'<div class="empty">برای مدیریت قاب‌ها وارد حساب شو.</div>':FRAMES.filter(f=>p.ownedFrames.includes(f.id)).map(f=>`<span class="pill" style="margin:4px">${esc(f.name)} ${p.activeFrame===f.id?'· فعال':''}</span>`).join('')}
+async function buyFrame(id){const p=getPlayer();if(!p){openAuth();return toast('برای خرید قاب ابتدا وارد حساب شو.')}ensureInventory(p);const f=FRAMES.find(x=>x.id===id);if(!f)return;if(p.ownedFrames.includes(id)){equipFrame(id);return}if(f.price===0){p.ownedFrames.push(id);p.activeFrame=id;saveState();renderStore();renderProfile();return toast('قاب رایگان فعال شد.')}if((+p.coins||0)<f.price)return toast(`برای خرید این قاب به ${fmt(f.price)} سکه نیاز داری.`);if(!confirm(`قاب «${f.name}» با ${fmt(f.price)} سکه خریداری شود؟`))return;
+const result=await purchaseFrameServer(id);if(!result)return;
+p.coins-=f.price;p.ownedFrames.push(id);p.activeFrame=id;saveState();updateNav();renderStore();renderProfile();toast('قاب خریداری و فعال شد.')}
+async function purchaseFrameServer(id){/* خرید دائمی باید از RPC امن سمت سرور انجام شود. */toast('برای ثبت دائمی خرید، تابع خرید امن قاب باید در Supabase فعال باشد.');return false}
+function equipFrame(id){const p=getPlayer();if(!p)return openAuth();ensureInventory(p);if(!p.ownedFrames.includes(id))return toast('ابتدا این قاب را خریداری کن.');p.activeFrame=id;saveState();renderStore();renderProfile();toast('قاب پروفایل تغییر کرد.')}
+function requestPaidPurchase(item){if(!sessionUser){openAuth();return toast('برای ادامه وارد حساب شو.')}toast('برای تکمیل این خرید، درگاه پرداخت امن باید به سامانه متصل باشد.')}
+function renderProfile(){const p=getPlayer();if(!p)return;$('profileContent').innerHTML=`<div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">${avatarHtml(p)}<div><h2 style="margin:0">${esc(p.displayName)}</h2><p class="muted">@${esc(p.username)}</p><span class="pill">عضو شعرشو</span><p class="muted">قاب فعال: ${esc(FRAMES.find(f=>f.id===p.activeFrame)?.name||'کلاسیک')}</p><button class="btn small" onclick="go('store')">تغییر قاب ✨</button></div></div><div class="stats" style="margin-top:22px"><div class="stat"><b>${fmt(p.score)}</b><span>امتیاز</span></div><div class="stat"><b>${fmt(p.coins)}</b><span>سکه</span></div><div class="stat"><b>${fmt(p.level)}</b><span>سطح</span></div><div class="stat"><b>${fmt(p.games)}</b><span>بازی‌ها</span></div></div><div class="notice">اطلاعات حساب و قاب‌های محلی این مرورگر ذخیره می‌شوند؛ ذخیره دائمی قاب و موجودی نیازمند اتصال RPC امن به پایگاه داده است.</div>`;const h=state.history.filter(x=>x.userId===p.id);$('historyContent').innerHTML=h.length?`<div class="table-wrap"><table><thead><tr><th>تاریخ</th><th>تعداد سؤال</th><th>امتیاز</th></tr></thead><tbody>${h.map(x=>`<tr><td>${new Date(x.date).toLocaleString('fa-IR')}</td><td>${fmt(x.count)}</td><td>${fmt(x.score)}</td></tr>`).join('')}</tbody></table></div>`:'هنوز بازی‌ای تمام نکرده‌ای.';updateNav()}
+const bank=[
+{c:'شعر و ادبیات فارسی',d:'آسان',q:'سرایندهٔ شاهنامه کیست؟',o:['فردوسی','سعدی','حافظ','مولانا'],a:0},
+{c:'شاعران و نویسندگان',d:'آسان',q:'غزل‌های مشهور لسان‌الغیب متعلق به کدام شاعر است؟',o:['حافظ','خیام','نظامی','رودکی'],a:0},
+{c:'شعر و ادبیات فارسی',d:'متوسط',q:'کتاب گلستان اثر کیست؟',o:['سعدی','فردوسی','عطار','سنایی'],a:0},
+{c:'ضرب‌المثل‌ها',d:'آسان',q:'کدام گزینه یک ضرب‌المثل فارسی است؟',o:['جوجه را آخر پاییز می‌شمارند','کتاب روی میز است','امروز هوا آفتابی است','درخت سبز است'],a:0},
+{c:'تاریخ',d:'آسان',q:'تخت جمشید در کدام کشور امروزی قرار دارد؟',o:['ایران','عراق','ترکیه','مصر'],a:0},
+{c:'جغرافیا',d:'آسان',q:'بزرگ‌ترین اقیانوس جهان کدام است؟',o:['آرام','اطلس','هند','منجمد شمالی'],a:0},
+{c:'علم و فناوری',d:'آسان',q:'کدام سیاره به سیاره سرخ معروف است؟',o:['مریخ','زهره','مشتری','عطارد'],a:0},
+{c:'دانش عمومی',d:'آسان',q:'حاصل ۷ ضربدر ۸ چند است؟',o:['۵۶','۴۸','۶۴','۵۴'],a:0},
+{c:'فرهنگ و هنر',d:'متوسط',q:'ساز تار بیشتر با کدام موسیقی شناخته می‌شود؟',o:['موسیقی ایرانی','جاز آمریکایی','رگتایم','الکترونیک'],a:0},
+{c:'شاعران و نویسندگان',d:'متوسط',q:'مثنوی معنوی اثر کیست؟',o:['مولانا','حافظ','پروین اعتصامی','باباطاهر'],a:0},
+{c:'تاریخ',d:'متوسط',q:'خط میخی در کدام منطقه باستانی استفاده می‌شد؟',o:['میان‌رودان','مایا','ژاپن','اسکاندیناوی'],a:0},
+{c:'جغرافیا',d:'متوسط',q:'پایتخت ژاپن کدام شهر است؟',o:['توکیو','کیوتو','اوساکا','ناگویا'],a:0},
+{c:'علم و فناوری',d:'متوسط',q:'فرمول شیمیایی آب چیست؟',o:['H₂O','CO₂','O₂','NaCl'],a:0},
+{c:'دانش عمومی',d:'متوسط',q:'کدام جانور پستاندار است؟',o:['دلفین','کوسه','قزل‌آلا','اختاپوس'],a:0},
+{c:'شعر و ادبیات فارسی',d:'سخت',q:'منطق‌الطیر اثر کدام شاعر است؟',o:['عطار نیشابوری','سعدی','وحشی بافقی','جامی'],a:0},
+{c:'فرهنگ و هنر',d:'سخت',q:'نقاشی شب پرستاره اثر کدام هنرمند است؟',o:['ونسان ون‌گوگ','کلود مونه','پیکاسو','سالوادور دالی'],a:0},
+{c:'دانش عمومی',d:'سخت',q:'واحد اندازه‌گیری شدت جریان الکتریکی چیست؟',o:['آمپر','ولت','وات','اهم'],a:0},
+{c:'تاریخ',d:'سخت',q:'کتاب جمهور اثر کدام فیلسوف است؟',o:['افلاطون','ارسطو','سقراط','اپیکور'],a:0},
+{c:'شعر و ادبیات فارسی',d:'آسان',q:'در عبارت «توانا بود هر که ... بود»، جای خالی چیست؟',o:['دانا','دارا','زیبا','پیدا'],a:0},
+{c:'شعر و ادبیات فارسی',d:'متوسط',q:'سرایندهٔ شعر «بنی‌آدم اعضای یکدیگرند» کیست؟',o:['سعدی','حافظ','فردوسی','مولانا'],a:0}
+];
+function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function startQuiz(){if(!getPlayer()){openAuth();return}const cat=$('category').value,diff=$('difficulty').value,count=Number($('questionCount').value);let pool=bank.filter(q=>(cat==='all'||q.c===cat)&&(diff==='all'||q.d===diff));if(!pool.length)return toast('برای این فیلتر سؤالی وجود ندارد.');quiz=shuffle(pool).slice(0,Math.min(count,pool.length)).map(q=>{const opts=shuffle(q.o.map((text,index)=>({text,index})));return{...q,o:opts.map(x=>x.text),a:opts.findIndex(x=>x.index===q.a)}});quizIndex=0;quizScore=0;$('quizSetup').classList.add('hidden');$('quizResult').classList.add('hidden');$('quizPlay').classList.remove('hidden');renderQuestion()}
+function renderQuestion(){if(quizIndex>=quiz.length)return endQuiz(false);quizAnswered=false;const q=quiz[quizIndex];$('quizCounter').textContent=`سؤال ${fmt(quizIndex+1)} از ${fmt(quiz.length)} · ${q.c}`;$('quizScore').textContent=fmt(quizScore);$('quizProgress').style.width=quizIndex/quiz.length*100+'%';$('quizContent').innerHTML=`<h2 style="line-height:2">${esc(q.q)}</h2><div class="answer-list">${q.o.map((o,i)=>`<button class="answer" onclick="answerQuestion(${i},this)">${['الف','ب','ج','د'][i]}) ${esc(o)}</button>`).join('')}</div><p id="quizFeedback" class="muted"></p>`}
+function answerQuestion(i,btn){if(quizAnswered)return;quizAnswered=true;const q=quiz[quizIndex];document.querySelectorAll('#quizContent .answer').forEach(b=>b.disabled=true);const p=getPlayer();if(i===q.a){btn.classList.add('correct');quizScore+=10;$('quizFeedback').textContent='آفرین! پاسخ درست بود؛ ۱۰ امتیاز گرفتی.';if(p){p.score=(p.score||0)+10;p.coins=(p.coins||0)+1;p.level=Math.max(1,Math.floor(p.score/100)+1);saveState();updateNav()}}else{btn.classList.add('wrong');document.querySelectorAll('#quizContent .answer')[q.a].classList.add('correct');$('quizFeedback').textContent='پاسخ درست مشخص شد؛ به سؤال بعدی برو.'}$('quizScore').textContent=fmt(quizScore);setTimeout(()=>{quizIndex++;renderQuestion()},900)}
+function skipQuestion(){quizIndex++;renderQuestion()}
+function endQuiz(cancelled){const p=getPlayer();if(p&&!cancelled){p.games=(p.games||0)+1;state.history.unshift({userId:p.id,score:quizScore,count:quiz.length,date:new Date().toISOString()});state.history=state.history.slice(0,100);saveState()}$('quizPlay').classList.add('hidden');$('quizResult').classList.remove('hidden');$('quizResult').innerHTML=`<div style="text-align:center;padding:22px"><div style="font-size:52px">${cancelled?'⏸️':'🏆'}</div><h2 style="font:32px Lalezar">${cancelled?'بازی پایان یافت':'چالش تمام شد!'}</h2><p class="muted">امتیاز این دور: <b>${fmt(quizScore)}</b></p><button class="btn" onclick="resetQuiz()">بازی دوباره</button> <button class="btn secondary" onclick="go('profile')">پروفایل</button></div>`}
+function resetQuiz(){$('quizSetup').classList.remove('hidden');$('quizPlay').classList.add('hidden');$('quizResult').classList.add('hidden')}
+function renderRanks(){const rows=[...state.players].sort((a,b)=>(b.score||0)-(a.score||0));$('rankRows').innerHTML=rows.length?rows.map((p,i)=>`<tr><td>${fmt(i+1)}</td><td><div style="display:flex;align-items:center;gap:8px">${avatarHtml(p,true)}<span>${esc(p.displayName)}<br><small class="muted">@${esc(p.username)}</small></span></div></td><td>${fmt(p.score)}</td><td>${fmt(p.level)}</td><td>${fmt(p.coins)}</td></tr>`).join(''):'<tr><td colspan="5" class="empty">هنوز امتیازی ثبت نشده است.</td></tr>'}
+function joinTournament(name){if(!getPlayer()){openAuth();return}if(state.tournaments.some(x=>x.userId===sessionUser.id&&x.name===name))return toast('قبلاً ثبت‌نام کرده‌ای.');state.tournaments.push({userId:sessionUser.id,name,date:new Date().toISOString()});saveState();renderTournaments();toast('ثبت‌نام انجام شد.')}
+function renderTournaments(){const rows=state.tournaments.filter(x=>x.userId===sessionUser?.id);$('myTournaments').innerHTML=rows.length?rows.map(x=>`<span class="pill" style="margin:4px">🏆 ${esc(x.name)} · ${new Date(x.date).toLocaleDateString('fa-IR')}</span>`).join(''):'هنوز در تورنمنتی ثبت‌نام نکرده‌ای.'}
+function addFriend(){if(!getPlayer()){openAuth();return}const name=$('friendName').value.trim().replace(/^@/,'');if(!/^[a-zA-Z0-9_.-]{3,24}$/.test(name))return toast('نام کاربری را درست وارد کن.');if(!state.friends.some(x=>x.userId===sessionUser.id&&x.name.toLowerCase()===name.toLowerCase()))state.friends.push({userId:sessionUser.id,name});saveState();$('friendName').value='';renderFriends();toast('دوست به فهرست اضافه شد.')}
+function renderFriends(){const rows=state.friends.filter(x=>x.userId===sessionUser?.id);$('friendsList').innerHTML=rows.length?rows.map(x=>`<span class="pill" style="margin:4px">👤 @${esc(x.name)} <button class="ghost" onclick="removeFriend('${encodeURIComponent(x.name)}')">×</button></span>`).join(''):'هنوز دوستی اضافه نکرده‌ای.'}
+function removeFriend(name){const n=decodeURIComponent(name);state.friends=state.friends.filter(x=>!(x.userId===sessionUser?.id&&x.name===n));saveState();renderFriends()}
+async function copyInvite(){const p=getPlayer();if(!p){openAuth();return}try{await navigator.clipboard.writeText(p.invite);toast('کد دعوت کپی شد.')}catch{toast('کد دعوت شما: '+p.invite)}}
+function showAbout(){alert('شعرشو؛ دنیای شعر، دانایی و رقابت.')}
+function initParticles(){const c=$('particles'),ctx=c.getContext('2d');let w,h,pts=[];function resize(){w=c.width=innerWidth*devicePixelRatio;h=c.height=innerHeight*devicePixelRatio;c.style.width=innerWidth+'px';c.style.height=innerHeight+'px';ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);pts=Array.from({length:Math.min(75,Math.floor(innerWidth/16))},()=>({x:Math.random()*innerWidth,y:Math.random()*innerHeight,r:Math.random()*1.7+.4,v:Math.random()*.28+.08,a:Math.random()*.5+.15}))}function draw(){ctx.clearRect(0,0,innerWidth,innerHeight);for(const p of pts){p.y-=p.v;if(p.y<-5){p.y=innerHeight+5;p.x=Math.random()*innerWidth}ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=`rgba(203,180,255,${p.a})`;ctx.fill()}requestAnimationFrame(draw)}addEventListener('resize',resize);resize();draw()}
+async function init(){initParticles();await restoreSession();const p=getPlayer();if(p)ensureInventory(p);saveState();updateNav();renderRanks();renderTournaments();renderFriends();renderStore();if(sessionUser)renderProfile()}
+$('adminPassword').addEventListener('keydown',e=>{if(e.key==='Enter')adminLogin()});
+init();
+</script>
+</body>
+</html>
