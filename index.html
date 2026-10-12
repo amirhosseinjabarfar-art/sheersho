@@ -466,7 +466,7 @@ async function duelPaintCurrent(d){
      duelMatchFinalRevealShown=true;duelMatchRevealLock=true;
      await duelRevealQuestion(d,2,all);
      if(duelMatchRevealTimer)clearTimeout(duelMatchRevealTimer);
-     duelMatchRevealTimer=setTimeout(()=>{duelMatchRevealLock=false;duelShowMatchResult(duelActive||d,duelMatchAnswersCache,duelUpdateScoreboard(duelActive||d,duelMatchAnswersCache))},5000);
+     duelMatchRevealTimer=setTimeout(()=>{duelMatchRevealLock=false;duelShowMatchResult(duelActive||d,duelMatchAnswersCache,duelUpdateScoreboard(duelActive||d,duelMatchAnswersCache))},3000);
      return;
    }
    await duelShowMatchResult(d,all,totals);return;
@@ -475,7 +475,7 @@ async function duelPaintCurrent(d){
  if(duelMatchShownQuestion>=0&&idx>duelMatchShownQuestion){
    const prev=duelMatchShownQuestion;duelMatchRevealLock=true;
    await duelRevealQuestion(d,prev,all);
-   duelScheduleNextQuestion(d,idx,5000);return;
+   duelScheduleNextQuestion(d,idx,3000);return;
  }
  const q=qs[idx];
  if(!q){$('duelMatchStage').innerHTML='<div class="duel-match-poem">سؤال در دسترس نیست.</div>';return;}
@@ -504,9 +504,9 @@ function duelMatchNoticeSync(duelId,index){
  const key=duelId+'_'+index;
  if(duelLastRevealKey===key||duelMatchRevealLock)return;
  duelLastRevealKey=key;duelMatchRevealLock=true;
- duelRevealQuestion(duelActive,index,duelMatchAnswersCache).then(()=>duelScheduleNextQuestion(duelActive, index+1, 5000));
+ duelRevealQuestion(duelActive,index,duelMatchAnswersCache).then(()=>duelScheduleNextQuestion(duelActive, index+1, 3000));
 }
-function duelScheduleNextQuestion(d,nextIndex,delayMs=5000){
+function duelScheduleNextQuestion(d,nextIndex,delayMs=3000){
  if(duelMatchRevealTimer)clearTimeout(duelMatchRevealTimer);
  if(duelNextRoundInterval)clearInterval(duelNextRoundInterval);
  let left=Math.ceil(delayMs/1000);
