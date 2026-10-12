@@ -360,7 +360,7 @@ $('poetHallAnswer')?.addEventListener('keydown',e=>{if(e.key==='Enter')submitPoe
 function initParticles(){const c=$('particles'),ctx=c.getContext('2d');let pts=[];function resize(){c.width=innerWidth*devicePixelRatio;c.height=innerHeight*devicePixelRatio;c.style.width=innerWidth+'px';c.style.height=innerHeight+'px';ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);pts=Array.from({length:Math.min(70,Math.floor(innerWidth/16))},()=>({x:Math.random()*innerWidth,y:Math.random()*innerHeight,r:Math.random()*1.6+.4,v:Math.random()*.28+.08,a:Math.random()*.5+.15}))}function draw(){ctx.clearRect(0,0,innerWidth,innerHeight);for(const p of pts){p.y-=p.v;if(p.y<-5){p.y=innerHeight+5;p.x=Math.random()*innerWidth}ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=`rgba(203,180,255,${p.a})`;ctx.fill()}requestAnimationFrame(draw)}addEventListener('resize',resize);resize();draw()}
 
 // ===== دوئل شاعران و دوستی آنلاین با Supabase =====
-let duelPoll=null,duelActiveId=null,duelActive=null,duelLocalQuestions=[],duelLocalIndex=0,duelLocalScore=0,duelLastSeenInvite=null,duelSubmitted={};
+let duelPoll=null,duelMatchSyncPoll=null,duelActiveId=null,duelActive=null,duelLocalQuestions=[],duelLocalIndex=0,duelLocalScore=0,duelLastSeenInvite=null,duelSubmitted={};
 const duelHeaders=()=>({...weeklyHeaders(),'Content-Type':'application/json','Prefer':'return=representation'});
 const duelRest=async(path,opts={})=>{if(!sessionUser||!accessToken)throw Error('ابتدا وارد حساب شعرشو شو.');const r=await fetch(SUPABASE_URL+'/rest/v1/'+path,{...opts,headers:{...duelHeaders(),...(opts.headers||{})}});const t=await r.text();let d;try{d=t?JSON.parse(t):null}catch{d=t}if(!r.ok)throw Error(d?.message||d?.hint||d?.details||String(d||('خطای '+r.status)));return d};
 const duelName=()=>String(remoteProfile?.username||sessionUser?.user_metadata?.username||sessionUser?.username||'').replace(/^@/,'');
@@ -377,29 +377,83 @@ async function duelRefreshAll(){if(!sessionUser||!accessToken){['duelRequests','
  $('duelOutgoingInvites').innerHTML=invOut.length?invOut.map(x=>`<div class="duel-invite-row">دعوت برای ${pname(x.receiver_id)} · <span class="pill">در انتظار پاسخ</span></div>`).join(''):'<div class="empty">دعوت ارسالی در انتظار نداری.</div>';
  const active=await duelRest('ss_poet_duels?select=*&or=(player1_id.eq.'+uid+',player2_id.eq.'+uid+')&status=in.(countdown,playing,finished)&order=created_at.desc&limit=1');if(active?.length){const d=active[0];if(d.id!==duelActiveId){duelActiveId=d.id;duelActive=d;duelMatchShownQuestion=-1;duelMatchFinalRevealShown=false;duelMatchTimerKey='';duelMatchNames={};if(d.status==='countdown'){if(d.start_at&&Date.now()>=new Date(d.start_at).getTime())duelRenderLive(d);else duelStartCountdown(d)}else if(d.status==='playing')duelRenderLive(d);else{const ans=await duelGetAllAnswers(d);duelShowMatchResult(d,ans,{})}}else{duelActive=d;if(d.status==='countdown'){if(d.start_at&&Date.now()>=new Date(d.start_at).getTime())duelRenderLive(d);else if(document.querySelector('[data-page="duel-match"].active'))duelStartCountdown(d)}else if(d.status==='playing'){if(document.querySelector('[data-page="duel-match"].active'))duelPaintCurrent(d)}else if(d.status==='finished'){if(document.querySelector('[data-page="duel-match"].active'))duelPaintCurrent(d);else{const ans=await duelGetAllAnswers(d);duelShowMatchResult(d,ans,{})}}}}
  }catch(e){console.warn('duelRefreshAll',e);duelStatus('فعلاً بارگذاری بخش دوئل انجام نشد. لطفاً کمی بعد دوباره تلاش کن.','error')}if(!duelPoll)duelPoll=setInterval(()=>{if(sessionUser&&accessToken)duelRefreshAll()},3500)}
+async function duelSyncActiveMatch(){
+ if(!sessionUser||!accessToken)return;
+ try{
+  const uid=sessionUser.id;
+  const rows=await duelRest('ss_poet_duels?select=*&or=(player1_id.eq.'+encodeURIComponent(uid)+',player2_id.eq.'+encodeURIComponent(uid)+')&status=in.(countdown,playing,finished)&order=created_at.desc&limit=1');
+  if(!rows||!rows.length)return;
+  const d=rows[0];
+  // Both clients independently discover the same server-side duel and route into the match page.
+  if(duelActiveId!==d.id){
+   duelActiveId=d.id;duelActive=d;duelMatchShownQuestion=-1;duelMatchFinalRevealShown=false;duelMatchRevealLock=false;duelMatchTimerKey='';duelMatchNames={};duelSubmitted={};
+   if(duelMatchRevealTimer){clearTimeout(duelMatchRevealTimer);duelMatchRevealTimer=null;}
+  } else duelActive=d;
+  if(!Object.keys(duelMatchNames).length)await duelLoadNames(d);
+  if(d.status==='countdown'){
+   const startAt=d.start_at?new Date(d.start_at).getTime():Date.now()+5000;
+   if(Date.now()<startAt){
+    if(duelIntroId!==d.id||!duelIntroTimer)await duelStartCountdown(d);
+   }else{
+    await duelRenderLive(d);
+   }
+   return;
+  }
+  // A missed polling tick must never leave either opponent stranded on the friends page.
+  if(d.status==='playing'){
+   if(duelIntroTimer){clearInterval(duelIntroTimer);duelIntroTimer=null;}
+   duelIntroId='';
+   if(!document.querySelector('[data-page="duel-match"].active'))go('duel-match');
+   await duelRenderLive(d);
+   return;
+  }
+  if(d.status==='finished'){
+   if(duelIntroTimer){clearInterval(duelIntroTimer);duelIntroTimer=null;}
+   duelIntroId='';
+   if(!document.querySelector('[data-page="duel-match"].active'))go('duel-match');
+   const answers=await duelGetAllAnswers(d);
+   await duelShowMatchResult(d,answers,{});
+  }
+ }catch(e){console.warn('duelSyncActiveMatch',e);}
+}
+
 async function duelRespondFriend(id,accept){try{await duelRest('rpc/ss_respond_friend_request',{method:'POST',body:JSON.stringify({p_request_id:id,p_accept:accept})});toast(accept?'درخواست پذیرفته شد؛ دوست به فهرست اضافه شد.':'درخواست رد شد.');await duelRefreshAll()}catch(e){toast('تغییر درخواست ناموفق بود: '+e.message)}}
 async function duelInvite(friendId){try{const pending=await duelRest('ss_duel_invites?select=id&sender_id=eq.'+sessionUser.id+'&receiver_id=eq.'+friendId+'&status=eq.pending&limit=1');if(pending.length)return toast('برای این دوست قبلاً دعوت در انتظار پاسخ فرستاده‌ای.');await duelRest('ss_duel_invites',{method:'POST',body:JSON.stringify({sender_id:sessionUser.id,receiver_id:friendId,status:'pending'})});toast('دعوت دوئل ارسال شد. وقتی دوستت قبول کند، شمارش معکوس ۵ ثانیه‌ای آغاز می‌شود.');await duelRefreshAll()}catch(e){toast('دعوت ارسال نشد: '+e.message)}}
-async function duelRespondInvite(id,accept){try{await duelRest('rpc/ss_respond_duel_invite',{method:'POST',body:JSON.stringify({p_invite_id:id,p_accept:accept,p_questions:accept?duelPickQuestions():[]})});toast(accept?'دعوت پذیرفته شد؛ بازی تا ۵ ثانیه دیگر شروع می‌شود.':'دعوت رد شد.');await duelRefreshAll()}catch(e){toast('پاسخ دعوت ناموفق بود: '+e.message)}}
+async function duelRespondInvite(id,accept){try{const questions=accept?duelPickQuestions():[];await duelRest('rpc/ss_respond_duel_invite',{method:'POST',body:JSON.stringify({p_invite_id:id,p_accept:accept,p_questions:questions})});toast(accept?'دعوت پذیرفته شد؛ هر دو حریف در شمارش معکوس مشترک وارد می‌شوند.':'دعوت رد شد.');await duelRefreshAll();await duelSyncActiveMatch()}catch(e){toast('پاسخ دعوت انجام نشد. دوباره تلاش کن.');console.warn('duel invite response',e)}}
 let duelMatchTimer=null,duelMatchDeadline=0,duelMatchTimerKey='',duelMatchShownQuestion=-1,duelMatchRevealLock=false,duelMatchRevealTimer=null,duelMatchAnswersCache=[],duelMatchNames={},duelMatchFinalRevealShown=false,duelIntroTimer=null,duelIntroId='';
 function duelPlayerLabel(id){if(id===sessionUser?.id)return String(remoteProfile?.display_name||sessionUser?.display_name||sessionUser?.user_metadata?.display_name||sessionUser?.username||'تو');return String(duelMatchNames[id]||'حریف')}
 async function duelLoadNames(d){try{const ids=[d.player1_id,d.player2_id];const ps=await duelRest('rpc/ss_get_public_profiles',{method:'POST',body:JSON.stringify({p_ids:ids})});duelMatchNames={};(ps||[]).forEach(p=>duelMatchNames[p.id]=p.display_name||p.username||'شاعر')}catch(e){console.warn('duel names unavailable')}}
+async function duelStartCountdown(d){
+  if(!d)return;duelActive=d;
+  if(!document.querySelector('[data-page="duel-match"].active'))go('duel-match');
+  if(duelIntroId===d.id&&duelIntroTimer)return;
+  duelIntroId=d.id;if(!Object.keys(duelMatchNames).length)await duelLoadNames(d);
+  $('duelPrestartName1').textContent=duelPlayerLabel(d.player1_id);$('duelPrestartName2').textContent=duelPlayerLabel(d.player2_id);
+  $('duelPrestart').classList.remove('hidden');$('duelMatchShell').classList.add('hidden');
+  $('duelMatchRound').textContent='آماده‌سازی مسابقه';$('duelMatchStage').innerHTML='<div class="duel-match-poem">آماده شو؛ سه سؤال مشترک در انتظار شماست!</div>';
+  $('duelMatchNotice').textContent='هر دو بازیکن شمارش معکوس مشترک را بر اساس زمان ثبت‌شده در سرور می‌بینند.';
+  if(duelIntroTimer)clearInterval(duelIntroTimer);
+  const stamp=d.start_at?new Date(d.start_at).getTime():Date.now()+5000;
+  const tick=()=>{const left=Math.max(0,Math.ceil((stamp-Date.now())/1000));$('duelPrestartCount').textContent=left?fmt(left):'🚀';if(!left){clearInterval(duelIntroTimer);duelIntroTimer=null;duelIntroId='';$('duelPrestart').classList.add('hidden');$('duelMatchShell').classList.remove('hidden');duelRenderLive(d)}};
+  duelIntroTimer=setInterval(tick,120);tick();
+}
 function duelUpdateScoreboard(d,answers=[]){const totals={[d.player1_id]:0,[d.player2_id]:0};const groups={};for(const a of answers){(groups[a.question_index]||(groups[a.question_index]=[])).push(a)}for(const key of Object.keys(groups)){const rows=groups[key].sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));const firstCorrect=rows[0]?.is_correct?rows[0]:null;for(const a of rows){if(a.is_correct)totals[a.user_id]=(totals[a.user_id]||0)+1}if(firstCorrect)totals[firstCorrect.user_id]=(totals[firstCorrect.user_id]||0)+1}
  $('duelMatchName1').textContent=duelPlayerLabel(d.player1_id);$('duelMatchName2').textContent=duelPlayerLabel(d.player2_id);$('duelMatchScore1').textContent=fmt(totals[d.player1_id]||0);$('duelMatchScore2').textContent=fmt(totals[d.player2_id]||0);return totals}
 async function duelGetAnswers(d,index){try{return await duelRest('ss_duel_answers?select=id,duel_id,question_index,user_id,answer,is_correct,created_at&duel_id=eq.'+d.id+'&question_index=eq.'+index+'&order=created_at.asc,id.asc')}catch(e){console.warn('duel answers unavailable',e);return []}}
 async function duelGetAllAnswers(d){try{return await duelRest('ss_duel_answers?select=id,duel_id,question_index,user_id,answer,is_correct,created_at&duel_id=eq.'+d.id+'&order=question_index.asc,created_at.asc,id.asc')}catch(e){console.warn('duel answers unavailable',e);return []}}
 async function duelStartCountdown(d){duelActive=d;go('duel-match');if(duelIntroId===d.id&&duelIntroTimer)return;duelIntroId=d.id;if(!Object.keys(duelMatchNames).length)await duelLoadNames(d);$('duelPrestartName1').textContent=duelPlayerLabel(d.player1_id);$('duelPrestartName2').textContent=duelPlayerLabel(d.player2_id);$('duelPrestart').classList.remove('hidden');$('duelMatchShell').classList.add('hidden');$('duelMatchRound').textContent='آماده‌سازی مسابقه';$('duelMatchStage').innerHTML='<div class="duel-match-poem">آماده شو؛ سه سؤال مشترک در انتظار شماست!</div>';$('duelMatchNotice').textContent='هر سؤال ۱۰ ثانیه فرصت دارد. پاسخ درستِ سریع‌تر امتیاز اضافه می‌گیرد.';if(duelIntroTimer)clearInterval(duelIntroTimer);const stamp=d.start_at?new Date(d.start_at).getTime():Date.now()+5000;const tick=()=>{const left=Math.max(0,Math.ceil((stamp-Date.now())/1000));$('duelPrestartCount').textContent=left?fmt(left):'🚀';if(!left){clearInterval(duelIntroTimer);duelIntroTimer=null;duelIntroId='';$('duelPrestart').classList.add('hidden');$('duelMatchShell').classList.remove('hidden');duelRenderLive(d)}};duelIntroTimer=setInterval(tick,120);tick()}
-function duelPickQuestions(){let pool=shuffle(poems).slice(0,3);return pool.map(q=>({line:q.line,answers:q.answers,hint:q.hint||''}))}
+function duelPickQuestions(){const pool=shuffle((Array.isArray(poems)?poems:[]).filter(q=>q&&typeof q.line==='string'&&q.line.includes('___')&&Array.isArray(q.answers)&&q.answers.length)).slice(0,3);if(pool.length!==3)throw Error('برای شروع دوئل، سه سؤال معتبر لازم است.');return pool.map(q=>({line:q.line,answers:q.answers,hint:q.hint||''}))}
 async function duelSubmitAnswer(timedOut=false){if(!duelActive||!['playing','countdown'].includes(duelActive.status))return;const idx=Number(duelActive.current_question||0),key=duelActive.id+'_'+idx;if(duelSubmitted[key])return;let answer=$('duelMatchAnswer')?.value.trim()||'';if(!answer&&!timedOut)return toast('پاسخت را وارد کن.');if(timedOut&&!answer)answer='زمان تمام شد';duelSubmitted[key]=true;stopDuelMatchTimer();const btn=$('duelMatchSubmit');if(btn)btn.disabled=true;const input=$('duelMatchAnswer');if(input)input.disabled=true;try{await duelRest('rpc/ss_submit_duel_answer',{method:'POST',body:JSON.stringify({p_duel_id:duelActive.id,p_question_index:idx,p_answer:answer})});$('duelMatchNotice').innerHTML='✅ پاسخ تو ثبت شد. <b>منتظر پاسخ حریف بمان…</b>';$('duelMatchStage').querySelector('.duel-match-poem')?.classList.add('answered');await duelRefreshAll()}catch(e){delete duelSubmitted[key];if(btn)btn.disabled=false;if(input)input.disabled=false;toast('ثبت پاسخ انجام نشد. دوباره تلاش کن.');console.warn('duel submit',e)}}
 function stopDuelMatchTimer(){if(duelMatchTimer){clearInterval(duelMatchTimer);duelMatchTimer=null}}
 function duelArmTimer(d,index){const key=d.id+'_'+index;if(duelMatchTimerKey===key&&duelMatchTimer)return;stopDuelMatchTimer();duelMatchTimerKey=key;duelMatchDeadline=Date.now()+10000;const tick=()=>{const left=Math.max(0,duelMatchDeadline-Date.now());$('duelMatchClock').textContent=String(Math.ceil(left/1000));$('duelMatchTimerBar').style.width=(left/10000*100)+'%';if(left<=0){stopDuelMatchTimer();if(!duelSubmitted[key])duelSubmitAnswer(true)}};tick();duelMatchTimer=setInterval(tick,100)}
-async function duelRenderLive(d){duelActive=d;if(duelIntroTimer){clearInterval(duelIntroTimer);duelIntroTimer=null}duelIntroId='';$('duelPrestart')?.classList.add('hidden');$('duelMatchShell')?.classList.remove('hidden');go('duel-match');$('duelMatchRound').textContent='در حال مسابقه';$('duelMatchNotice').textContent='جای خالی را کامل کن؛ پاسخ درستِ سریع‌تر امتیاز بیشتری دارد.';if(!Object.keys(duelMatchNames).length)await duelLoadNames(d);await duelPaintCurrent(d)}
+async function duelRenderLive(d){duelActive=d;if(duelIntroTimer){clearInterval(duelIntroTimer);duelIntroTimer=null}duelIntroId='';$('duelPrestart')?.classList.add('hidden');$('duelMatchShell')?.classList.remove('hidden');if(!document.querySelector('[data-page="duel-match"].active'))go('duel-match');$('duelMatchRound').textContent='در حال مسابقه';$('duelMatchNotice').textContent='جای خالی را کامل کن؛ پاسخ درستِ سریع‌تر امتیاز بیشتری دارد.';if(!Object.keys(duelMatchNames).length)await duelLoadNames(d);await duelPaintCurrent(d)}
 async function duelPaintCurrent(d){if(!d)return;duelActive=d;const idx=Number(d.current_question||0),qs=d.questions||[];const all=await duelGetAllAnswers(d);duelMatchAnswersCache=all;const totals=duelUpdateScoreboard(d,all);if(duelMatchRevealLock)return;if(d.status==='finished'||idx>=3){if(!duelMatchFinalRevealShown&&duelMatchShownQuestion===2){duelMatchFinalRevealShown=true;duelMatchRevealLock=true;await duelRevealQuestion(d,2,all);if(duelMatchRevealTimer)clearTimeout(duelMatchRevealTimer);duelMatchRevealTimer=setTimeout(()=>{duelMatchRevealLock=false;duelShowMatchResult(d,duelMatchAnswersCache,duelUpdateScoreboard(d,duelMatchAnswersCache))},2800);return}await duelShowMatchResult(d,all,totals);return}
  // When server advances to a new question, reveal both answers to the previous question first.
  if(duelMatchShownQuestion>=0&&idx>duelMatchShownQuestion){const prev=duelMatchShownQuestion;duelMatchRevealLock=true;await duelRevealQuestion(d,prev,all);if(duelMatchRevealTimer)clearTimeout(duelMatchRevealTimer);duelMatchRevealTimer=setTimeout(()=>{duelMatchRevealLock=false;duelMatchShownQuestion=idx;duelPaintCurrent(duelActive||d)},2600);return}
  const q=qs[idx];if(!q){$('duelMatchStage').innerHTML='<div class="duel-match-poem">سؤال در دسترس نیست.</div>';return}if(duelMatchShownQuestion!==idx){duelMatchShownQuestion=idx;duelMatchTimerKey='';$('duelMatchRound').textContent=`سؤال ${fmt(idx+1)} از ۳`;const mine=all.some(a=>a.question_index===idx&&a.user_id===sessionUser.id);$('duelMatchStage').innerHTML=`<div class="duel-match-poem">${esc(q.line).replace('___','<span class="poem-gap">جای خالی</span>')}</div><div class="field"><label for="duelMatchAnswer">پاسخ جای خالی</label><input id="duelMatchAnswer" class="duel-match-answer" maxlength="180" autocomplete="off" placeholder="پاسخت را بنویس…" ${mine?'disabled':''}></div><button class="btn duel-match-submit" id="duelMatchSubmit" onclick="duelSubmitAnswer()" ${mine?'disabled':''}>ثبت پاسخ ✨</button>`;$('duelMatchAnswer')?.addEventListener('keydown',e=>{if(e.key==='Enter')duelSubmitAnswer()})}
- const own=all.find(a=>a.question_index===idx&&a.user_id===sessionUser.id);const other=all.find(a=>a.question_index===idx&&a.user_id!==sessionUser.id);if(own){if($('duelMatchAnswer'))$('duelMatchAnswer').disabled=true;if($('duelMatchSubmit'))$('duelMatchSubmit').disabled=true;$('duelMatchNotice').innerHTML=other?'هر دو پاسخ ثبت شده‌اند؛ نتیجه در حال نمایش است.':'پاسخ تو ثبت شد. <b>منتظر حریف بمان…</b>';if(other){await duelRevealQuestion(d,idx,all);return}}else{$('duelMatchNotice').textContent='۱۰ ثانیه فرصت داری. اگر زمان تمام شود، پاسخ به‌صورت خودکار ثبت می‌شود.';duelArmTimer(d,idx)}
+ const own=all.find(a=>a.question_index===idx&&a.user_id===sessionUser.id);const other=all.find(a=>a.question_index===idx&&a.user_id!==sessionUser.id);if(own){if($('duelMatchAnswer'))$('duelMatchAnswer').disabled=true;if($('duelMatchSubmit'))$('duelMatchSubmit').disabled=true;$('duelMatchNotice').innerHTML=other?'هر دو پاسخ ثبت شده‌اند؛ نتیجه در حال نمایش است.':'پاسخ تو ثبت شد. <b>منتظر حریف بمان…</b>';if(other){if(!duelMatchRevealLock){duelMatchRevealLock=true;await duelRevealQuestion(d,idx,all);if(duelMatchRevealTimer)clearTimeout(duelMatchRevealTimer);duelMatchRevealTimer=setTimeout(()=>{duelMatchRevealLock=false;duelPaintCurrent(duelActive||d)},2200)}return}}else{$('duelMatchNotice').textContent='۱۰ ثانیه فرصت داری. اگر زمان تمام شود، پاسخ به‌صورت خودکار ثبت می‌شود.';duelArmTimer(d,idx)}
 }
-async function duelRevealQuestion(d,index,all){const q=(d.questions||[])[index];if(!q)return;const rows=all.filter(a=>a.question_index===index).sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));const firstCorrect=rows[0]?.is_correct?rows[0]:null;const answerRows=[d.player1_id,d.player2_id].map(id=>rows.find(a=>a.user_id===id));const right=(q.answers||[])[0]||'—';$('duelMatchRound').textContent=`نتیجه سؤال ${fmt(index+1)}`;stopDuelMatchTimer();$('duelMatchStage').innerHTML=`<div class="duel-match-poem">${esc(q.line).replace('___',`<span class="poet-hall-answer">${esc(right)}</span>`)}</div><div class="duel-reveal-grid">${answerRows.map((a,i)=>{const id=i===0?d.player1_id:d.player2_id;const ok=!!a?.is_correct;const quick=!!(a&&firstCorrect&&a.id===firstCorrect.id);return `<div class="duel-reveal-card ${ok?'correct':'wrong'}"><div class="muted">${esc(duelPlayerLabel(id))}</div><div class="duel-reveal-answer">${esc(a?.answer||'پاسخ نداد')}</div><div style="margin-top:7px;font-weight:800">${ok?'✅ پاسخ درست':'❌ پاسخ نادرست'}${quick?' · ⚡ سریع‌ترین پاسخ درست +۱':''}</div></div>`}).join('')}</div><div class="duel-correct-line">پاسخ درست: ${esc(right)}</div>`;$('duelMatchNotice').textContent='نتیجه این سؤال برای هر دو بازیکن نمایش داده شد.';duelUpdateScoreboard(d,all)}
+async function duelRevealQuestion(d,index,all){const q=(d.questions||[])[index];if(!q)return;const rows=all.filter(a=>a.question_index===index).sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));const firstCorrect=rows.find(a=>a.is_correct)||null;const answerRows=[d.player1_id,d.player2_id].map(id=>rows.find(a=>a.user_id===id));const right=(q.answers||[])[0]||'—';$('duelMatchRound').textContent=`نتیجه سؤال ${fmt(index+1)}`;stopDuelMatchTimer();$('duelMatchStage').innerHTML=`<div class="duel-match-poem">${esc(q.line).replace('___',`<span class="poet-hall-answer">${esc(right)}</span>`)}</div><div class="duel-reveal-grid">${answerRows.map((a,i)=>{const id=i===0?d.player1_id:d.player2_id;const ok=!!a?.is_correct;const quick=!!(a&&firstCorrect&&a.id===firstCorrect.id);return `<div class="duel-reveal-card ${ok?'correct':'wrong'}"><div class="muted">${esc(duelPlayerLabel(id))}</div><div class="duel-reveal-answer">${esc(a?.answer||'پاسخ نداد')}</div><div style="margin-top:7px;font-weight:800">${ok?'✅ پاسخ درست':'❌ پاسخ نادرست'}${quick?' · ⚡ سریع‌ترین پاسخ درست +۱':''}</div></div>`}).join('')}</div><div class="duel-correct-line">پاسخ درست: ${esc(right)}</div>`;$('duelMatchNotice').textContent='نتیجه این سؤال برای هر دو بازیکن نمایش داده شد.';duelUpdateScoreboard(d,all)}
 async function duelShowMatchResult(d,all,totals){stopDuelMatchTimer();if(!Object.keys(duelMatchNames).length)await duelLoadNames(d);totals=duelUpdateScoreboard(d,all);const a=totals[d.player1_id]||0,b=totals[d.player2_id]||0;const title=a>b?`${duelPlayerLabel(d.player1_id)} برنده شد!`:b>a?`${duelPlayerLabel(d.player2_id)} برنده شد!`:'دوئل مساوی شد!';$('duelMatchRound').textContent='پایان مسابقه';$('duelMatchStage').innerHTML=`<div class="duel-match-result"><div style="font-size:60px;animation:float 2s infinite">${a===b?'🤝':'🏆'}</div><h2>${esc(title)}</h2><p class="muted">هر سه سؤال به پایان رسید.</p><div class="duel-reveal-grid"><div class="duel-reveal-card correct"><div class="duel-vs-name">${esc(duelPlayerLabel(d.player1_id))}</div><div class="duel-vs-points">${fmt(a)}</div></div><div class="duel-reveal-card correct"><div class="duel-vs-name">${esc(duelPlayerLabel(d.player2_id))}</div><div class="duel-vs-points">${fmt(b)}</div></div></div><button class="btn" onclick="duelResetRoom()">بازگشت به دوستان</button></div>`;$('duelMatchNotice').textContent='مسابقه تمام شد؛ امتیازها بر اساس جواب درست و سرعت پاسخ‌گویی محاسبه شده‌اند.'}
 function duelShowResult(d){go('duel-match');duelShowMatchResult(d,duelMatchAnswersCache||[],{})}
 function duelResetRoom(){if(duelIntroTimer){clearInterval(duelIntroTimer);duelIntroTimer=null}duelIntroId='';$('duelPrestart')?.classList.add('hidden');$('duelMatchShell')?.classList.remove('hidden');stopDuelMatchTimer();if(duelMatchRevealTimer)clearTimeout(duelMatchRevealTimer);duelMatchRevealLock=false;duelMatchShownQuestion=-1;duelMatchFinalRevealShown=false;duelMatchTimerKey='';duelMatchNames={};$('duelRoom')?.classList.add('hidden');duelActiveId=null;duelActive=null;duelSubmitted={};go('duel');duelRefreshAll()}
@@ -409,6 +463,140 @@ function previousWeeklyStartDate(){const d=new Date(weeklyStartDate()+'T00:00:00
 async function refreshPreviousWeekPrize(){const msg=$('weeklyPrizeMessage'),action=$('weeklyPrizeAction');if(!msg||!action)return;action.innerHTML='';if(!sessionUser||!accessToken){msg.textContent='برای بررسی جایزه هفته گذشته وارد حساب شو.';return}const start=previousWeeklyStartDate();try{const r=await duelRest('ss_weekly_scores?select=user_id,username,display_name,weekly_points,updated_at&week_start=eq.'+start+'&order=weekly_points.desc,updated_at.asc&limit=10');const rank=r.findIndex(x=>x.user_id===sessionUser.id)+1;if(rank<1){msg.textContent='در هفته گذشته جزو ۱۰ نفر برتر نبودی؛ هفته تازه از شنبه شروع شده است.';return}const claims=await duelRest('ss_weekly_claims?select=id&user_id=eq.'+sessionUser.id+'&week_start=eq.'+start+'&limit=1');msg.textContent=`هفته پایان‌یافته ${start} · رتبه تو: ${fmt(rank)} · جایزه: ${fmt(weeklyReward(rank))} سکه`;if(claims.length){action.innerHTML='<button class="btn secondary" disabled>جایزه این هفته دریافت شده ✓</button>';return}action.innerHTML=`<button class="btn weekly-big-claim" onclick="claimPreviousWeekPrize(${rank},'${start}')">🎁 دریافت جایزه</button>`}catch(e){msg.textContent='فعلاً امکان بررسی جایزه وجود ندارد. کمی بعد دوباره تلاش کن.'}}
 async function claimPreviousWeekPrize(rank,start){if(!sessionUser||!accessToken){openAuth();return}if(start!==previousWeeklyStartDate())return toast('این هفته قابل دریافت نیست؛ صفحه را تازه کن.');const b=$('weeklyPrizeAction').querySelector('button');if(b)b.disabled=true;try{const r=await fetch(SUPABASE_URL+'/rest/v1/rpc/claim_weekly_prize',{method:'POST',headers:{...weeklyHeaders(),'Content-Type':'application/json'},body:JSON.stringify({p_week_start:start})});const data=await r.json().catch(()=>({}));if(!r.ok)throw Error(data.message||data.details||'خطای پرداخت جایزه');await refreshRemoteProfile();await refreshPreviousWeekPrize();toast('جایزه '+fmt(data.reward||weeklyReward(rank))+' سکه به حسابت اضافه شد!')}catch(e){toast('دریافت جایزه انجام نشد. کمی بعد دوباره تلاش کن.');if(b)b.disabled=false}}
 
-document.addEventListener('visibilitychange',()=>{if(!document.hidden&&sessionUser){refreshRemoteProfile();refreshVip().then(updateTournamentVip)}if(!document.hidden&&document.querySelector('[data-page="rank"].active'))refreshWeeklyLeaderboard()});window.addEventListener('focus',()=>{if(sessionUser)refreshRemoteProfile();if(document.querySelector('[data-page="rank"].active'))refreshWeeklyLeaderboard()});$('tournamentPlayersCount').addEventListener('change',renderTournamentNameInputs);$('adminPassword').addEventListener('keydown',e=>{if(e.key==='Enter')adminLogin()});$('userPassword').addEventListener('keydown',e=>{if(e.key==='Enter')submitAuth()});$('soloAnswer').addEventListener('keydown',e=>{if(e.key==='Enter')checkSolo()});$('duelAnswer')?.addEventListener('keydown',e=>{if(e.key==='Enter')duelSubmitAnswer()});$('gatherAnswer').addEventListener('keydown',e=>{if(e.key==='Enter')checkGathering()});async function init(){initParticles();renderTournamentNameInputs();await restoreSession();getPlayer();updateNav();renderRanks();renderTournaments();renderFriends();renderStore();if(sessionUser){await refreshRemoteProfile();await refreshVip();renderProfile()}updateTournamentVip();renderPoetHallAccess();setWeeklyPeriod();if(!duelPoll)duelPoll=setInterval(()=>{if(sessionUser&&accessToken)duelRefreshAll()},3500);if(sessionUser)duelRefreshAll();if(weeklyRefreshTimer)clearInterval(weeklyRefreshTimer);weeklyRefreshTimer=setInterval(()=>{setWeeklyPeriod();if(document.querySelector('[data-page="rank"].active'))refreshWeeklyLeaderboard()},30000)}init();
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&sessionUser){refreshRemoteProfile();refreshVip().then(updateTournamentVip)}if(!document.hidden&&document.querySelector('[data-page="rank"].active'))refreshWeeklyLeaderboard()});window.addEventListener('focus',()=>{if(sessionUser)refreshRemoteProfile();if(document.querySelector('[data-page="rank"].active'))refreshWeeklyLeaderboard()});$('tournamentPlayersCount').addEventListener('change',renderTournamentNameInputs);$('adminPassword').addEventListener('keydown',e=>{if(e.key==='Enter')adminLogin()});$('userPassword').addEventListener('keydown',e=>{if(e.key==='Enter')submitAuth()});$('soloAnswer').addEventListener('keydown',e=>{if(e.key==='Enter')checkSolo()});$('duelAnswer')?.addEventListener('keydown',e=>{if(e.key==='Enter')duelSubmitAnswer()});$('gatherAnswer').addEventListener('keydown',e=>{if(e.key==='Enter')checkGathering()});async function init(){initParticles();renderTournamentNameInputs();await restoreSession();getPlayer();updateNav();renderRanks();renderTournaments();renderFriends();renderStore();if(sessionUser){await refreshRemoteProfile();await refreshVip();renderProfile()}updateTournamentVip();renderPoetHallAccess();setWeeklyPeriod();if(!duelPoll)duelPoll=setInterval(()=>{if(sessionUser&&accessToken)duelRefreshAll()},3500);if(!duelMatchSyncPoll)duelMatchSyncPoll=setInterval(()=>{if(sessionUser&&accessToken)duelSyncActiveMatch()},1200);if(sessionUser){duelRefreshAll();duelSyncActiveMatch()}if(weeklyRefreshTimer)clearInterval(weeklyRefreshTimer);weeklyRefreshTimer=setInterval(()=>{setWeeklyPeriod();if(document.querySelector('[data-page="rank"].active'))refreshWeeklyLeaderboard()},30000)}
+/* ===== بازنویسی یکپارچه منطق بازی‌ها؛ سایر بخش‌های سایت عمداً دست‌نخورده‌اند ===== */
+let shershoSoloRunToken = 0;
+let shershoGatherRunToken = 0;
+function shershoValidPoems(category='all') {
+  const source = Array.isArray(poems) ? poems : [];
+  return source.filter(q => q && typeof q.line === 'string' && q.line.includes('___') && Array.isArray(q.answers) && q.answers.some(a => String(a||'').trim()) && (category==='all' || q.cat===category));
+}
+function startSolo(){
+  if(!getPlayer()){openAuth();return;}
+  stopQuestionTimer();
+  shershoSoloRunToken++;
+  const cat=$('soloCategory').value, requested=Math.max(1,Number($('soloCount').value)||5);
+  const pool=shuffle(shershoValidPoems(cat));
+  if(!pool.length){toast('برای این موضوع هنوز سؤال معتبر وجود ندارد.');return;}
+  soloQuestions=pool.slice(0,Math.min(requested,pool.length));
+  if(soloQuestions.length<requested)toast(`بانک این موضوع ${fmt(soloQuestions.length)} سؤال معتبر دارد؛ بازی با همین تعداد آغاز می‌شود.`);
+  soloIndex=0;soloScore=0;soloAnswered=false;
+  $('soloSetup').classList.add('hidden');$('soloResult').classList.add('hidden');$('soloPlay').classList.remove('hidden');
+  renderSoloQuestion();
+}
+function renderSoloQuestion(){
+  ++shershoSoloRunToken;stopQuestionTimer();
+  if(soloIndex>=soloQuestions.length){endSolo();return;}
+  soloAnswered=false;const q=soloQuestions[soloIndex];
+  $('soloCounter').textContent=`سؤال ${fmt(soloIndex+1)} از ${fmt(soloQuestions.length)}`;
+  $('soloScore').textContent=fmt(soloScore);$('soloProgress').style.width=(soloIndex/soloQuestions.length*100)+'%';
+  $('soloQuestion').innerHTML=`<div class="poem-line">${esc(q.line).replace('___','<span class="poem-gap">جای خالی</span>')}</div><p class="muted">${esc(q.hint||'جای خالی را کامل کن.')}</p>`;
+  $('soloAnswer').value='';$('soloAnswer').disabled=false;$('soloSubmit').disabled=false;$('soloFeedback').textContent='';
+  startQuestionTimer('solo');
+}
+function checkSolo(){
+  if(soloAnswered||soloIndex>=soloQuestions.length)return;
+  const raw=$('soloAnswer').value.trim();if(!raw)return toast('پاسخ را وارد کن.');
+  stopQuestionTimer();soloAnswered=true;const q=soloQuestions[soloIndex],timedOut=raw==='__time_expired__';
+  const answer=timedOut?'':norm(raw),ok=!timedOut&&q.answers.some(a=>norm(a)===answer);
+  $('soloAnswer').disabled=true;$('soloSubmit').disabled=true;
+  if(ok){soloScore+=10;const p=getPlayer();if(p){p.score=(p.score||0)+10;p.level=Math.max(1,Math.floor(p.score/100)+1);saveState();}addWeeklyPoints(10,'solo');}
+  showAnswerAnimation('soloQuestion','soloFeedback',q,ok,ok?'۱۰ امتیاز گرفتی!':'');
+  $('soloFeedback').textContent=timedOut?'زمان تمام شد. پاسخ درست: '+q.answers[0]:(ok?'آفرین! پاسخ درست بود؛ ۱۰ امتیاز گرفتی.':'پاسخ درست: '+q.answers[0]);
+  $('soloFeedback').style.color=ok?'var(--green)':'#fda4af';$('soloScore').textContent=fmt(soloScore);
+  const token=shershoSoloRunToken;setTimeout(()=>{if(token!==shershoSoloRunToken||!soloAnswered)return;soloIndex++;renderSoloQuestion();},1250);
+}
+function skipSolo(){if(soloAnswered)return;stopQuestionTimer();soloAnswered=true;soloIndex++;renderSoloQuestion();}
+function endSolo(){
+  stopQuestionTimer();const p=getPlayer();if(p){p.games=(p.games||0)+1;state.history.unshift({userId:p.id,score:soloScore,count:soloQuestions.length,date:new Date().toISOString()});state.history=state.history.slice(0,100);saveState();}
+  $('soloProgress').style.width='100%';$('soloPlay').classList.add('hidden');$('soloResult').classList.remove('hidden');
+  $('soloResult').innerHTML=`<div style="text-align:center;padding:22px"><div style="font-size:50px">🏆</div><h2 class="bracket-title">چالش تمام شد!</h2><p class="muted">${fmt(soloQuestions.length)} سؤال · امتیاز این دور: <b>${fmt(soloScore)}</b></p><button class="btn" onclick="resetSolo()">بازی دوباره</button> <button class="btn secondary" onclick="go('profile')">پروفایل</button></div>`;
+}
+function resetSolo(){stopQuestionTimer();shershoSoloRunToken++;soloQuestions=[];soloIndex=0;soloScore=0;soloAnswered=false;$('soloSetup').classList.remove('hidden');$('soloPlay').classList.add('hidden');$('soloResult').classList.add('hidden');$('soloAnswer').value='';$('soloAnswer').disabled=false;$('soloSubmit').disabled=false;}
+function showGatherSetup(vip){
+  gather.vip=!!vip;gather.answered=false;stopQuestionTimer();shershoGatherRunToken++;
+  $('gatherSetup').classList.remove('hidden');$('gatherPlay').classList.add('hidden');$('gatherResult').classList.add('hidden');
+  $('gatherTitle').textContent=vip?'ساخت دورهمی VIP':'ساخت دورهمی رایگان';
+  $('gatherVipNotice').textContent=vip?'اشتراک VIP فعال است: تا ۱۰ شرکت‌کننده و انتخاب بیش از ۵۰ سؤال.':'نسخه رایگان: حداکثر ۲ شرکت‌کننده و ۱۰ سؤال.';
+  $('gatherCount').innerHTML=vip?'<option value="51">۵۱ سؤال</option>':'<option value="5">۵ سؤال</option><option value="10" selected>۱۰ سؤال</option>';
+  $('gatherPlayers').innerHTML=Array.from({length:vip?9:1},(_,i)=>`<option value="${i+2}">${i+2} شرکت‌کننده</option>`).join('');renderGatherNames();$('gatherPlayers').onchange=renderGatherNames;
+}
+async function startGathering(){
+  if(!sessionUser){openAuth();return toast('برای شروع دورهمی ابتدا وارد حساب شو.');}
+  const names=[...document.querySelectorAll('.gather-name')].map((x,i)=>x.value.trim()||`بازیکن ${i+1}`);
+  const count=Math.max(1,Number($('gatherCount').value)||5);
+  if(names.length>(gather.vip?10:2))return toast('تعداد شرکت‌کننده بیشتر از حد مجاز است.');
+  if(!gather.vip&&(names.length>2||count>10))return toast('نسخه رایگان حداکثر ۲ بازیکن و ۱۰ سؤال دارد.');
+  if(gather.vip){const v=await refreshVip();if(!v.active||count<=50||names.length>10)return toast('برای دورهمی VIP با بیش از ۵۰ سؤال یا بیش از ۲ نفر، اشتراک VIP فعال لازم است.');}
+  if(names.length>2&&!gather.vip)return toast('دورهمی با بیش از ۲ نفر فقط برای VIP است.');
+  const pool=shuffle(shershoValidPoems());if(!pool.length)return toast('بانک سؤال معتبر در دسترس نیست.');
+  stopQuestionTimer();shershoGatherRunToken++;gather.players=names;gather.scores=names.map(()=>0);
+  gather.questions=Array.from({length:count},(_,i)=>pool[i%pool.length]);
+  // در صورت کوچک بودن بانک، ترتیب تکرارها تغییر می‌کند تا سؤال‌های تکراری پشت سر هم نیایند.
+  for(let i=pool.length;i<gather.questions.length;i+=pool.length){const batch=shuffle(pool);for(let j=0;j<pool.length&&i+j<gather.questions.length;j++)gather.questions[i+j]=batch[j];}
+  gather.index=0;gather.answered=false;$('gatherSetup').classList.add('hidden');$('gatherResult').classList.add('hidden');$('gatherPlay').classList.remove('hidden');renderGatherQuestion();
+}
+function renderGatherQuestion(){
+  ++shershoGatherRunToken;stopQuestionTimer();if(gather.index>=gather.questions.length){endGathering();return;}
+  gather.answered=false;const q=gather.questions[gather.index],pi=gather.index%gather.players.length;
+  $('gatherTurn').textContent='نوبت: '+gather.players[pi];$('gatherCounter').textContent=`سؤال ${fmt(gather.index+1)} از ${fmt(gather.questions.length)}`;
+  $('gatherProgress').style.width=(gather.index/gather.questions.length*100)+'%';
+  $('gatherQuestion').innerHTML=`<div class="poem-line">${esc(q.line).replace('___','<span class="poem-gap">جای خالی</span>')}</div><p class="muted">${esc(q.hint||'جای خالی شعر را کامل کن.')}</p>`;
+  $('gatherAnswer').value='';$('gatherAnswer').disabled=false;$('gatherFeedback').textContent='';startQuestionTimer('gather');
+}
+function checkGathering(){
+  if(gather.answered||gather.index>=gather.questions.length)return;
+  const raw=$('gatherAnswer').value.trim();if(!raw)return toast('پاسخ را وارد کن.');stopQuestionTimer();gather.answered=true;
+  const q=gather.questions[gather.index],pi=gather.index%gather.players.length,timedOut=raw==='__time_expired__',ans=timedOut?'':norm(raw),ok=!timedOut&&q.answers.some(a=>norm(a)===ans);
+  if(ok)gather.scores[pi]+=10;showAnswerAnimation('gatherQuestion','gatherFeedback',q,ok,ok?'۱۰ امتیاز برای '+gather.players[pi]+'!':'');
+  $('gatherFeedback').textContent=timedOut?'زمان تمام شد. پاسخ درست: '+q.answers[0]:(ok?'آفرین! ۱۰ امتیاز برای '+gather.players[pi]+'!':'پاسخ درست: '+q.answers[0]);
+  $('gatherFeedback').style.color=ok?'var(--green)':'#fda4af';$('gatherAnswer').disabled=true;const token=shershoGatherRunToken;
+  setTimeout(()=>{if(token!==shershoGatherRunToken||!gather.answered)return;gather.index++;renderGatherQuestion();},1100);
+}
+function skipGathering(){if(gather.answered)return;stopQuestionTimer();gather.answered=true;gather.index++;renderGatherQuestion();}
+function endGathering(){
+  stopQuestionTimer();const ranking=gather.players.map((name,i)=>({name,score:gather.scores[i],original:i})).sort((a,b)=>b.score-a.score||a.original-b.original);
+  $('gatherProgress').style.width='100%';$('gatherPlay').classList.add('hidden');$('gatherResult').classList.remove('hidden');
+  $('gatherResult').innerHTML=`<h2 class="bracket-title">نتیجه دورهمی</h2><div class="table-wrap"><table><thead><tr><th>رتبه</th><th>بازیکن</th><th>امتیاز</th></tr></thead><tbody>${ranking.map((x,i)=>`<tr><td>${i+1===1?'🥇':i+1===2?'🥈':i+1===3?'🥉':fmt(i+1)}</td><td>${esc(x.name)}</td><td>${fmt(x.score)}</td></tr>`).join('')}</tbody></table></div><button class="btn" onclick="showGatherSetup(gather.vip)">دورهمی جدید</button>`;
+}
+function startMatchQuiz(ri,mi){
+  const match=bracket?.rounds?.[ri]?.[mi];if(!match||match.winner||!match.players[0]||!match.players[1])return;
+  if(tournamentQuiz)return toast('ابتدا مسابقه در حال اجرا را تمام کن.');
+  const pool=shuffle(shershoValidPoems());if(!pool.length)return toast('بانک سؤال معتبر در دسترس نیست.');
+  stopQuestionTimer();tournamentQuiz={ri,mi,turn:0,roundsPerPlayer:3,scores:[0,0],questions:pool,answered:false,runId:Date.now()};
+  $('tournamentQuiz').classList.remove('hidden');$('bracketBoard').classList.add('hidden');$('bracketWinner').classList.add('hidden');renderTournamentQuestion();
+}
+function renderTournamentQuestion(){
+  if(!tournamentQuiz)return;const qz=tournamentQuiz,match=bracket?.rounds?.[qz.ri]?.[qz.mi];if(!match)return;
+  stopQuestionTimer();const playerIndex=qz.turn%2,player=match.players[playerIndex],question=qz.questions[qz.turn%qz.questions.length];
+  qz.currentQuestion=question;qz.answered=false;$('tournamentQuizTitle').textContent=`${bracket.name} · ${match.players[0]} در برابر ${match.players[1]}`;
+  $('tournamentQuizCounter').textContent=`سؤال ${fmt(qz.turn+1)} · نوبت ${playerIndex===0?'بازیکن اول':'بازیکن دوم'}`;
+  $('tournamentQuizProgress').style.width=Math.min(100,qz.turn/(qz.roundsPerPlayer*2)*100)+'%';$('tournamentQuizLabel').textContent='پاسخ '+player;
+  $('tournamentQuizQuestion').innerHTML=esc(question.line).replace('___','<span class="poem-gap">جای خالی</span>');$('tournamentQuizHint').textContent=question.hint||'جای خالی شعر را کامل کن.';
+  $('tournamentQuizAnswer').value='';$('tournamentQuizAnswer').disabled=false;$('tournamentQuizSubmit').disabled=false;$('tournamentQuizFeedback').textContent='';
+  $('tournamentQuizScores').innerHTML=`امتیاز فعلی: <b>${esc(match.players[0])}: ${fmt(qz.scores[0])}</b> · <b>${esc(match.players[1])}: ${fmt(qz.scores[1])}</b><br><small>هر پاسخ درست ۱۰ امتیاز دارد؛ هر بازیکن حداقل ۳ سؤال پاسخ می‌دهد.</small>`;startQuestionTimer('tournament');
+}
+function checkTournamentAnswer(){
+  const qz=tournamentQuiz;if(!qz||qz.answered)return;const raw=$('tournamentQuizAnswer').value.trim();if(!raw)return toast('پاسخ را وارد کن.');
+  stopQuestionTimer();qz.answered=true;const q=qz.currentQuestion,playerIndex=qz.turn%2,timedOut=raw==='__time_expired__',answer=timedOut?'':norm(raw),ok=!timedOut&&q.answers.some(a=>norm(a)===answer);
+  if(ok)qz.scores[playerIndex]+=10;$('tournamentQuizFeedback').textContent=timedOut?'زمان تمام شد. پاسخ درست: '+q.answers[0]:(ok?'آفرین! پاسخ درست بود؛ ۱۰ امتیاز گرفتی.':'پاسخ درست: '+q.answers[0]);
+  $('tournamentQuizFeedback').style.color=ok?'var(--green)':'#fda4af';showAnswerAnimation('tournamentQuizQuestion','tournamentQuizFeedback',q,ok,ok?'۱۰ امتیاز گرفتی!':'');$('tournamentQuizAnswer').disabled=true;$('tournamentQuizSubmit').disabled=true;
+  const runId=qz.runId;setTimeout(()=>{if(tournamentQuiz!==qz||qz.runId!==runId)return;qz.turn++;if(qz.turn>=qz.roundsPerPlayer*2){if(qz.scores[0]===qz.scores[1]){qz.roundsPerPlayer++;qz.questions=shuffle(shershoValidPoems());$('tournamentQuizFeedback').textContent='امتیازها برابر است؛ یک سؤال اضافه برای هر بازیکن!';setTimeout(()=>{if(tournamentQuiz===qz)renderTournamentQuestion()},650);return;}finishTournamentMatch();}else renderTournamentQuestion();},1050);
+}
+function cancelTournamentQuiz(){if(!tournamentQuiz)return;stopQuestionTimer();tournamentQuiz=null;$('tournamentQuiz').classList.add('hidden');$('bracketBoard').classList.remove('hidden');renderBracket();}
+function resetBracket(){stopQuestionTimer();bracket=null;tournamentQuiz=null;$('tournamentQuiz').classList.add('hidden');$('bracketBoard').classList.remove('hidden');$('bracketArea').classList.add('hidden');$('tournamentSetup').classList.remove('hidden');$('bracketWinner').classList.add('hidden');renderTournamentNameInputs();}
+function duelUpdateScoreboard(d,answers=[]){
+  const totals={[d.player1_id]:0,[d.player2_id]:0},groups={};
+  for(const a of answers){(groups[a.question_index]||(groups[a.question_index]=[])).push(a);}
+  for(const key of Object.keys(groups)){
+    const rows=groups[key].slice().sort((a,b)=>{const ta=new Date(a.created_at||0).getTime(),tb=new Date(b.created_at||0).getTime();return ta-tb||String(a.id).localeCompare(String(b.id));});
+    for(const a of rows)if(a.is_correct)totals[a.user_id]=(totals[a.user_id]||0)+1;
+    const firstCorrect=rows.find(a=>a.is_correct);if(firstCorrect)totals[firstCorrect.user_id]=(totals[firstCorrect.user_id]||0)+1;
+  }
+  $('duelMatchName1').textContent=duelPlayerLabel(d.player1_id);$('duelMatchName2').textContent=duelPlayerLabel(d.player2_id);
+  $('duelMatchScore1').textContent=fmt(totals[d.player1_id]||0);$('duelMatchScore2').textContent=fmt(totals[d.player2_id]||0);return totals;
+}
+
+init();
 </script><footer class="jabarfar-studio-footer" aria-label="استودیو جبارفر"><div class="jabarfar-studio-frame"><p class="jabarfar-studio-text">استودیو جبارفر</p></div></footer>
 </body></html>
