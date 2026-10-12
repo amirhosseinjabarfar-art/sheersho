@@ -386,7 +386,7 @@ async function duelSyncActiveMatch(){
   const d=rows[0];
   // Both clients independently discover the same server-side duel and route into the match page.
   if(duelActiveId!==d.id){
-   duelActiveId=d.id;duelActive=d;duelMatchShownQuestion=-1;duelMatchFinalRevealShown=false;duelMatchRevealLock=false;duelMatchTimerKey='';duelMatchNames={};duelSubmitted={};
+   duelActiveId=d.id;duelActive=d;duelMatchShownQuestion=-1;duelMatchFinalRevealShown=false;duelMatchRevealLock=false;duelMatchTimerKey='';duelMatchNames={};duelSubmitted={};duelLastRevealKey='';if(duelNextRoundInterval){clearInterval(duelNextRoundInterval);duelNextRoundInterval=null;}
    if(duelMatchRevealTimer){clearTimeout(duelMatchRevealTimer);duelMatchRevealTimer=null;}
   } else duelActive=d;
   if(!Object.keys(duelMatchNames).length)await duelLoadNames(d);
@@ -420,7 +420,7 @@ async function duelSyncActiveMatch(){
 async function duelRespondFriend(id,accept){try{await duelRest('rpc/ss_respond_friend_request',{method:'POST',body:JSON.stringify({p_request_id:id,p_accept:accept})});toast(accept?'درخواست پذیرفته شد؛ دوست به فهرست اضافه شد.':'درخواست رد شد.');await duelRefreshAll()}catch(e){toast('تغییر درخواست ناموفق بود: '+e.message)}}
 async function duelInvite(friendId){try{const pending=await duelRest('ss_duel_invites?select=id&sender_id=eq.'+sessionUser.id+'&receiver_id=eq.'+friendId+'&status=eq.pending&limit=1');if(pending.length)return toast('برای این دوست قبلاً دعوت در انتظار پاسخ فرستاده‌ای.');await duelRest('ss_duel_invites',{method:'POST',body:JSON.stringify({sender_id:sessionUser.id,receiver_id:friendId,status:'pending'})});toast('دعوت دوئل ارسال شد. وقتی دوستت قبول کند، شمارش معکوس ۵ ثانیه‌ای آغاز می‌شود.');await duelRefreshAll()}catch(e){toast('دعوت ارسال نشد: '+e.message)}}
 async function duelRespondInvite(id,accept){try{const questions=accept?duelPickQuestions():[];await duelRest('rpc/ss_respond_duel_invite',{method:'POST',body:JSON.stringify({p_invite_id:id,p_accept:accept,p_questions:questions})});toast(accept?'دعوت پذیرفته شد؛ هر دو حریف در شمارش معکوس مشترک وارد می‌شوند.':'دعوت رد شد.');await duelRefreshAll();await duelSyncActiveMatch()}catch(e){toast('پاسخ دعوت انجام نشد. دوباره تلاش کن.');console.warn('duel invite response',e)}}
-let duelMatchTimer=null,duelMatchDeadline=0,duelMatchTimerKey='',duelMatchShownQuestion=-1,duelMatchRevealLock=false,duelMatchRevealTimer=null,duelMatchAnswersCache=[],duelMatchNames={},duelMatchFinalRevealShown=false,duelIntroTimer=null,duelIntroId='';
+let duelMatchTimer=null,duelMatchDeadline=0,duelMatchTimerKey='',duelMatchShownQuestion=-1,duelMatchRevealLock=false,duelMatchRevealTimer=null,duelMatchAnswersCache=[],duelMatchNames={},duelMatchFinalRevealShown=false,duelIntroTimer=null,duelIntroId='',duelNextRoundInterval=null,duelLastRevealKey='';
 function duelPlayerLabel(id){if(id===sessionUser?.id)return String(remoteProfile?.display_name||sessionUser?.display_name||sessionUser?.user_metadata?.display_name||sessionUser?.username||'تو');return String(duelMatchNames[id]||'حریف')}
 async function duelLoadNames(d){try{const ids=[d.player1_id,d.player2_id];const ps=await duelRest('rpc/ss_get_public_profiles',{method:'POST',body:JSON.stringify({p_ids:ids})});duelMatchNames={};(ps||[]).forEach(p=>duelMatchNames[p.id]=p.display_name||p.username||'شاعر')}catch(e){console.warn('duel names unavailable')}}
 async function duelStartCountdown(d){
@@ -437,7 +437,7 @@ async function duelStartCountdown(d){
   const tick=()=>{const left=Math.max(0,Math.ceil((stamp-Date.now())/1000));$('duelPrestartCount').textContent=left?fmt(left):'🚀';if(!left){clearInterval(duelIntroTimer);duelIntroTimer=null;duelIntroId='';$('duelPrestart').classList.add('hidden');$('duelMatchShell').classList.remove('hidden');duelRenderLive(d)}};
   duelIntroTimer=setInterval(tick,120);tick();
 }
-function duelUpdateScoreboard(d,answers=[]){const totals={[d.player1_id]:0,[d.player2_id]:0};const groups={};for(const a of answers){(groups[a.question_index]||(groups[a.question_index]=[])).push(a)}for(const key of Object.keys(groups)){const rows=groups[key].sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));const firstCorrect=rows[0]?.is_correct?rows[0]:null;for(const a of rows){if(a.is_correct)totals[a.user_id]=(totals[a.user_id]||0)+1}if(firstCorrect)totals[firstCorrect.user_id]=(totals[firstCorrect.user_id]||0)+1}
+function duelUpdateScoreboard(d,answers=[]){const totals={[d.player1_id]:0,[d.player2_id]:0};const groups={};for(const a of answers){(groups[a.question_index]||(groups[a.question_index]=[])).push(a)}for(const key of Object.keys(groups)){const rows=groups[key].sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));const firstCorrect=rows.find(a=>a.is_correct)||null;for(const a of rows){if(a.is_correct)totals[a.user_id]=(totals[a.user_id]||0)+1}if(firstCorrect)totals[firstCorrect.user_id]=(totals[firstCorrect.user_id]||0)+1}
  $('duelMatchName1').textContent=duelPlayerLabel(d.player1_id);$('duelMatchName2').textContent=duelPlayerLabel(d.player2_id);$('duelMatchScore1').textContent=fmt(totals[d.player1_id]||0);$('duelMatchScore2').textContent=fmt(totals[d.player2_id]||0);return totals}
 async function duelGetAnswers(d,index){try{return await duelRest('ss_duel_answers?select=id,duel_id,question_index,user_id,answer,is_correct,created_at&duel_id=eq.'+d.id+'&question_index=eq.'+index+'&order=created_at.asc,id.asc')}catch(e){console.warn('duel answers unavailable',e);return []}}
 async function duelGetAllAnswers(d){try{return await duelRest('ss_duel_answers?select=id,duel_id,question_index,user_id,answer,is_correct,created_at&duel_id=eq.'+d.id+'&order=question_index.asc,created_at.asc,id.asc')}catch(e){console.warn('duel answers unavailable',e);return []}}
@@ -447,16 +447,80 @@ async function duelSubmitAnswer(timedOut=false){if(!duelActive||!['playing','cou
 function stopDuelMatchTimer(){if(duelMatchTimer){clearInterval(duelMatchTimer);duelMatchTimer=null}}
 function duelArmTimer(d,index){const key=d.id+'_'+index;if(duelMatchTimerKey===key&&duelMatchTimer)return;stopDuelMatchTimer();duelMatchTimerKey=key;duelMatchDeadline=Date.now()+10000;const tick=()=>{const left=Math.max(0,duelMatchDeadline-Date.now());$('duelMatchClock').textContent=String(Math.ceil(left/1000));$('duelMatchTimerBar').style.width=(left/10000*100)+'%';if(left<=0){stopDuelMatchTimer();if(!duelSubmitted[key])duelSubmitAnswer(true)}};tick();duelMatchTimer=setInterval(tick,100)}
 async function duelRenderLive(d){duelActive=d;if(duelIntroTimer){clearInterval(duelIntroTimer);duelIntroTimer=null}duelIntroId='';$('duelPrestart')?.classList.add('hidden');$('duelMatchShell')?.classList.remove('hidden');if(!document.querySelector('[data-page="duel-match"].active'))go('duel-match');$('duelMatchRound').textContent='در حال مسابقه';$('duelMatchNotice').textContent='جای خالی را کامل کن؛ پاسخ درستِ سریع‌تر امتیاز بیشتری دارد.';if(!Object.keys(duelMatchNames).length)await duelLoadNames(d);await duelPaintCurrent(d)}
-async function duelPaintCurrent(d){if(!d)return;duelActive=d;const idx=Number(d.current_question||0),qs=d.questions||[];const all=await duelGetAllAnswers(d);duelMatchAnswersCache=all;const totals=duelUpdateScoreboard(d,all);if(duelMatchRevealLock)return;if(d.status==='finished'||idx>=3){if(!duelMatchFinalRevealShown&&duelMatchShownQuestion===2){duelMatchFinalRevealShown=true;duelMatchRevealLock=true;await duelRevealQuestion(d,2,all);if(duelMatchRevealTimer)clearTimeout(duelMatchRevealTimer);duelMatchRevealTimer=setTimeout(()=>{duelMatchRevealLock=false;duelShowMatchResult(d,duelMatchAnswersCache,duelUpdateScoreboard(d,duelMatchAnswersCache))},2800);return}await duelShowMatchResult(d,all,totals);return}
- // When server advances to a new question, reveal both answers to the previous question first.
- if(duelMatchShownQuestion>=0&&idx>duelMatchShownQuestion){const prev=duelMatchShownQuestion;duelMatchRevealLock=true;await duelRevealQuestion(d,prev,all);if(duelMatchRevealTimer)clearTimeout(duelMatchRevealTimer);duelMatchRevealTimer=setTimeout(()=>{duelMatchRevealLock=false;duelMatchShownQuestion=idx;duelPaintCurrent(duelActive||d)},2600);return}
- const q=qs[idx];if(!q){$('duelMatchStage').innerHTML='<div class="duel-match-poem">سؤال در دسترس نیست.</div>';return}if(duelMatchShownQuestion!==idx){duelMatchShownQuestion=idx;duelMatchTimerKey='';$('duelMatchRound').textContent=`سؤال ${fmt(idx+1)} از ۳`;const mine=all.some(a=>a.question_index===idx&&a.user_id===sessionUser.id);$('duelMatchStage').innerHTML=`<div class="duel-match-poem">${esc(q.line).replace('___','<span class="poem-gap">جای خالی</span>')}</div><div class="field"><label for="duelMatchAnswer">پاسخ جای خالی</label><input id="duelMatchAnswer" class="duel-match-answer" maxlength="180" autocomplete="off" placeholder="پاسخت را بنویس…" ${mine?'disabled':''}></div><button class="btn duel-match-submit" id="duelMatchSubmit" onclick="duelSubmitAnswer()" ${mine?'disabled':''}>ثبت پاسخ ✨</button>`;$('duelMatchAnswer')?.addEventListener('keydown',e=>{if(e.key==='Enter')duelSubmitAnswer()})}
- const own=all.find(a=>a.question_index===idx&&a.user_id===sessionUser.id);const other=all.find(a=>a.question_index===idx&&a.user_id!==sessionUser.id);if(own){if($('duelMatchAnswer'))$('duelMatchAnswer').disabled=true;if($('duelMatchSubmit'))$('duelMatchSubmit').disabled=true;$('duelMatchNotice').innerHTML=other?'هر دو پاسخ ثبت شده‌اند؛ نتیجه در حال نمایش است.':'پاسخ تو ثبت شد. <b>منتظر حریف بمان…</b>';if(other){if(!duelMatchRevealLock){duelMatchRevealLock=true;await duelRevealQuestion(d,idx,all);if(duelMatchRevealTimer)clearTimeout(duelMatchRevealTimer);duelMatchRevealTimer=setTimeout(()=>{duelMatchRevealLock=false;duelPaintCurrent(duelActive||d)},2200)}return}}else{$('duelMatchNotice').textContent='۱۰ ثانیه فرصت داری. اگر زمان تمام شود، پاسخ به‌صورت خودکار ثبت می‌شود.';duelArmTimer(d,idx)}
+async function duelPaintCurrent(d){
+ if(!d||!sessionUser)return;
+ duelActive=d;
+ const idx=Number(d.current_question||0),qs=d.questions||[];
+ const all=await duelGetAllAnswers(d);duelMatchAnswersCache=all;
+ const totals=duelUpdateScoreboard(d,all);
+ if(duelMatchRevealLock)return;
+ if(d.status==='finished'||idx>=3){
+   if(!duelMatchFinalRevealShown&&duelMatchShownQuestion===2){
+     duelMatchFinalRevealShown=true;duelMatchRevealLock=true;
+     await duelRevealQuestion(d,2,all);
+     if(duelMatchRevealTimer)clearTimeout(duelMatchRevealTimer);
+     duelMatchRevealTimer=setTimeout(()=>{duelMatchRevealLock=false;duelShowMatchResult(duelActive||d,duelMatchAnswersCache,duelUpdateScoreboard(duelActive||d,duelMatchAnswersCache))},5000);
+     return;
+   }
+   await duelShowMatchResult(d,all,totals);return;
+ }
+ // Server advances the shared question only after both players have answered (or timed out).
+ if(duelMatchShownQuestion>=0&&idx>duelMatchShownQuestion){
+   const prev=duelMatchShownQuestion;duelMatchRevealLock=true;
+   await duelRevealQuestion(d,prev,all);
+   duelScheduleNextQuestion(d,idx,5000);return;
+ }
+ const q=qs[idx];
+ if(!q){$('duelMatchStage').innerHTML='<div class="duel-match-poem">سؤال در دسترس نیست.</div>';return;}
+ if(duelMatchShownQuestion!==idx){
+   duelMatchShownQuestion=idx;duelMatchTimerKey='';
+   $('duelMatchRound').textContent=`سؤال ${fmt(idx+1)} از ۳`;
+   const mine=all.some(a=>Number(a.question_index)===idx&&a.user_id===sessionUser.id);
+   $('duelMatchStage').innerHTML=`<div class="duel-match-poem">${esc(q.line).replace('___','<span class="poem-gap">جای خالی</span>')}</div><div class="field"><label for="duelMatchAnswer">پاسخ جای خالی</label><input id="duelMatchAnswer" class="duel-match-answer" maxlength="180" autocomplete="off" placeholder="پاسخت را بنویس…" ${mine?'disabled':''}></div><button class="btn duel-match-submit" id="duelMatchSubmit" onclick="duelSubmitAnswer()" ${mine?'disabled':''}>ثبت پاسخ ✨</button>`;
+   $('duelMatchAnswer')?.addEventListener('keydown',e=>{if(e.key==='Enter')duelSubmitAnswer()});
+ }
+ const own=all.find(a=>Number(a.question_index)===idx&&a.user_id===sessionUser.id);
+ const other=all.find(a=>Number(a.question_index)===idx&&a.user_id!==sessionUser.id);
+ if(own){
+   if($('duelMatchAnswer'))$('duelMatchAnswer').disabled=true;
+   if($('duelMatchSubmit'))$('duelMatchSubmit').disabled=true;
+   $('duelMatchNotice').innerHTML=other?'هر دو پاسخ ثبت شده‌اند؛ نتیجه نمایش داده می‌شود.':'پاسخ تو ثبت شد. <b>منتظر پاسخ حریف یا پایان زمان او بمان…</b>';
+   // If both rows exist but server has not yet advanced in this response, the next poll will sync it.
+   if(other){duelMatchNoticeSync(d.id,idx);}
+ }else{
+   $('duelMatchNotice').textContent='۱۰ ثانیه فرصت داری. اگر زمان تمام شود، پاسخ به‌صورت خودکار ثبت می‌شود.';
+   duelArmTimer(d,idx);
+ }
+}
+function duelMatchNoticeSync(duelId,index){
+ // Do not repeatedly reveal the same question while the server transaction finishes advancing it.
+ const key=duelId+'_'+index;
+ if(duelLastRevealKey===key||duelMatchRevealLock)return;
+ duelLastRevealKey=key;duelMatchRevealLock=true;
+ duelRevealQuestion(duelActive,index,duelMatchAnswersCache).then(()=>duelScheduleNextQuestion(duelActive, index+1, 5000));
+}
+function duelScheduleNextQuestion(d,nextIndex,delayMs=5000){
+ if(duelMatchRevealTimer)clearTimeout(duelMatchRevealTimer);
+ if(duelNextRoundInterval)clearInterval(duelNextRoundInterval);
+ let left=Math.ceil(delayMs/1000);
+ $('duelMatchNotice').innerHTML=`نتیجهٔ این سؤال نمایش داده شد. سؤال بعدی تا <b id="duelNextRoundCount">${left}</b> ثانیه دیگر شروع می‌شود.`;
+ const count=$('duelNextRoundCount');
+ duelNextRoundInterval=setInterval(()=>{left--;const el=$('duelNextRoundCount');if(el)el.textContent=String(Math.max(0,left));if(left<=0){clearInterval(duelNextRoundInterval);duelNextRoundInterval=null;}},1000);
+ duelMatchRevealTimer=setTimeout(async()=>{
+   if(duelNextRoundInterval){clearInterval(duelNextRoundInterval);duelNextRoundInterval=null;}
+   duelMatchRevealLock=false;
+   // Re-fetch the authoritative server state; never independently choose a question.
+   try{
+     const fresh=await duelRest('ss_poet_duels?select=*&id=eq.'+encodeURIComponent(d.id)+'&limit=1');
+     if(fresh&&fresh[0]){duelActive=fresh[0];duelActiveId=fresh[0].id;duelMatchShownQuestion=-1;duelLastRevealKey='';await duelPaintCurrent(fresh[0]);}
+     else await duelSyncActiveMatch();
+   }catch(e){console.warn('duel next question sync',e);await duelSyncActiveMatch();}
+ },delayMs);
 }
 async function duelRevealQuestion(d,index,all){const q=(d.questions||[])[index];if(!q)return;const rows=all.filter(a=>a.question_index===index).sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));const firstCorrect=rows.find(a=>a.is_correct)||null;const answerRows=[d.player1_id,d.player2_id].map(id=>rows.find(a=>a.user_id===id));const right=(q.answers||[])[0]||'—';$('duelMatchRound').textContent=`نتیجه سؤال ${fmt(index+1)}`;stopDuelMatchTimer();$('duelMatchStage').innerHTML=`<div class="duel-match-poem">${esc(q.line).replace('___',`<span class="poet-hall-answer">${esc(right)}</span>`)}</div><div class="duel-reveal-grid">${answerRows.map((a,i)=>{const id=i===0?d.player1_id:d.player2_id;const ok=!!a?.is_correct;const quick=!!(a&&firstCorrect&&a.id===firstCorrect.id);return `<div class="duel-reveal-card ${ok?'correct':'wrong'}"><div class="muted">${esc(duelPlayerLabel(id))}</div><div class="duel-reveal-answer">${esc(a?.answer||'پاسخ نداد')}</div><div style="margin-top:7px;font-weight:800">${ok?'✅ پاسخ درست':'❌ پاسخ نادرست'}${quick?' · ⚡ سریع‌ترین پاسخ درست +۱':''}</div></div>`}).join('')}</div><div class="duel-correct-line">پاسخ درست: ${esc(right)}</div>`;$('duelMatchNotice').textContent='نتیجه این سؤال برای هر دو بازیکن نمایش داده شد.';duelUpdateScoreboard(d,all)}
 async function duelShowMatchResult(d,all,totals){stopDuelMatchTimer();if(!Object.keys(duelMatchNames).length)await duelLoadNames(d);totals=duelUpdateScoreboard(d,all);const a=totals[d.player1_id]||0,b=totals[d.player2_id]||0;const title=a>b?`${duelPlayerLabel(d.player1_id)} برنده شد!`:b>a?`${duelPlayerLabel(d.player2_id)} برنده شد!`:'دوئل مساوی شد!';$('duelMatchRound').textContent='پایان مسابقه';$('duelMatchStage').innerHTML=`<div class="duel-match-result"><div style="font-size:60px;animation:float 2s infinite">${a===b?'🤝':'🏆'}</div><h2>${esc(title)}</h2><p class="muted">هر سه سؤال به پایان رسید.</p><div class="duel-reveal-grid"><div class="duel-reveal-card correct"><div class="duel-vs-name">${esc(duelPlayerLabel(d.player1_id))}</div><div class="duel-vs-points">${fmt(a)}</div></div><div class="duel-reveal-card correct"><div class="duel-vs-name">${esc(duelPlayerLabel(d.player2_id))}</div><div class="duel-vs-points">${fmt(b)}</div></div></div><button class="btn" onclick="duelResetRoom()">بازگشت به دوستان</button></div>`;$('duelMatchNotice').textContent='مسابقه تمام شد؛ امتیازها بر اساس جواب درست و سرعت پاسخ‌گویی محاسبه شده‌اند.'}
 function duelShowResult(d){go('duel-match');duelShowMatchResult(d,duelMatchAnswersCache||[],{})}
-function duelResetRoom(){if(duelIntroTimer){clearInterval(duelIntroTimer);duelIntroTimer=null}duelIntroId='';$('duelPrestart')?.classList.add('hidden');$('duelMatchShell')?.classList.remove('hidden');stopDuelMatchTimer();if(duelMatchRevealTimer)clearTimeout(duelMatchRevealTimer);duelMatchRevealLock=false;duelMatchShownQuestion=-1;duelMatchFinalRevealShown=false;duelMatchTimerKey='';duelMatchNames={};$('duelRoom')?.classList.add('hidden');duelActiveId=null;duelActive=null;duelSubmitted={};go('duel');duelRefreshAll()}
+function duelResetRoom(){if(duelIntroTimer){clearInterval(duelIntroTimer);duelIntroTimer=null}if(duelNextRoundInterval){clearInterval(duelNextRoundInterval);duelNextRoundInterval=null}duelIntroId='';$('duelPrestart')?.classList.add('hidden');$('duelMatchShell')?.classList.remove('hidden');stopDuelMatchTimer();if(duelMatchRevealTimer){clearTimeout(duelMatchRevealTimer);duelMatchRevealTimer=null}duelMatchRevealLock=false;duelMatchShownQuestion=-1;duelMatchFinalRevealShown=false;duelMatchTimerKey='';duelLastRevealKey='';duelMatchNames={};$('duelRoom')?.classList.add('hidden');duelActiveId=null;duelActive=null;duelSubmitted={};go('duel');duelRefreshAll();duelSyncActiveMatch()}
 // Weekly prizes: claim only for the last completed Saturday-Friday week.
 function previousWeeklyStartDate(){const d=new Date(weeklyStartDate()+'T00:00:00');d.setDate(d.getDate()-7);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
 
