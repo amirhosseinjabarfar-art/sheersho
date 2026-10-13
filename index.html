@@ -153,6 +153,24 @@
 @keyframes homeIconBob{50%{transform:translateY(-6px) rotate(4deg) scale(1.05)}}
 @keyframes homeTitleGlow{to{text-shadow:0 0 34px #c084fc88,0 0 60px #ec489933}}
 @media(max-width:720px){.home-alliance-card{grid-template-columns:auto minmax(0,1fr);gap:14px;padding:18px}.home-alliance-emblem{width:58px;height:58px;font-size:29px;border-radius:18px}.home-alliance-btn{grid-column:1/-1;width:100%}.home-alliance-meta{font-size:11px}}
+/* Refined home layout: square glowing game cards and Lalezar display type */
+#page-home .home-mode-cards{grid-template-columns:repeat(3,minmax(0,1fr));align-items:stretch;gap:18px}
+#page-home .feature.home-mode{min-height:285px;aspect-ratio:1/1;display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;padding:clamp(17px,2.3vw,27px);border-radius:25px;border:1px solid #c4b5fd38;background:radial-gradient(ellipse at 50% 0%,#a78bfa1d,transparent 62%),linear-gradient(145deg,#211936e8,#111020f2 70%,#1b1530f0)}
+#page-home .feature.home-mode h3{font-family:'Lalezar',Vazirmatn,sans-serif;font-size:clamp(21px,2.2vw,28px);font-weight:400;line-height:1.35;margin:15px 0 7px;text-shadow:0 0 16px #c4b5fd33}
+#page-home .feature.home-mode p{flex:1;margin:0 0 15px;line-height:1.9}
+#page-home .feature.home-mode .btn{margin-top:auto}
+#page-home .feature.home-mode.solo-mode{border-color:#67e8f966;box-shadow:0 0 20px #22d3ee13,inset 0 0 28px #22d3ee08}
+#page-home .feature.home-mode.duel-mode{border-color:#f472b666;box-shadow:0 0 20px #ec489913,inset 0 0 28px #ec489908}
+#page-home .feature.home-mode.gather-mode{border-color:#fcd34d66;box-shadow:0 0 20px #f59e0b13,inset 0 0 28px #f59e0b08}
+#page-home .feature.home-mode.solo-mode:hover{box-shadow:0 0 0 1px #67e8f966,0 0 35px #22d3ee35,0 25px 65px #0006}
+#page-home .feature.home-mode.duel-mode:hover{box-shadow:0 0 0 1px #f472f966,0 0 35px #ec489935,0 25px 65px #0006}
+#page-home .feature.home-mode.gather-mode:hover{box-shadow:0 0 0 1px #fcd34d99,0 0 35px #f59e0b35,0 25px 65px #0006}
+#page-home .home-alliance-copy h2{font-family:'Lalezar',Vazirmatn,sans-serif;font-weight:400}
+#page-home .home-alliance-btn{font-family:'Lalezar',Vazirmatn,sans-serif;font-weight:400;font-size:17px}
+#page-home .home-alliance-card{min-height:190px}
+@media(max-width:760px){#page-home .home-mode-cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}#page-home .feature.home-mode{min-height:245px;padding:16px}#page-home .feature.home-mode h3{font-size:22px}}
+@media(max-width:470px){#page-home .home-mode-cards{grid-template-columns:1fr}#page-home .feature.home-mode{aspect-ratio:auto;min-height:210px}#page-home .home-alliance-card{grid-template-columns:auto minmax(0,1fr);gap:12px}#page-home .home-alliance-btn{grid-column:1/-1}}
+
 @media(prefers-reduced-motion:reduce){#page-home .hero-card,#page-home .feature-icon,#page-home .feature.home-mode:before,.home-alliance-card,.home-alliance-rays,.home-alliance-emblem,.home-alliance-btn{animation:none}}
 
 </style>
