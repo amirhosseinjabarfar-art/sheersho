@@ -130,17 +130,35 @@ set search_path = public
 as $$
 declare
   v_gift public.ss_poem_card_gifts%rowtype;
+  v_updated integer;
 begin
   if auth.uid() is null then return jsonb_build_object('success',false,'message','ابتدا وارد حساب شو.'); end if;
-  delete from public.ss_poem_card_gifts
+
+  -- Lock the gift first so it cannot be claimed twice.
+  select * into v_gift
+    from public.ss_poem_card_gifts
    where id = p_gift_id and recipient_id = auth.uid()
-   returning * into v_gift;
-  if not found then return jsonb_build_object('success',false,'message','این هدیه قبلاً دریافت شده یا برای حساب تو نیست.'); end if;
+   for update;
+  if not found then
+    return jsonb_build_object('success',false,'message','این هدیه قبلاً دریافت شده یا برای حساب تو نیست.');
+  end if;
+
+  -- Receiving the gift transfers the 50 coins to the recipient exactly once.
+  update public.ss_profiles
+     set coins = coalesce(coins,0) + 50
+   where id = auth.uid();
+  get diagnostics v_updated = row_count;
+  if v_updated = 0 then
+    return jsonb_build_object('success',false,'message','پروفایل تو پیدا نشد؛ سکه‌ای اضافه نشد.');
+  end if;
+
+  delete from public.ss_poem_card_gifts
+   where id = p_gift_id and recipient_id = auth.uid();
 
   insert into public.ss_poem_cards(owner_id,poem_key,poem_title,poem_verse,poem_author,received_from)
   values(v_gift.recipient_id,v_gift.poem_key,v_gift.poem_title,v_gift.poem_verse,v_gift.poem_author,v_gift.sender_id);
 
-  return jsonb_build_object('success',true,'message','کارت شعر دریافت شد.');
+  return jsonb_build_object('success',true,'message','کارت شعر دریافت شد و ۵۰ سکه به حسابت اضافه شد.','coins_added',50);
 end;
 $$;
 
