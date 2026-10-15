@@ -42,6 +42,9 @@ revoke all on table public.ss_poem_cards from anon, authenticated;
 grant select on table public.ss_poem_card_gifts to authenticated;
 grant select on table public.ss_poem_cards to authenticated;
 
+drop function if exists public.ss_send_poem_card_gift(text, uuid);
+drop function if exists public.ss_send_poem_card_gift(uuid, text);
+
 create or replace function public.ss_send_poem_card_gift(p_recipient_id uuid, p_poem_key text)
 returns jsonb
 language plpgsql
@@ -149,5 +152,8 @@ grant execute on function public.ss_send_poem_card_gift(uuid,text) to authentica
 grant execute on function public.ss_my_pending_poem_card_gifts() to authenticated;
 grant execute on function public.ss_my_poem_cards() to authenticated;
 grant execute on function public.ss_claim_poem_card_gift(bigint) to authenticated;
+
+-- Refresh PostgREST so the RPC becomes visible immediately.
+notify pgrst, 'reload schema';
 
 commit;
