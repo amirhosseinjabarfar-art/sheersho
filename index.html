@@ -1019,20 +1019,7 @@ function sendAllianceSticker(e){$('allianceStickerPicker').classList.add('hidden
 function toggleAllianceStickers(){$('allianceStickerPicker').classList.toggle('hidden')}
 async function toggleAllianceRecording(){if(!allianceCurrent)return toast('ابتدا عضو اتحاد شو.');if(allianceRecording){allianceRecorder.stop();return}if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder)return toast('ضبط ویس در این مرورگر در دسترس نیست.');try{const stream=await navigator.mediaDevices.getUserMedia({audio:true});allianceChunks=[];allianceRecorder=new MediaRecorder(stream);allianceRecorder.ondataavailable=e=>{if(e.data.size)allianceChunks.push(e.data)};allianceRecorder.onstop=async()=>{stream.getTracks().forEach(t=>t.stop());allianceRecording=false;$('allianceVoiceBtn').textContent='🎙️ ضبط ویس';const blob=new Blob(allianceChunks,{type:allianceRecorder.mimeType||'audio/webm'});try{const path=sessionUser.id+'/'+allianceCurrent.id+'/'+Date.now()+'.webm',u=SUPABASE_URL+'/storage/v1/object/alliance-voice/'+path,up=await fetch(u,{method:'POST',headers:{...allianceHeaders(),'Content-Type':blob.type,'x-upsert':'false'},body:blob}),d=await up.json().catch(()=>({}));if(!up.ok)throw Error(d.message||'آپلود ویس انجام نشد؛ Storage را تنظیم کن.');await sendAllianceMessage('voice',SUPABASE_URL+'/storage/v1/object/public/alliance-voice/'+path)}catch(e){toast(e.message||'ارسال ویس ناموفق بود.')}};allianceRecorder.start();allianceRecording=true;$('allianceVoiceBtn').textContent='⏹️ پایان ضبط';setTimeout(()=>{if(allianceRecording)allianceRecorder.stop()},60000)}catch(e){toast('اجازه میکروفون داده نشد.')}}
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&document.activeElement?.id==='allianceMessageInput'){e.preventDefault();sendAllianceText()}});
-</script><footer class="jabarfar-studio-footer" aria-label="استودیو لایت"><div class="jabarfar-studio-frame"><p class="jabarfar-studio-text">استودیو لایت</p></div></footer>
-<script>
-(function(){
-  const overlay=document.getElementById('studioIntro');
-  const title=document.getElementById('studioIntroTitle');
-  if(!overlay||!title)return;
-  title.textContent='استودیو لایت';
-  title.setAttribute('dir','rtl');
-  window.setTimeout(()=>overlay.classList.add('is-exiting'),4450);
-  window.setTimeout(()=>{overlay.remove();},5050);
-})();
-</script>
 
-<script>
 // ===== هدیه سکه و کارت شعر دیجیتال VIP =====
 const DIGITAL_POEMS=[
 {title:'توانا بود هر که دانا بود',verse:'توانا بود هر که دانا بود\nز دانش دل پیر برنا بود',author:'فردوسی'},
@@ -1135,4 +1122,6 @@ async function loadReceivedCoinGifts(showToast=false){
  }catch(e){box.innerHTML='<div class="empty">هدیه‌ها دریافت نشدند. پس از نصب توابع هدیه سکه در Supabase دوباره تلاش کن.</div>';console.warn('loadReceivedCoinGifts',e)}
 }
 initDigitalPoemChoices();
-</script></body></html>
+
+</script><footer class="jabarfar-studio-footer" aria-label="استودیو لایت"><div class="jabarfar-studio-frame"><p class="jabarfar-studio-text">استودیو لایت</p></div></footer>
+</body></html>
