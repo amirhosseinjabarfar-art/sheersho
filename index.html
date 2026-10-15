@@ -1031,6 +1031,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&documen
 function clampPhysicalQty(input,max){if(!input)return;let n=Number.parseInt(input.value,10);if(!Number.isFinite(n))n=1;input.value=Math.max(1,Math.min(max,n));}
 function changePhysicalQty(id,delta,max){const input=document.getElementById(id);if(!input)return;clampPhysicalQty(input,max);input.value=Math.max(1,Math.min(max,Number(input.value)+delta));}
 async function copyPhysicalOrder(text){try{if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(text);}else{const area=document.createElement('textarea');area.value=text;area.setAttribute('readonly','');area.style.position='fixed';area.style.opacity='0';document.body.appendChild(area);area.select();const ok=document.execCommand('copy');area.remove();if(!ok)throw new Error('copy failed');}if(typeof toast==='function')toast('متن کامل سفارش کپی شد؛ می‌توانی آن را برای فروشنده بفرستی.');else alert('متن سفارش کپی شد.');}catch(e){window.prompt('متن سفارش را کپی کن:',text);}}
+async function copyPhysicalOrderAndOpenRubika(text){const target='https://rubika.ir/amirtbpedit';const tab=window.open('about:blank','_blank');try{await copyPhysicalOrder(text);}finally{if(tab){tab.location.href=target;}else{window.location.href=target;}}}
 function selectPhysicalProduct(name,price,qtyId,maxQty){
  const shipping=200000;
  const isPoem=name==='کارت شعر شعرشو';
@@ -1043,9 +1044,10 @@ function selectPhysicalProduct(name,price,qtyId,maxQty){
  const total=unitTotal+shipping;
  const details='سفارش فروشگاه شعرشو\n'+'--------------------\nمحصول: '+name+'\n'+'تعداد: '+qty+' عدد\n'+(poem?'شعر انتخابی: '+poem+'\n':'')+'قیمت هر محصول: '+price.toLocaleString('fa-IR')+' تومان\n'+'جمع محصولات: '+unitTotal.toLocaleString('fa-IR')+' تومان\n'+'هزینه ارسال: '+shipping.toLocaleString('fa-IR')+' تومان\n'+'مبلغ نهایی: '+total.toLocaleString('fa-IR')+' تومان\n'+'موجودی اعلام‌شده پیش از ثبت سفارش: '+stockLabel;
  const existing=document.getElementById('physicalOrderResult');if(existing)existing.remove();
- const result=document.createElement('div');result.id='physicalOrderResult';result.className='notice success';result.style.marginTop='16px';result.innerHTML='<b>سفارش آماده است</b><p style="white-space:pre-line;line-height:2;margin:8px 0 12px"></p><button type="button" class="btn cyan" id="copyPhysicalOrderBtn">📋 کپی متن سفارش</button>';
+ const result=document.createElement('div');result.id='physicalOrderResult';result.className='notice success';result.style.marginTop='16px';result.innerHTML='<b>سفارش آماده است</b><p style="white-space:pre-line;line-height:2;margin:8px 0 12px"></p><button type="button" class="btn cyan" id="copyPhysicalOrderBtn">📋 کپی سفارش و ورود به روبیکا</button><button type="button" class="btn secondary" id="copyPhysicalOrderOnlyBtn" style="margin-right:8px">فقط کپی سفارش</button>';
  result.querySelector('p').textContent=details;
- result.querySelector('button').addEventListener('click',()=>copyPhysicalOrder(details));
+ result.querySelector('#copyPhysicalOrderBtn').addEventListener('click',()=>copyPhysicalOrderAndOpenRubika(details));
+ result.querySelector('#copyPhysicalOrderOnlyBtn').addEventListener('click',()=>copyPhysicalOrder(details));
  const card=qtyInput?.closest('.physical-product-card');if(card)card.appendChild(result);else document.querySelector('.physical-shipping-note')?.before(result);
  result.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
