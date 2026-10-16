@@ -1309,7 +1309,7 @@ avatarHtml=function(p,mini=false,override=null){
  const html=oldAvatarHtmlForProfile(p,mini,override);
  if(override||!p?.activeAvatarUrl)return html;
  const safe=escapeAvatarHtml(p.activeAvatarUrl);
- return html.replace(/<div class="avatar-core">.*?<\\/div>/,'<div class="avatar-core"><img src="'+safe+'" alt="آواتار پروفایل" style="width:100%;height:100%;object-fit:cover;border-radius:inherit"></div>');
+ return html.replace(/<div class="avatar-core">.*?<\/div>/,'<div class="avatar-core"><img src="'+safe+'" alt="آواتار پروفایل" style="width:100%;height:100%;object-fit:cover;border-radius:inherit"></div>');
 };
 </script>
 </body></html>
