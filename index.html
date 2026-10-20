@@ -1008,34 +1008,43 @@ function endSolo(){
 function resetSolo(){stopQuestionTimer();shershoSoloRunToken++;soloQuestions=[];soloIndex=0;soloScore=0;soloAnswered=false;$('soloSetup').classList.remove('hidden');$('soloPlay').classList.add('hidden');$('soloResult').classList.add('hidden');$('soloAnswer').value='';$('soloAnswer').disabled=false;$('soloSubmit').disabled=false;}
 function showGatherSetup(vip){
   gather.vip=!!vip;gather.answered=false;stopQuestionTimer();shershoGatherRunToken++;
-  $('gatherSetup').classList.remove('hidden');$('gatherPlay').classList.add('hidden');$('gatherResult').classList.add('hidden');
+  const page=vip?'gather-vip-setup':'gather-setup',mount=document.getElementById(vip?'gatherVipSetupMount':'gatherSetupMount'),form=$('gatherSetup');
+  if(!mount||!document.querySelector('.page[data-page="'+page+'"]')||!form){toast('صفحه ساخت دورهمی پیدا نشد. صفحه را تازه‌سازی کن.');return}
+  if(form.parentElement!==mount)mount.appendChild(form);
+  const play=$('gatherPlay'),result=$('gatherResult'),matchMount=$('gatherMatchMount');if(matchMount&&play&&play.parentElement!==matchMount)matchMount.appendChild(play);if(matchMount&&result&&result.parentElement!==matchMount)matchMount.appendChild(result);
+  form.classList.remove('hidden');play.classList.add('hidden');result.classList.add('hidden');
   $('gatherTitle').textContent=vip?'ساخت دورهمی VIP':'ساخت دورهمی رایگان';
-  $('gatherVipNotice').textContent=vip?'اشتراک VIP فعال است: تا ۱۰ شرکت‌کننده و انتخاب بیش از ۵۰ سؤال.':'نسخه رایگان: حداکثر ۲ شرکت‌کننده و ۱۰ سؤال.';
+  $('gatherVipNotice').textContent=vip?'دورهمی ویژه: تا ۱۰ تیم و ۵۱ سؤال؛ برای شروع اشتراک VIP لازم است.':'دورهمی رایگان: حداکثر ۲ تیم و ۱۰ سؤال.';
   $('gatherCount').innerHTML=vip?'<option value="51">۵۱ سؤال</option>':'<option value="5">۵ سؤال</option><option value="10" selected>۱۰ سؤال</option>';
-  $('gatherPlayers').innerHTML=Array.from({length:vip?9:1},(_,i)=>`<option value="${i+2}">${i+2} شرکت‌کننده</option>`).join('');renderGatherNames();$('gatherPlayers').onchange=renderGatherNames;
+  $('gatherPlayers').innerHTML=Array.from({length:vip?9:1},(_,i)=>`<option value="${i+2}">${i+2} تیم</option>`).join('');
+  if($('gatherMode')){$('gatherMode').value='blank';if(typeof renderGatherModeCards==='function')renderGatherModeCards()}
+  renderGatherNames();$('gatherPlayers').onchange=renderGatherNames;go(page);window.scrollTo({top:0,behavior:'instant'});
 }
 async function startGathering(){
-  if(!sessionUser){openAuth();return toast('برای شروع دورهمی ابتدا وارد حساب شو.');}
-  const names=[...document.querySelectorAll('.gather-name')].map((x,i)=>x.value.trim()||`بازیکن ${i+1}`);
-  const count=Math.max(1,Number($('gatherCount').value)||5);
-  if(names.length>(gather.vip?10:2))return toast('تعداد شرکت‌کننده بیشتر از حد مجاز است.');
-  if(!gather.vip&&(names.length>2||count>10))return toast('نسخه رایگان حداکثر ۲ بازیکن و ۱۰ سؤال دارد.');
-  if(gather.vip){const v=await refreshVip();if(!v.active||count<=50||names.length>10)return toast('برای دورهمی VIP با بیش از ۵۰ سؤال یا بیش از ۲ نفر، اشتراک VIP فعال لازم است.');}
-  if(names.length>2&&!gather.vip)return toast('دورهمی با بیش از ۲ نفر فقط برای VIP است.');
   const pool=shuffle(shershoValidPoems());if(!pool.length)return toast('بانک سؤال معتبر در دسترس نیست.');
-  stopQuestionTimer();shershoGatherRunToken++;gather.players=names;gather.scores=names.map(()=>0);
-  gather.questions=Array.from({length:count},(_,i)=>pool[i%pool.length]);
-  // در صورت کوچک بودن بانک، ترتیب تکرارها تغییر می‌کند تا سؤال‌های تکراری پشت سر هم نیایند.
-  for(let i=pool.length;i<gather.questions.length;i+=pool.length){const batch=shuffle(pool);for(let j=0;j<pool.length&&i+j<gather.questions.length;j++)gather.questions[i+j]=batch[j];}
-  gather.index=0;gather.answered=false;$('gatherSetup').classList.add('hidden');$('gatherResult').classList.add('hidden');$('gatherPlay').classList.remove('hidden');renderGatherQuestion();
+  const names=[...document.querySelectorAll('#gatherNames .gather-name')].map(x=>x.value.trim());
+  if(!names.length||names.some(x=>!x))return toast('نام همه تیم‌ها را وارد کن.');
+  if(new Set(names.map(norm)).size!==names.length)return toast('نام تیم‌ها باید متفاوت باشد.');
+  const count=Math.max(1,Number($('gatherCount').value)||5);
+  if(names.length>(gather.vip?10:2))return toast('تعداد تیم‌ها بیشتر از حد مجاز است.');
+  if(!gather.vip&&(names.length>2||count>10))return toast('دورهمی رایگان حداکثر ۲ تیم و ۱۰ سؤال دارد.');
+  const mode=$('gatherMode')?.value==='truefalse'?'truefalse':'blank';if(mode==='truefalse'&&!gather.vip)return toast('مدل درست یا نادرست مخصوص دورهمی VIP است.');
+  if(gather.vip){if(!sessionUser){openAuth();return toast('برای شروع دورهمی VIP وارد حساب شو.')}const v=await refreshVip();if(!v.active)return toast('برای شروع دورهمی VIP اشتراک فعال لازم است.');if(count<=50||names.length>10)return toast('تنظیمات دورهمی VIP معتبر نیست.');}
+  stopQuestionTimer();shershoGatherRunToken++;gather.players=names;gather.scores=names.map(()=>0);gather.tieCandidates=[];gather.winner=null;gather.mode=mode;
+  const questions=Array.from({length:count},(_,i)=>pool[i%pool.length]);
+  if(mode==='truefalse'){const all=[...new Set(pool.flatMap(q=>q.answers||[]))];gather.questions=questions.map(q=>{const wrong=shuffle(all.filter(a=>!(q.answers||[]).some(c=>norm(c)===norm(a))))[0],isTrue=Math.random()<.5||!wrong;return {...q,displayAnswer:isTrue?q.answers[0]:wrong,isTrue}})}else gather.questions=questions;
+  gather.index=0;gather.answered=false;
+  const setup=$('gatherSetup'),play=$('gatherPlay'),result=$('gatherResult'),mount=$('gatherMatchMount');if(!mount)return toast('صفحه اجرای دورهمی پیدا نشد.');
+  if(play.parentElement!==mount)mount.appendChild(play);if(result.parentElement!==mount)mount.appendChild(result);
+  setup.classList.add('hidden');result.classList.add('hidden');play.classList.remove('hidden');go('gather-match');renderGatherQuestion();window.scrollTo({top:0,behavior:'instant'});
 }
 function renderGatherQuestion(){
-  ++shershoGatherRunToken;stopQuestionTimer();if(gather.index>=gather.questions.length){endGathering();return;}
+  stopQuestionTimer();if(!Array.isArray(gather.questions)||!gather.questions.length){toast('سؤال‌های دورهمی آماده نیستند.');return}if(gather.index>=gather.questions.length){endGathering();return}
+  const mount=$('gatherMatchMount'),play=$('gatherPlay');if(mount&&play&&play.parentElement!==mount)mount.appendChild(play);if(play)play.classList.remove('hidden');if(!document.querySelector('[data-page="gather-match"].active'))go('gather-match');
   gather.answered=false;const q=gather.questions[gather.index],pi=gather.index%gather.players.length;
-  $('gatherTurn').textContent='نوبت: '+gather.players[pi];$('gatherCounter').textContent=`سؤال ${fmt(gather.index+1)} از ${fmt(gather.questions.length)}`;
-  $('gatherProgress').style.width=(gather.index/gather.questions.length*100)+'%';
-  $('gatherQuestion').innerHTML=`<div class="poem-line">${esc(q.line).replace('___','<span class="poem-gap">جای خالی</span>')}</div><p class="muted">${esc(q.hint||'جای خالی شعر را کامل کن.')}</p>`;
-  $('gatherAnswer').value='';$('gatherAnswer').disabled=false;$('gatherFeedback').textContent='';startQuestionTimer('gather');
+  $('gatherTurn').textContent='نوبت: '+gather.players[pi];$('gatherCounter').textContent=`سؤال ${fmt(gather.index+1)} از ${fmt(gather.questions.length)}`;$('gatherProgress').style.width=(gather.index/gather.questions.length*100)+'%';
+  $('gatherReadyTitle').textContent='نوبت '+gather.players[pi];$('gatherReadyText').textContent=gather.players[pi]+'، برای دیدن سؤال و فعال شدن زمان «شروع بازی» را بزن.';
+  $('gatherReady').classList.remove('hidden');$('gatherTimer').classList.add('hidden');$('gatherQuestion').classList.add('hidden');$('gatherAnswerField').classList.add('hidden');$('gatherChoiceButtons').classList.add('hidden');$('gatherSubmitBtn').classList.add('hidden');$('gatherSkipBtn').classList.add('hidden');$('gatherAnswer').value='';$('gatherAnswer').disabled=false;$('gatherFeedback').textContent='';document.querySelectorAll('#gatherChoiceButtons button').forEach(b=>b.disabled=false);
 }
 function checkGathering(){
   if(gather.answered||gather.index>=gather.questions.length)return;
@@ -1053,28 +1062,26 @@ function endGathering(){
   $('gatherResult').innerHTML=`<h2 class="bracket-title">نتیجه دورهمی</h2><div class="table-wrap"><table><thead><tr><th>رتبه</th><th>بازیکن</th><th>امتیاز</th></tr></thead><tbody>${ranking.map((x,i)=>`<tr><td>${i+1===1?'🥇':i+1===2?'🥈':i+1===3?'🥉':fmt(i+1)}</td><td>${esc(x.name)}</td><td>${fmt(x.score)}</td></tr>`).join('')}</tbody></table></div><button class="btn" onclick="showGatherSetup(gather.vip)">دورهمی جدید</button>`;
 }
 function startMatchQuiz(ri,mi){
-  const match=bracket?.rounds?.[ri]?.[mi];if(!match||match.winner||!match.players[0]||!match.players[1])return;
-  if(tournamentQuiz)return toast('ابتدا مسابقه در حال اجرا را تمام کن.');
+  const match=bracket?.rounds?.[ri]?.[mi];if(!match||match.winner||!match.players[0]||!match.players[1])return;if(tournamentQuiz)return toast('ابتدا مسابقه در حال اجرا را تمام کن.');
   const pool=shuffle(shershoValidPoems());if(!pool.length)return toast('بانک سؤال معتبر در دسترس نیست.');
-  stopQuestionTimer();tournamentQuiz={ri,mi,turn:0,roundsPerPlayer:3,scores:[0,0],questions:pool,answered:false,runId:Date.now()};
-  $('tournamentQuiz').classList.remove('hidden');$('bracketBoard').classList.add('hidden');$('bracketWinner').classList.add('hidden');renderTournamentQuestion();
+  stopQuestionTimer();const mode=bracket.mode||tournamentMode||'blank';
+  tournamentQuiz={ri,mi,turn:0,roundsPerPlayer:3,scores:[0,0],questions:pool.map(q=>{if(mode!=='truefalse')return q;const all=[...new Set(pool.flatMap(p=>p.answers||[]))],wrong=shuffle(all.filter(a=>!(q.answers||[]).some(c=>norm(c)===norm(a))))[0],isTrue=Math.random()<.5||!wrong;return {...q,displayAnswer:isTrue?q.answers[0]:wrong,isTrue}}),mode,answered:false,runId:Date.now()};
+  const quiz=$('tournamentQuiz'),mount=$('tournamentMatchMount');if(!quiz||!mount)return toast('بخش اجرای مسابقه پیدا نشد.');if(quiz.parentElement!==mount)mount.appendChild(quiz);
+  quiz.classList.remove('hidden');$('bracketBoard').classList.add('hidden');$('bracketWinner').classList.add('hidden');go('tournament-match');renderTournamentQuestion();window.scrollTo({top:0,behavior:'instant'});
 }
 function renderTournamentQuestion(){
-  if(!tournamentQuiz)return;const qz=tournamentQuiz,match=bracket?.rounds?.[qz.ri]?.[qz.mi];if(!match)return;
-  stopQuestionTimer();const playerIndex=qz.turn%2,player=match.players[playerIndex],question=qz.questions[qz.turn%qz.questions.length];
-  qz.currentQuestion=question;qz.answered=false;$('tournamentQuizTitle').textContent=`${bracket.name} · ${match.players[0]} در برابر ${match.players[1]}`;
-  $('tournamentQuizCounter').textContent=`سؤال ${fmt(qz.turn+1)} · نوبت ${playerIndex===0?'بازیکن اول':'بازیکن دوم'}`;
-  $('tournamentQuizProgress').style.width=Math.min(100,qz.turn/(qz.roundsPerPlayer*2)*100)+'%';$('tournamentQuizLabel').textContent='پاسخ '+player;
-  $('tournamentQuizQuestion').innerHTML=esc(question.line).replace('___','<span class="poem-gap">جای خالی</span>');$('tournamentQuizHint').textContent=question.hint||'جای خالی شعر را کامل کن.';
-  $('tournamentQuizAnswer').value='';$('tournamentQuizAnswer').disabled=false;$('tournamentQuizSubmit').disabled=false;$('tournamentQuizFeedback').textContent='';
-  $('tournamentQuizScores').innerHTML=`امتیاز فعلی: <b>${esc(match.players[0])}: ${fmt(qz.scores[0])}</b> · <b>${esc(match.players[1])}: ${fmt(qz.scores[1])}</b><br><small>هر پاسخ درست ۱۰ امتیاز دارد؛ هر بازیکن حداقل ۳ سؤال پاسخ می‌دهد.</small>`;startQuestionTimer('tournament');
+  if(!tournamentQuiz)return;const qz=tournamentQuiz,match=bracket?.rounds?.[qz.ri]?.[qz.mi];if(!match||!Array.isArray(qz.questions)||!qz.questions.length)return;stopQuestionTimer();
+  const pi=qz.turn%2,player=match.players[pi],question=qz.questions[qz.turn%qz.questions.length];qz.currentQuestion=question;qz.answered=false;
+  $('tournamentQuizTitle').textContent=`${bracket.name} · ${match.players[0]} در برابر ${match.players[1]}`;$('tournamentQuizCounter').textContent=`سؤال ${fmt(qz.turn+1)} · نوبت ${player}`;$('tournamentQuizProgress').style.width=Math.min(100,qz.turn/(qz.roundsPerPlayer*2)*100)+'%';$('tournamentQuizLabel').textContent='پاسخ '+player;$('tournamentReadyPlayer').textContent='نوبت '+player;
+  $('tournamentReady').classList.remove('hidden');$('tournamentQuestionStage').classList.add('hidden');$('tournamentTimer').classList.add('hidden');$('tournamentQuizQuestion').classList.add('hidden');$('tournamentQuizAnswer').value='';$('tournamentQuizAnswer').disabled=false;$('tournamentQuizSubmit').disabled=false;$('tournamentQuizSubmit').classList.add('hidden');$('tournamentChoiceButtons').classList.add('hidden');$('tournamentQuizFeedback').textContent='';
+  $('tournamentQuizScores').innerHTML=`امتیاز فعلی: <b>${esc(match.players[0])}: ${fmt(qz.scores[0])}</b> · <b>${esc(match.players[1])}: ${fmt(qz.scores[1])}</b><br><small>هر پاسخ درست ۱۰ امتیاز دارد.</small>`;
 }
 function checkTournamentAnswer(){
   const qz=tournamentQuiz;if(!qz||qz.answered)return;const raw=$('tournamentQuizAnswer').value.trim();if(!raw)return toast('پاسخ را وارد کن.');
   stopQuestionTimer();qz.answered=true;const q=qz.currentQuestion,playerIndex=qz.turn%2,timedOut=raw==='__time_expired__',answer=timedOut?'':norm(raw),ok=!timedOut&&q.answers.some(a=>norm(a)===answer);
   if(ok)qz.scores[playerIndex]+=10;$('tournamentQuizFeedback').textContent=timedOut?'زمان تمام شد. پاسخ درست: '+q.answers[0]:(ok?'آفرین! پاسخ درست بود؛ ۱۰ امتیاز گرفتی.':'پاسخ درست: '+q.answers[0]);
   $('tournamentQuizFeedback').style.color=ok?'var(--green)':'#fda4af';showAnswerAnimation('tournamentQuizQuestion','tournamentQuizFeedback',q,ok,ok?'۱۰ امتیاز گرفتی!':'');$('tournamentQuizAnswer').disabled=true;$('tournamentQuizSubmit').disabled=true;
-  const runId=qz.runId;setTimeout(()=>{if(tournamentQuiz!==qz||qz.runId!==runId)return;qz.turn++;if(qz.turn>=qz.roundsPerPlayer*2){if(qz.scores[0]===qz.scores[1]){qz.roundsPerPlayer++;qz.questions=shuffle(shershoValidPoems());$('tournamentQuizFeedback').textContent='امتیازها برابر است؛ یک سؤال اضافه برای هر بازیکن!';setTimeout(()=>{if(tournamentQuiz===qz)renderTournamentQuestion()},650);return;}finishTournamentMatch();}else renderTournamentQuestion();},1050);
+  const runId=qz.runId;setTimeout(()=>{if(tournamentQuiz!==qz||qz.runId!==runId)return;advanceTournamentQuestion(qz)},1050);
 }
 function cancelTournamentQuiz(){if(!tournamentQuiz)return;stopQuestionTimer();tournamentQuiz=null;$('tournamentQuiz').classList.add('hidden');$('bracketBoard').classList.remove('hidden');renderBracket();}
 function resetBracket(){stopQuestionTimer();bracket=null;tournamentQuiz=null;$('tournamentQuiz').classList.add('hidden');$('bracketBoard').classList.remove('hidden');$('bracketArea').classList.add('hidden');$('tournamentSetup').classList.remove('hidden');$('bracketWinner').classList.add('hidden');renderTournamentNameInputs();}
