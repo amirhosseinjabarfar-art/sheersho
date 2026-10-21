@@ -1792,4 +1792,27 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeGraphicsSetting
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
 </script>
+
+<style id="beyto-blur-select-click-fix">
+/* رفع تداخل لایه‌های بلور و انیمیشن با کلیک روی گزینه‌ها */
+.beyto-select-ui{pointer-events:auto!important}
+.beyto-select-trigger{position:relative;z-index:2;pointer-events:auto!important;touch-action:manipulation}
+.beyto-select-ui.is-open{z-index:10001!important}
+.beyto-select-menu,.beyto-select-ui.is-open .beyto-select-menu{
+  position:absolute;z-index:10002!important;pointer-events:auto!important;
+  -webkit-backface-visibility:hidden;backface-visibility:hidden;
+}
+.beyto-select-option{
+  position:relative;z-index:1;pointer-events:auto!important;
+  touch-action:manipulation; -webkit-tap-highlight-color:transparent;
+}
+.beyto-select-option:before{pointer-events:none!important}
+.beyto-select-scrim{z-index:10000!important}
+.beyto-select-ui.is-open .beyto-select-menu{animation:beytoMenuEnter .18s ease-out both}
+.beyto-select-option{animation:beytoOptionIn .16s ease-out both}
+@media(prefers-reduced-motion:reduce){
+ .beyto-select-ui.is-open .beyto-select-menu,.beyto-select-option{animation:none!important;filter:none!important}
+}
+</style>
+
 </body></html>
