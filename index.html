@@ -1609,7 +1609,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeGraphicsSetting
    $('gatherFeedback').textContent=(correct?'✅ پاسخ توسط داور تأیید شد؛ ':'❌ پاسخ نادرست ثبت شد؛ ')+'پاسخ مورد انتظار: '+(p.q?.answers?.[0]||'—');
    $('gatherFeedback').style.color=correct?'var(--green)':'#fda4af';
    if(p.q){showAnswerAnimation('gatherQuestion','gatherFeedback',p.q,correct,correct?'۱۰ امتیاز برای '+gather.players[pi]+'!':'')}
-   if(correct&& !was) $('gatherFeedback').textContent='پاسخ دستی تأیید شد؛ ۱۰ امتیاز برای '+gather.players[pi]+'!';
+   if(correct) $('gatherFeedback').textContent='پاسخ تأیید شد؛ ۱۰ امتیاز برای '+gather.players[pi]+'!';
    updateScores();const token=shershoGatherRunToken;
    setTimeout(()=>{if(token!==shershoGatherRunToken||!gather.answered)return;gather.index++;renderGatherQuestion()},1300);
  };
