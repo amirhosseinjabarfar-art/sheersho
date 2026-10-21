@@ -1344,6 +1344,34 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeGraphicsSetting
 @keyframes timerPulse{50%{box-shadow:0 0 0 8px #a78bfa12,0 0 40px #67e8f988}}
 @keyframes tieReveal{0%{transform:translate(-50%,-50%) scale(.25) rotate(-12deg);filter:blur(8px)}55%{transform:translate(-50%,-50%) scale(1.08) rotate(5deg);filter:blur(0)}75%{transform:translate(-50%,-50%) scale(.97) rotate(-3deg)}100%{transform:translate(-50%,-50%) scale(1) rotate(0)}}
 @media(max-width:560px){.gather-tie-cards{gap:7px}.gather-tie-card{min-height:100px;font-size:26px}.gather-tie-card.chosen{height:190px}}
+
+/* تشخیص و داوری دستی پاسخ‌ها و جدول امتیاز دورهمی */
+#gatherJudgePanel{margin:18px 0;padding:18px;border:1px solid #a78bfa77;border-radius:20px;background:radial-gradient(ellipse at top,#47287944,transparent 75%),linear-gradient(135deg,#151029ee,#0b2433ee);box-shadow:0 0 24px #8b5cf622;animation:gatherPanelIn .4s both}
+#gatherJudgePanel .judge-title{font:24px Lalezar;margin:0 0 8px}
+#gatherJudgePanel .judge-status{padding:12px 14px;border-radius:14px;font-weight:900;margin:10px 0;border:1px solid #ffffff22;background:#ffffff08}
+#gatherJudgePanel .judge-status.is-correct{color:#86efac;border-color:#4ade8077;background:#14532d44;box-shadow:0 0 22px #22c55e22}
+#gatherJudgePanel .judge-status.is-wrong{color:#fda4af;border-color:#fb718577;background:#88133733;box-shadow:0 0 22px #fb718522}
+#gatherJudgePanel .judge-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
+#gatherJudgePanel .judge-actions button{min-height:48px;border-radius:14px;border:1px solid #ffffff30;font-weight:900;transition:transform .2s,box-shadow .2s;animation:choiceCardIn .35s both}
+#gatherJudgePanel .judge-actions button:hover{transform:translateY(-3px);box-shadow:0 0 24px #67e8f944}
+#gatherJudgePanel .judge-correct{background:linear-gradient(135deg,#166534,#064e3b);border-color:#86efac88!important}
+#gatherJudgePanel .judge-wrong{background:linear-gradient(135deg,#9f1239,#4c0519);border-color:#fda4af88!important}
+#gatherLiveScores{margin:22px 0;padding:18px;border-radius:22px;border:1px solid #67e8f966;background:radial-gradient(ellipse at top,#0e749044,transparent 70%),linear-gradient(135deg,#0b192c,#201033);box-shadow:0 0 28px #67e8f922;animation:gatherPanelIn .45s both}
+#gatherLiveScores h3{font:25px Lalezar;margin:0 0 14px}
+.gather-score-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:12px}
+.gather-score-card{position:relative;overflow:hidden;padding:15px;border:1px solid #a78bfa66;border-radius:17px;background:linear-gradient(135deg,#261a42,#10283a);box-shadow:0 8px 22px #0003;animation:choiceCardIn .4s both;transition:transform .2s,box-shadow .2s}
+.gather-score-card.leader{border-color:#fcd34d;box-shadow:0 0 0 1px #fcd34d33,0 0 26px #fcd34d22;background:linear-gradient(135deg,#4b3410,#27203c 75%)}
+.gather-score-card .score-crown{font-size:24px;filter:drop-shadow(0 0 10px #fcd34d88);animation:winnerPop .6s both}
+.gather-score-card .score-name{font-weight:900;overflow-wrap:anywhere}
+.gather-score-card .score-value{font:30px Lalezar;color:#67e8f9;text-shadow:0 0 16px #67e8f944;margin-top:5px}
+.gather-score-card.leader .score-value{color:#fcd34d;text-shadow:0 0 18px #fcd34d55}
+#gatherResult .gather-final-scores{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:13px;margin:18px 0}
+#gatherResult .gather-final-card{padding:18px;border-radius:19px;border:1px solid #a78bfa66;background:linear-gradient(140deg,#21163a,#102637);box-shadow:0 0 20px #8b5cf622;animation:choiceCardIn .5s both}
+#gatherResult .gather-final-card.first{border-color:#fcd34d;background:linear-gradient(140deg,#4b3410,#211832);box-shadow:0 0 28px #fcd34d33}
+#gatherResult .gather-final-card .final-points{font:34px Lalezar;color:#67e8f9}
+#gatherResult .gather-final-card.first .final-points{color:#fcd34d}
+@keyframes gatherPanelIn{from{opacity:0;transform:translateY(15px) scale(.985)}to{opacity:1;transform:none}}
+@media(max-width:540px){#gatherJudgePanel .judge-actions{grid-template-columns:1fr}#gatherLiveScores{padding:13px}.gather-score-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
 
 <script id="beyto-gather-four-choice-polish">
@@ -1447,6 +1475,96 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeGraphicsSetting
  const soloObserver=new MutationObserver(styleSoloChoices);
  const soloBox=$('soloChoiceButtons');if(soloBox)soloObserver.observe(soloBox,{childList:true,subtree:true});
  document.addEventListener('DOMContentLoaded',styleSoloChoices);styleSoloChoices();
+})();
+</script>
+
+<script id="beyto-gather-judge-and-scores">
+(function(){
+ function ensurePanels(){
+   const play=$('gatherPlay');if(!play)return;
+   if(!$('gatherJudgePanel')){const p=document.createElement('section');p.id='gatherJudgePanel';p.className='hidden';p.innerHTML='<h3 class="judge-title">🧠 بررسی پاسخ</h3><div id="gatherJudgeStatus" class="judge-status">پاسخ را بررسی کن.</div><p class="muted">تشخیص سیستم خودکار است؛ اگر لازم بود، نتیجه را دستی اصلاح کن.</p><div class="judge-actions"><button type="button" class="judge-correct" onclick="judgeGatherAnswer(true)">✅ تأیید پاسخ درست</button><button type="button" class="judge-wrong" onclick="judgeGatherAnswer(false)">❌ ثبت پاسخ نادرست</button></div>';const feedback=$('gatherFeedback');if(feedback&&feedback.parentElement)feedback.parentElement.insertBefore(p,feedback.nextSibling);else play.appendChild(p)}
+   if(!$('gatherLiveScores')){const sc=document.createElement('section');sc.id='gatherLiveScores';sc.innerHTML='<h3>✨ امتیاز تیم‌ها</h3><div id="gatherScoreCards" class="gather-score-grid"></div>';play.appendChild(sc)}
+ }
+ function updateScores(){
+   ensurePanels();const box=$('gatherScoreCards');if(!box||!Array.isArray(gather.players))return;
+   const scores=gather.players.map((name,i)=>({name,score:Number(gather.scores?.[i]||0),index:i}));
+   const high=Math.max(0,...scores.map(x=>x.score));
+   box.innerHTML=scores.map((x,i)=>'<div class="gather-score-card '+(x.score===high?'leader':'')+'" style="animation-delay:'+(i*.06)+'s">'+(x.score===high?'<div class="score-crown">👑</div>':'<div class="score-crown" style="opacity:.25">🎴</div>')+'<div class="score-name">'+esc(x.name)+'</div><div class="score-value">'+fmt(x.score)+' <small>امتیاز</small></div></div>').join('');
+ }
+ let pending=null;
+ function showJudge(q,systemCorrect,teamIndex,timedOut){
+   ensurePanels();pending={q,teamIndex,systemCorrect:!!systemCorrect,timedOut:!!timedOut};
+   const panel=$('gatherJudgePanel'),status=$('gatherJudgeStatus');
+   panel.classList.remove('hidden');status.className='judge-status '+(systemCorrect?'is-correct':'is-wrong');
+   status.textContent=timedOut?'⏰ زمان تمام شد؛ سیستم پاسخ را نادرست ثبت می‌کند.':systemCorrect?'✅ تشخیص سیستم: پاسخ درست است.':'❌ تشخیص سیستم: پاسخ نادرست است.';
+   document.querySelectorAll('#gatherChoiceButtons button,#gatherPlay #gatherSubmitBtn,#gatherPlay #gatherAnswer').forEach(el=>el.disabled=true);
+   $('gatherSkipBtn')?.classList.add('hidden');
+ }
+ window.judgeGatherAnswer=function(correct){
+   if(!pending||gather.answered)return;
+   const p=pending;pending=null;gather.answered=true;stopQuestionTimer();
+   const pi=p.teamIndex,was=p.systemCorrect;
+   if(was!==correct){gather.scores[pi]=Math.max(0,(gather.scores[pi]||0)+(correct?10:-10));}
+   else if(correct){gather.scores[pi]=(gather.scores[pi]||0);}
+   if(correct&&was===false&&p.systemCorrect===false&&gather.scores[pi]===0){gather.scores[pi]=10;}
+   // امتیاز بر اساس رأی نهایی داور؛ در صورت تغییر از نادرست به درست، ۱۰ امتیاز اضافه می‌شود.
+   if(correct&&!was){gather.scores[pi]=(gather.scores[pi]||0)+10;}
+   $('gatherJudgePanel').classList.add('hidden');
+   $('gatherFeedback').textContent=(correct?'✅ پاسخ توسط داور تأیید شد؛ ':'❌ پاسخ نادرست ثبت شد؛ ')+'پاسخ مورد انتظار: '+(p.q?.answers?.[0]||'—');
+   $('gatherFeedback').style.color=correct?'var(--green)':'#fda4af';
+   if(p.q){showAnswerAnimation('gatherQuestion','gatherFeedback',p.q,correct,correct?'۱۰ امتیاز برای '+gather.players[pi]+'!':'')}
+   if(correct&& !was) $('gatherFeedback').textContent='پاسخ دستی تأیید شد؛ ۱۰ امتیاز برای '+gather.players[pi]+'!';
+   updateScores();const token=shershoGatherRunToken;
+   setTimeout(()=>{if(token!==shershoGatherRunToken||!gather.answered)return;gather.index++;renderGatherQuestion()},1300);
+ };
+ const oldRender=window.renderGatherQuestion;
+ window.renderGatherQuestion=function(){
+   if(typeof oldRender==='function')oldRender.apply(this,arguments);
+   ensurePanels();pending=null;
+   if($('gatherJudgePanel'))$('gatherJudgePanel').classList.add('hidden');
+   updateScores();
+ };
+ const oldStart=window.startGathering;
+ window.startGathering=async function(){
+   pending=null;const out=await oldStart.apply(this,arguments);
+   setTimeout(()=>{ensurePanels();updateScores()},0);return out;
+ };
+ const oldCheck=window.checkGathering;
+ window.checkGathering=function(){
+   if(gather.answered||gather.index>=gather.questions.length)return;
+   const raw=$('gatherAnswer').value.trim();const q=gather.questions[gather.index],pi=gather.index%gather.players.length;
+   const timedOut=raw==='__time_expired__';if(!raw)return toast('پاسخ را وارد کن.');
+   stopQuestionTimer();const ans=timedOut?'':norm(raw),correct=!timedOut&&(q.answers||[]).some(a=>norm(a)===ans);
+   showJudge(q,correct,pi,timedOut);
+ };
+ const oldChoice=window.checkGatherChoice;
+ window.checkGatherChoice=function(index){
+   if(gather.answered||gather.index>=gather.questions.length)return;
+   const q=gather.questions[gather.index],pi=gather.index%gather.players.length;
+   if(!q||!Array.isArray(q.choiceOptions))return typeof oldChoice==='function'?oldChoice(index):undefined;
+   const correct=Number(index)===Number(q.correctChoice);
+   document.querySelectorAll('#gatherChoiceButtons button').forEach((b,i)=>{b.disabled=true;if(i===q.correctChoice)b.classList.add('correct');if(i===Number(index)&&!correct)b.classList.add('wrong')});
+   showJudge(q,correct,pi,false);
+ };
+ const oldTimeout=window.timeoutGatherChoice;
+ window.timeoutGatherChoice=function(){
+   if(gather.answered)return;const q=gather.questions[gather.index],pi=gather.index%gather.players.length;
+   stopQuestionTimer();showJudge(q,false,pi,true);
+ };
+ const oldEnd=window.endGathering;
+ window.endGathering=function(){
+   pending=null;const names=Array.isArray(gather.players)?gather.players:[],scores=Array.isArray(gather.scores)?gather.scores:[];
+   const ranking=names.map((name,i)=>({name,score:Number(scores[i]||0),original:i})).sort((a,b)=>b.score-a.score||a.original-b.original);
+   const result=$('gatherResult');if(!result)return oldEnd.apply(this,arguments);
+   $('gatherPlay').classList.add('hidden');result.classList.remove('hidden');
+   const high=ranking[0]?.score??0,top=ranking.filter(x=>x.score===high);
+   result.innerHTML='<h2 class="bracket-title">🏆 نتیجه نهایی دورهمی</h2><p class="muted">امتیاز نهایی تیم‌ها با ترتیب رتبه و تاج نفر اول</p><div class="gather-final-scores">'+ranking.map((x,i)=>'<div class="gather-final-card '+(i===0?'first':'')+'" style="animation-delay:'+(i*.08)+'s"><div>'+(i===0?'👑 🏆 نفر اول':i===1?'🥈 نفر دوم':i===2?'🥉 نفر سوم':'🎴 رتبه '+fmt(i+1))+'</div><h3 class="score-name">'+esc(x.name)+'</h3><div class="final-points">'+fmt(x.score)+' <small>امتیاز</small></div></div>').join('')+'</div><div id="gatherWinnerStage" class="gather-tie-stage" style="text-align:center;margin-top:18px"></div><button class="btn secondary" onclick="showGatherSetup(gather.vip)">دورهمی جدید</button>';
+   if(top.length===1){if(typeof showGatherWinner==='function')showGatherWinner(top[0].original,false);return}
+   const cards=[];top.forEach(team=>{for(let n=0;n<3;n++)cards.push({teamIndex:team.original,nonce:Math.random()})});
+   window.gatherTieCards=shuffle(cards);gather.tieCandidates=top.map(x=>x.original);gather.winner=null;
+   const stage=$('gatherWinnerStage');stage.innerHTML='<h3>🤝 مساوی شد!</h3><p class="muted">سه کارت برای هر تیم مساوی؛ یکی را شانسی انتخاب کن.</p><div class="gather-tie-cards">'+window.gatherTieCards.map((c,i)=>'<button type="button" class="gather-tie-card" onclick="revealGatherTieCard('+i+')"><span class="tie-card-back">🎴</span><span class="tie-card-front hidden">🏆</span></button>').join('')+'</div>';
+ };
+ document.addEventListener('DOMContentLoaded',()=>{ensurePanels();updateScores()});
 })();
 </script>
 </body></html>
