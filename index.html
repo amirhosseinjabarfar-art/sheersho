@@ -2118,4 +2118,89 @@ select.beyto-native-select option{color:#f8fafc!important;background:#15152d!imp
 })();
 </script>
 
+
+<style id="beyto-neon-settings-design-v1">
+/* BEYTO: cinematic neon settings for solo, gathering and tournament */
+:root{--by-cyan:#67e8f9;--by-violet:#a78bfa;--by-pink:#f0abfc;--by-deep:#08091f}
+#soloSetup,#gatherSetup,#tournamentSetup,#tournamentSetupMount> #tournamentSetup{
+ position:relative;isolation:isolate;overflow:visible!important;
+ padding:clamp(18px,3vw,32px)!important;border:1px solid #8b5cf577!important;border-radius:28px!important;
+ background:radial-gradient(ellipse at 4% 0%,#06b6d429,transparent 42%),radial-gradient(ellipse at 100% 100%,#a21caf2b,transparent 48%),linear-gradient(145deg,#0c1030f5,#11102bf5 48%,#081b30f5)!important;
+ box-shadow:0 20px 60px #02061788,inset 0 1px 0 #ffffff19,0 0 35px #7c3aed20!important;
+}
+#soloSetup:before,#gatherSetup:before,#tournamentSetup:before{
+ content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;
+ background:linear-gradient(125deg,#67e8f9aa,#8b5cf544 35%,#f0abfc99 68%,#67e8f977);
+ -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;
+ pointer-events:none;opacity:.72;z-index:-1;animation:byGlowPulse 5s ease-in-out infinite alternate;
+}
+#soloSetup .columns,#gatherSetup .columns,#tournamentSetup .columns{
+ display:grid!important;grid-template-columns:repeat(auto-fit,minmax(min(100%,235px),1fr))!important;gap:17px!important;align-items:stretch
+}
+#soloSetup .field,#gatherSetup .field,#tournamentSetup .field{
+ position:relative;min-width:0;padding:16px!important;border:1px solid #818cf844!important;border-radius:21px!important;
+ background:linear-gradient(145deg,#ffffff0b,#ffffff03),radial-gradient(ellipse at top left,#8b5cf51b,transparent 70%)!important;
+ box-shadow:inset 0 1px 0 #ffffff0c,0 10px 26px #0206172b!important;
+ transition:transform .25s,border-color .25s,box-shadow .25s!important;animation:bySettingIn .55s both
+}
+#soloSetup .field:hover,#gatherSetup .field:hover,#tournamentSetup .field:hover{
+ transform:translateY(-3px);border-color:#67e8f988!important;box-shadow:inset 0 1px 0 #ffffff12,0 0 0 1px #67e8f91c,0 12px 32px #02061755,0 0 24px #8b5cf522!important
+}
+#soloSetup .field label,#gatherSetup .field label,#tournamentSetup .field label{
+ display:flex;align-items:center;gap:8px;margin-bottom:11px!important;color:#f5f3ff!important;font-size:14px!important;font-weight:900!important;letter-spacing:.1px
+}
+#soloSetup .field label:before,#gatherSetup .field label:before,#tournamentSetup .field label:before{
+ content:"";display:inline-block;width:5px;height:19px;border-radius:8px;background:linear-gradient(#67e8f9,#a78bfa,#f0abfc);box-shadow:0 0 12px #a78bfa88
+}
+#soloSetup select:not(.beyto-native-select),#gatherSetup select:not(.beyto-native-select),#tournamentSetup select:not(.beyto-native-select),
+#soloSetup select.beyto-native-select,#gatherSetup select.beyto-native-select,#tournamentSetup select.beyto-native-select,
+#soloSetup input,#gatherSetup input,#tournamentSetup input{
+ box-sizing:border-box!important;width:100%!important;min-width:0!important;min-height:52px!important;padding:12px 14px!important;
+ border:1px solid #818cf877!important;border-radius:15px!important;color:#f8fafc!important;
+ background-color:#11152f!important;background-image:linear-gradient(120deg,#67e8f90a,#a78bfa0a)!important;
+ box-shadow:inset 0 1px 0 #ffffff0c,0 6px 18px #02061733!important;
+ font:800 14px Vazirmatn,sans-serif!important;transition:border-color .22s,box-shadow .22s,transform .22s!important;
+}
+#soloSetup select:focus,#gatherSetup select:focus,#tournamentSetup select:focus,
+#soloSetup input:focus,#gatherSetup input:focus,#tournamentSetup input:focus{
+ outline:none!important;border-color:#67e8f9!important;box-shadow:0 0 0 3px #67e8f922,0 0 25px #22d3ee2c,inset 0 1px 0 #ffffff14!important
+}
+#soloSetup select option,#gatherSetup select option,#tournamentSetup select option{background:#10132d!important;color:#f8fafc!important}
+#soloSetup .btn,#gatherSetup>.btn,#gatherSetup .actions .btn,#tournamentSetup .btn,#tournamentSetupMount .btn{
+ min-height:54px!important;padding:13px 24px!important;border:1px solid #67e8f9aa!important;border-radius:17px!important;
+ color:#fff!important;font:900 15px Vazirmatn,sans-serif!important;
+ background:linear-gradient(105deg,#075985,#4f46e5 55%,#86198f)!important;
+ box-shadow:0 7px 0 #080b2b,0 12px 28px #4f46e544,inset 0 1px 0 #ffffff44,0 0 22px #22d3ee20!important;
+ transition:transform .2s,box-shadow .2s,filter .2s!important;position:relative;isolation:isolate;overflow:hidden
+}
+#soloSetup>.btn:before,#gatherSetup>.btn:before,#tournamentSetup .btn:before,#tournamentSetupMount .btn:before{
+ content:"";position:absolute;top:-80%;bottom:-80%;left:-45%;width:25%;transform:rotate(24deg);
+ background:linear-gradient(90deg,transparent,#ffffff77,transparent);pointer-events:none;animation:byButtonSweep 4s ease-in-out infinite
+}
+#soloSetup .btn:hover:not(:disabled),#gatherSetup .btn:hover:not(:disabled),#tournamentSetup .btn:hover:not(:disabled),#tournamentSetupMount .btn:hover:not(:disabled){
+ transform:translateY(-3px)!important;filter:brightness(1.13);box-shadow:0 10px 0 #080b2b,0 18px 35px #4f46e566,inset 0 1px 0 #ffffff55,0 0 28px #22d3ee3a!important
+}
+#soloSetup .btn:active:not(:disabled),#gatherSetup .btn:active:not(:disabled),#tournamentSetup .btn:active:not(:disabled){transform:translateY(2px)!important;box-shadow:0 3px 0 #080b2b,0 7px 16px #4f46e544!important}
+#soloSetup .btn:disabled,#gatherSetup .btn:disabled,#tournamentSetup .btn:disabled{opacity:.55;filter:grayscale(.3);cursor:not-allowed}
+#soloSetup .notice,#gatherSetup .notice,#tournamentSetup .notice{
+ border:1px solid #818cf844!important;border-radius:17px!important;background:linear-gradient(110deg,#312e811f,#0891b21a)!important;
+ padding:14px 16px!important;line-height:1.9;box-shadow:inset 0 1px 0 #ffffff0a!important
+}
+#soloSetup .muted,#gatherSetup .muted,#tournamentSetup .muted{color:#c4b5fd!important;line-height:1.9}
+#page-solo .page-head,#page-friends .page-head,#page-tournaments .page-head{position:relative}
+#page-solo .page-title,#page-friends .page-title,#page-tournaments .page-title{text-shadow:0 0 28px #8b5cf544}
+#tournamentSetupMount #tournamentSetup{margin-top:16px}
+@keyframes byGlowPulse{from{opacity:.42;filter:hue-rotate(0deg)}to{opacity:.95;filter:hue-rotate(22deg)}}
+@keyframes bySettingIn{from{opacity:0;transform:translateY(12px);filter:blur(5px)}to{opacity:1;transform:translateY(0);filter:blur(0)}}
+@keyframes byButtonSweep{0%,15%{left:-45%}55%,100%{left:145%}}
+@media(max-width:600px){
+ #soloSetup,#gatherSetup,#tournamentSetup{padding:14px!important;border-radius:21px!important}
+ #soloSetup .field,#gatherSetup .field,#tournamentSetup .field{padding:13px!important;border-radius:17px!important}
+ #soloSetup .btn,#gatherSetup>.btn,#tournamentSetup .btn,#tournamentSetupMount .btn{width:100%;min-height:52px!important}
+}
+@media(prefers-reduced-motion:reduce){
+ #soloSetup:before,#gatherSetup:before,#tournamentSetup:before,#soloSetup .field,#gatherSetup .field,#tournamentSetup .field,#soloSetup .btn:before,#gatherSetup>.btn:before{animation:none!important;transition:none!important}
+}
+</style>
+
 </body></html>
