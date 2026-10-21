@@ -1928,4 +1928,47 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeGraphicsSetting
 })();
 </script>
 
+
+<style id="beyto-global-click-unblock-fix">
+/* مودال بررسی دورهمی نباید ورود یا هیچ صفحه دیگری را قفل کند */
+#beytoGatherReviewOverlay{z-index:8000!important}
+#beytoGatherReviewOverlay:not(.active){display:none!important;visibility:hidden!important;pointer-events:none!important}
+#beytoGatherReviewOverlay.active{display:grid!important;pointer-events:auto!important}
+#authModal,#adminModal{z-index:9000!important;pointer-events:none}
+#authModal.show,#adminModal.show{pointer-events:auto}
+#authModal.show .modal,#adminModal.show .modal{pointer-events:auto;position:relative;z-index:1}
+</style>
+<script id="beyto-global-click-unblock-fix">
+(function(){
+ const layer=()=>document.getElementById('beytoGatherReviewOverlay');
+ function releaseReviewLock(){
+   const el=layer();if(el){el.classList.remove('active');el.style.pointerEvents='none';el.setAttribute('aria-hidden','true')}
+   if(typeof window.beytoGatherReviewRelease==='function')window.beytoGatherReviewRelease();
+ }
+ const originalOpenAuth=window.openAuth;
+ if(typeof originalOpenAuth==='function')window.openAuth=function(){releaseReviewLock();return originalOpenAuth.apply(this,arguments)};
+ const originalOpenAuthMode=window.openAuthMode;
+ if(typeof originalOpenAuthMode==='function')window.openAuthMode=function(){releaseReviewLock();return originalOpenAuthMode.apply(this,arguments)};
+ const originalOpenModal=window.openModal;
+ if(typeof originalOpenModal==='function')window.openModal=function(id){if(id==='authModal'||id==='adminModal')releaseReviewLock();return originalOpenModal.apply(this,arguments)};
+ const originalGo=window.go;
+ if(typeof originalGo==='function')window.go=function(name){if(name!=='gather-match')releaseReviewLock();return originalGo.apply(this,arguments)};
+ document.addEventListener('click',function(e){
+   const target=e.target.closest('button,[role="button"],a');
+   if(!target)return;
+   if(target.id==='navAuth'||target.closest('#navAuthActions')||target.id==='authSwitch'||target.closest('#authModal')||target.id==='navMenuToggle'){
+     releaseReviewLock();
+   }
+ },true);
+ window.addEventListener('pageshow',releaseReviewLock);
+ document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&!document.querySelector('#page-gather-match.active'))releaseReviewLock()});
+ // اگر مودال ورود باز است، هرگز لایه بازی نباید روی آن قرار بگیرد.
+ const obs=new MutationObserver(()=>{
+   const auth=document.getElementById('authModal'),admin=document.getElementById('adminModal'),el=layer();
+   if(el&&(auth?.classList.contains('show')||admin?.classList.contains('show'))){el.classList.remove('active');el.style.pointerEvents='none';el.setAttribute('aria-hidden','true')}
+ });
+ if(document.body)obs.observe(document.body,{subtree:true,attributes:true,attributeFilter:['class']});
+})();
+</script>
+
 </body></html>
