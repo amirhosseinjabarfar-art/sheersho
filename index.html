@@ -1522,6 +1522,15 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeGraphicsSetting
 .beyto-select-menu{z-index:10020}
 .beyto-select-scrim{z-index:10000}
 .field>.beyto-select-ui,.field .beyto-select-ui{margin-top:5px}
+
+/* AUTH FIX: dropdown layers must never cover the login/register modal */
+.beyto-select-scrim{z-index:80!important}
+.beyto-select-ui.is-open{z-index:84!important}
+.beyto-select-menu{z-index:85!important}
+.modal-backdrop{z-index:9000!important;pointer-events:auto}
+.modal-backdrop.show{pointer-events:auto}
+.modal-backdrop.show .modal,.modal-backdrop.show .modal *{pointer-events:auto}
+.dashboard{z-index:9100!important}
 </style>
 
 <script id="beyto-gather-four-choice-polish">
