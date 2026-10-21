@@ -1471,6 +1471,49 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeGraphicsSetting
 @keyframes beytoAnswerShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}50%{transform:translateX(5px)}75%{transform:translateX(-3px)}}
 @media(prefers-reduced-motion:reduce){.game-mode-card,#soloChoiceButtons .solo-answer-option,#gatherChoiceButtons .gather-answer-option{animation:none!important;transition:none!important}}
 @media(max-width:600px){.game-mode-card{min-height:140px!important;padding:16px!important}.game-mode-card b{font-size:20px!important}#soloChoiceButtons .solo-answer-option,#gatherChoiceButtons .gather-answer-option{min-height:70px!important;border-radius:17px!important}}
+
+/* BEYTO CUSTOM SELECTS — animated glass dropdowns across every game */
+.beyto-native-select{display:none!important}
+.beyto-select-ui{position:relative;width:100%;min-width:0;z-index:5;isolation:isolate}
+.beyto-select-trigger{
+ width:100%;min-height:54px;display:flex;align-items:center;justify-content:space-between;gap:12px;text-align:right;
+ padding:12px 15px;border:1px solid #a78bfa88;border-radius:17px;color:#f8fafc;
+ background:radial-gradient(ellipse at 8% 0%,#a78bfa24,transparent 60%),linear-gradient(135deg,#19132f,#102b40 68%,#25152f);
+ box-shadow:0 8px 22px #0003,inset 0 1px 0 #ffffff17,0 0 0 1px #ffffff05;
+ font:800 14px Vazirmatn,sans-serif;cursor:pointer;position:relative;overflow:hidden;
+ transition:transform .25s,border-color .25s,box-shadow .25s,background .25s;animation:beytoChoiceAppear .4s both
+}
+.beyto-select-trigger:before{content:"";position:absolute;inset:-80% auto -80% -60%;width:35%;transform:rotate(22deg);background:linear-gradient(90deg,transparent,#fff2,transparent);pointer-events:none;transition:left .55s}
+.beyto-select-trigger:hover{transform:translateY(-2px);border-color:#67e8f9;box-shadow:0 0 0 2px #67e8f91a,0 0 25px #8b5cf544,0 12px 25px #0004}
+.beyto-select-trigger:hover:before{left:140%}
+.beyto-select-ui.is-open{z-index:1000}
+.beyto-select-ui.is-open .beyto-select-trigger{border-color:#67e8f9;box-shadow:0 0 0 3px #67e8f91e,0 0 30px #67e8f944;background:linear-gradient(135deg,#20214a,#103a4b)}
+.beyto-select-value{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;position:relative;z-index:1}
+.beyto-select-mark{flex:none;width:28px;height:28px;border-radius:9px;display:grid;place-items:center;color:#a5f3fc;border:1px solid #67e8f955;background:#67e8f914;transition:transform .25s,box-shadow .25s}
+.beyto-select-ui.is-open .beyto-select-mark{transform:rotate(180deg);box-shadow:0 0 15px #67e8f944}
+.beyto-select-menu{
+ position:absolute;top:calc(100% + 9px);right:0;left:0;max-height:min(310px,45vh);overflow-y:auto;overscroll-behavior:contain;
+ padding:8px;border:1px solid #a78bfa88;border-radius:19px;
+ background:linear-gradient(145deg,#17142cf5,#0b2436f7 60%,#21132cf7);
+ -webkit-backdrop-filter:blur(24px) saturate(150%);backdrop-filter:blur(24px) saturate(150%);
+ box-shadow:0 20px 60px #0009,0 0 35px #8b5cf533,inset 0 1px 0 #ffffff1b;
+ opacity:0;transform:translateY(-10px) scale(.97);filter:blur(7px);transform-origin:top center;pointer-events:none;
+ transition:opacity .23s,transform .28s cubic-bezier(.2,.9,.2,1),filter .25s;z-index:1001
+}
+.beyto-select-ui.is-open .beyto-select-menu{opacity:1;transform:translateY(0) scale(1);filter:blur(0);pointer-events:auto;animation:beytoMenuEnter .28s both}
+.beyto-select-option{width:100%;display:flex;align-items:center;gap:10px;text-align:right;padding:11px 12px;min-height:43px;border:1px solid transparent;border-radius:12px;color:#e2e8f0;background:transparent;font:700 13px Vazirmatn,sans-serif;cursor:pointer;transition:background .18s,border-color .18s,transform .18s,box-shadow .18s;animation:beytoOptionIn .3s both}
+.beyto-select-option:before{content:"";width:8px;height:8px;flex:none;border-radius:50%;background:#64748b;box-shadow:0 0 0 4px #64748b1c;transition:all .2s}
+.beyto-select-option:hover{transform:translateX(-3px);border-color:#67e8f966;background:linear-gradient(90deg,#67e8f917,#a78bfa18);box-shadow:inset 0 0 18px #8b5cf51a}
+.beyto-select-option[aria-selected=true]{color:#a5f3fc;border-color:#67e8f977;background:linear-gradient(100deg,#0891b22a,#8b5cf52b);box-shadow:0 0 18px #67e8f91a,inset 0 1px 0 #ffffff10}
+.beyto-select-option[aria-selected=true]:before{background:#67e8f9;box-shadow:0 0 0 4px #67e8f91c,0 0 14px #67e8f9}
+.beyto-select-option:disabled{opacity:.35;cursor:not-allowed}
+.beyto-select-ui.beyto-select-disabled .beyto-select-trigger{opacity:.5;cursor:not-allowed;filter:grayscale(.4)}
+.beyto-select-scrim{position:fixed;inset:0;z-index:999;background:#05081618;-webkit-backdrop-filter:blur(1px);backdrop-filter:blur(1px);opacity:0;pointer-events:none;transition:opacity .2s}
+.beyto-select-scrim.active{opacity:1;pointer-events:auto}
+@keyframes beytoMenuEnter{from{opacity:0;transform:translateY(-12px) scale(.96);filter:blur(9px)}to{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}}
+@keyframes beytoOptionIn{from{opacity:0;transform:translateY(7px);filter:blur(3px)}to{opacity:1;transform:none;filter:blur(0)}}
+@media(max-width:600px){.beyto-select-trigger{min-height:50px;padding:11px 12px}.beyto-select-menu{max-height:38vh;border-radius:15px}}
+@media(prefers-reduced-motion:reduce){.beyto-select-trigger,.beyto-select-menu,.beyto-select-option{animation:none!important;transition:none!important}}
 </style>
 
 <script id="beyto-gather-four-choice-polish">
@@ -1661,6 +1704,51 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeGraphicsSetting
    const stage=$('gatherWinnerStage');stage.innerHTML='<h3>🤝 مساوی شد!</h3><p class="muted">سه کارت برای هر تیم مساوی؛ یکی را شانسی انتخاب کن.</p><div class="gather-tie-cards">'+window.gatherTieCards.map((c,i)=>'<button type="button" class="gather-tie-card" onclick="revealGatherTieCard('+i+')"><span class="tie-card-back">🎴</span><span class="tie-card-front hidden">🏆</span></button>').join('')+'</div>';
  };
  document.addEventListener('DOMContentLoaded',()=>{ensurePanels();updateScores()});
+})();
+</script>
+
+<script id="beyto-custom-selects">
+(function(){
+ const SELECTOR='select:not([data-native-only="true"])';
+ let opened=null,scrim=null,observer=null;
+ function ensureScrim(){if(scrim)return;scrim=document.createElement('div');scrim.className='beyto-select-scrim';scrim.addEventListener('click',closeAll);document.body.appendChild(scrim)}
+ function closeAll(){document.querySelectorAll('.beyto-select-ui.is-open').forEach(w=>{w.classList.remove('is-open');const b=w.querySelector('.beyto-select-trigger');if(b)b.setAttribute('aria-expanded','false')});if(scrim)scrim.classList.remove('active');opened=null}
+ function optionText(o){return (o?.textContent||'').trim()||'انتخاب کن'}
+ function refresh(sel){
+   const ui=sel._beytoUI;if(!ui)return;
+   const value=ui.querySelector('.beyto-select-value'),menu=ui.querySelector('.beyto-select-menu'),trigger=ui.querySelector('.beyto-select-trigger');
+   const selected=sel.options[sel.selectedIndex];value.textContent=optionText(selected);trigger.disabled=sel.disabled;ui.classList.toggle('beyto-select-disabled',sel.disabled);
+   const oldScroll=menu.scrollTop;menu.innerHTML='';
+   Array.from(sel.options).forEach((o,i)=>{
+     const b=document.createElement('button');b.type='button';b.className='beyto-select-option';b.textContent=optionText(o);b.disabled=o.disabled;b.setAttribute('aria-selected',String(i===sel.selectedIndex));b.style.animationDelay=Math.min(i*.025,.3)+'s';
+     b.addEventListener('click',()=>{
+       if(sel.disabled||o.disabled)return;sel.selectedIndex=i;sel.dispatchEvent(new Event('change',{bubbles:true}));refresh(sel);closeAll();trigger.focus({preventScroll:true});
+     });menu.appendChild(b)
+   });menu.scrollTop=oldScroll;
+   ui.style.display=sel.offsetParent===null&&sel.closest('.page')&&!sel.closest('.page').classList.contains('active')?'none':'';
+ }
+ function wrap(sel){
+   if(sel._beytoUI||!sel.parentNode)return;
+   const ui=document.createElement('div');ui.className='beyto-select-ui';
+   const trigger=document.createElement('button');trigger.type='button';trigger.className='beyto-select-trigger';trigger.setAttribute('aria-haspopup','listbox');trigger.setAttribute('aria-expanded','false');
+   const val=document.createElement('span');val.className='beyto-select-value';
+   const mark=document.createElement('span');mark.className='beyto-select-mark';mark.innerHTML='⌄';
+   trigger.append(val,mark);
+   const menu=document.createElement('div');menu.className='beyto-select-menu';menu.setAttribute('role','listbox');
+   ui.append(trigger,menu);sel.classList.add('beyto-native-select');sel.parentNode.insertBefore(ui,sel.nextSibling);sel._beytoUI=ui;
+   trigger.addEventListener('click',()=>{
+     if(sel.disabled)return;
+     if(opened===ui){closeAll();return}
+     closeAll();ensureScrim();opened=ui;ui.classList.add('is-open');trigger.setAttribute('aria-expanded','true');scrim.classList.add('active');refresh(sel);
+     const chosen=menu.querySelector('[aria-selected=true]');if(chosen)chosen.scrollIntoView({block:'nearest'});
+   });
+   trigger.addEventListener('keydown',e=>{if(e.key==='Escape'){closeAll();return}if(e.key==='ArrowDown'||e.key==='Enter'||e.key===' '){e.preventDefault();trigger.click()}});
+   sel.addEventListener('change',()=>refresh(sel));
+   refresh(sel);
+ }
+ function scan(root=document){root.querySelectorAll?.(SELECTOR).forEach(wrap);document.querySelectorAll('select.beyto-native-select').forEach(sel=>{if(sel._beytoUI)refresh(sel)})}
+ function init(){ensureScrim();scan();if(observer)observer.disconnect();observer=new MutationObserver(records=>{let needsScan=false;records.forEach(r=>{if(r.type==='childList'){if(r.addedNodes.length)needsScan=true;if(r.target instanceof HTMLSelectElement&&r.target._beytoUI)refresh(r.target)}});if(needsScan)scan()});observer.observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['disabled','hidden']});document.addEventListener('keydown',e=>{if(e.key==='Escape')closeAll()});document.addEventListener('click',e=>{if(opened&&!opened.contains(e.target)&&!e.target.closest('.beyto-select-scrim'))closeAll()});document.addEventListener('click',e=>{const target=e.target.closest('button,[role=button],.game-mode-card');if(target&&!target.classList.contains('beyto-select-trigger')){target.classList.remove('beyto-click-burst');void target.offsetWidth;target.classList.add('beyto-click-burst');setTimeout(()=>target.classList.remove('beyto-click-burst'),500)}},true)}
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
 </script>
 </body></html>
