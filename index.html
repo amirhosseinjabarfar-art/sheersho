@@ -1653,8 +1653,9 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeGraphicsSetting
    $('gatherFeedback').style.color=correct?'var(--green)':'#fda4af';
    if(p.q){showAnswerAnimation('gatherQuestion','gatherFeedback',p.q,correct,correct?'۱۰ امتیاز برای '+gather.players[pi]+'!':'')}
    if(correct) $('gatherFeedback').textContent='پاسخ تأیید شد؛ ۱۰ امتیاز برای '+gather.players[pi]+'!';
-   updateScores();const token=shershoGatherRunToken;
-   setTimeout(()=>{if(token!==shershoGatherRunToken||!gather.answered)return;gather.index++;renderGatherQuestion()},1300);
+   updateScores();const token=shershoGatherRunToken,answeredIndex=gather.index;
+   // هر پاسخ فقط یک بار نوبت را جلو می‌برد؛ تغییرات DOM منوهای سفارشی نباید تایمر بازی را متوقف کند.
+   setTimeout(()=>{if(token!==shershoGatherRunToken||gather.index!==answeredIndex)return;gather.index=answeredIndex+1;if(gather.index>=gather.questions.length){endGathering();return}renderGatherQuestion()},1100);
  };
  const oldRender=window.renderGatherQuestion;
  window.renderGatherQuestion=function(){
@@ -1747,7 +1748,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeGraphicsSetting
    refresh(sel);
  }
  function scan(root=document){root.querySelectorAll?.(SELECTOR).forEach(wrap);document.querySelectorAll('select.beyto-native-select').forEach(sel=>{if(sel._beytoUI)refresh(sel)})}
- function init(){ensureScrim();scan();if(observer)observer.disconnect();observer=new MutationObserver(records=>{let needsScan=false;records.forEach(r=>{if(r.type==='childList'){if(r.addedNodes.length)needsScan=true;if(r.target instanceof HTMLSelectElement&&r.target._beytoUI)refresh(r.target)}});if(needsScan)scan()});observer.observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['disabled','hidden']});document.addEventListener('keydown',e=>{if(e.key==='Escape')closeAll()});document.addEventListener('click',e=>{if(opened&&!opened.contains(e.target)&&!e.target.closest('.beyto-select-scrim'))closeAll()});document.addEventListener('click',e=>{const target=e.target.closest('button,[role=button],.game-mode-card');if(target&&!target.classList.contains('beyto-select-trigger')){target.classList.remove('beyto-click-burst');void target.offsetWidth;target.classList.add('beyto-click-burst');setTimeout(()=>target.classList.remove('beyto-click-burst'),500)}},true)}
+ function init(){ensureScrim();scan();if(observer)observer.disconnect();observer=new MutationObserver(records=>{let needsScan=false;for(const r of records){if(r.type!=='childList'||!r.addedNodes.length)continue;for(const node of r.addedNodes){if(node.nodeType!==1)continue;if(node.matches?.(SELECTOR)||node.querySelector?.(SELECTOR)){needsScan=true;break}}if(needsScan)break}if(needsScan)scan()});observer.observe(document.body,{subtree:true,childList:true});document.addEventListener('keydown',e=>{if(e.key==='Escape')closeAll()});document.addEventListener('click',e=>{if(opened&&!opened.contains(e.target)&&!e.target.closest('.beyto-select-scrim'))closeAll()});document.addEventListener('click',e=>{const target=e.target.closest('button,[role=button],.game-mode-card');if(target&&!target.classList.contains('beyto-select-trigger')){target.classList.remove('beyto-click-burst');void target.offsetWidth;target.classList.add('beyto-click-burst');setTimeout(()=>target.classList.remove('beyto-click-burst'),500)}},true)}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
 </script>
