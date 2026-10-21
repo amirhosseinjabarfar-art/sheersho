@@ -1503,12 +1503,9 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeGraphicsSetting
  window.judgeGatherAnswer=function(correct){
    if(!pending||gather.answered)return;
    const p=pending;pending=null;gather.answered=true;stopQuestionTimer();
-   const pi=p.teamIndex,was=p.systemCorrect;
-   if(was!==correct){gather.scores[pi]=Math.max(0,(gather.scores[pi]||0)+(correct?10:-10));}
-   else if(correct){gather.scores[pi]=(gather.scores[pi]||0);}
-   if(correct&&was===false&&p.systemCorrect===false&&gather.scores[pi]===0){gather.scores[pi]=10;}
-   // امتیاز بر اساس رأی نهایی داور؛ در صورت تغییر از نادرست به درست، ۱۰ امتیاز اضافه می‌شود.
-   if(correct&&!was){gather.scores[pi]=(gather.scores[pi]||0)+10;}
+   const pi=p.teamIndex;
+   // فقط نتیجه نهایی داوری امتیاز می‌گیرد؛ پاسخ درست دقیقاً ۱۰ امتیاز دارد.
+   if(correct)gather.scores[pi]=(gather.scores[pi]||0)+10;
    $('gatherJudgePanel').classList.add('hidden');
    $('gatherFeedback').textContent=(correct?'✅ پاسخ توسط داور تأیید شد؛ ':'❌ پاسخ نادرست ثبت شد؛ ')+'پاسخ مورد انتظار: '+(p.q?.answers?.[0]||'—');
    $('gatherFeedback').style.color=correct?'var(--green)':'#fda4af';
