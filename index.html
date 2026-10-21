@@ -1815,4 +1815,117 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeGraphicsSetting
 }
 </style>
 
+
+<style id="beyto-gather-review-overlay-fix">
+#beytoGatherReviewOverlay{position:fixed;inset:0;z-index:12000;display:grid;place-items:center;padding:22px;background:rgba(5,3,18,.58);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .3s,visibility .3s}
+#beytoGatherReviewOverlay.active{opacity:1;visibility:visible;pointer-events:auto}
+#beytoGatherReviewOverlay .review-card{width:min(560px,100%);padding:clamp(26px,6vw,46px) 24px;text-align:center;border:1px solid #c4b5fd88;border-radius:30px;background:linear-gradient(145deg,rgba(35,20,65,.97),rgba(8,24,43,.97));box-shadow:0 0 0 1px #ffffff0b,inset 0 1px 0 #ffffff18,0 25px 90px #0009,0 0 55px #8b5cf655;animation:beytoReviewCardIn .45s cubic-bezier(.2,.9,.2,1.2) both}
+#beytoGatherReviewOverlay .review-icon{font-size:clamp(54px,12vw,82px);line-height:1.25;filter:drop-shadow(0 0 22px #c084fc88);margin-bottom:12px}
+#beytoGatherReviewOverlay .review-title{font:clamp(26px,6vw,42px) Lalezar,sans-serif;color:#fff;margin:0 0 12px;text-shadow:0 0 24px #a78bfa88}
+#beytoGatherReviewOverlay .review-sub{color:#ddd6fe;font-size:15px;line-height:1.9}
+#beytoGatherReviewOverlay .review-answer{font-size:clamp(20px,5vw,30px);font-weight:900;color:#86efac;padding:14px;margin:18px 0;border:1px solid #86efac66;border-radius:18px;background:#16a34a18;animation:beytoReviewCardIn .35s both}
+#beytoGatherReviewOverlay .review-action{margin-top:12px}
+@keyframes beytoReviewCardIn{from{opacity:0;transform:translateY(18px) scale(.92);filter:blur(12px)}to{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}}
+@media(prefers-reduced-motion:reduce){#beytoGatherReviewOverlay .review-card,#beytoGatherReviewOverlay .review-answer{animation:none!important}}
+</style>
+<div id="beytoGatherReviewOverlay" aria-live="polite" aria-modal="true" role="dialog">
+ <div class="review-card"><div class="review-icon" id="beytoGatherReviewIcon">✨</div><h2 class="review-title" id="beytoGatherReviewTitle">امیدوارم درست گفته باشی ...</h2><p class="review-sub" id="beytoGatherReviewSub">پاسخت در حال بررسی است.</p><div id="beytoGatherReviewAnswer" class="review-answer" hidden></div><button id="beytoGatherReviewNext" class="btn review-action" hidden>رفتن به نوبت بعد</button></div>
+</div>
+<script id="beyto-gather-review-overlay-fix">
+(function(){
+ let awaitingNext=false, reviewTimer=null, reviewToken=0, reviewLock=false;
+ const $id=id=>document.getElementById(id);
+ function overlay(){return $id('beytoGatherReviewOverlay')}
+ function showReview(q,correct,pi,rawLabel){
+   const token=++reviewToken;reviewLock=true;awaitingNext=false;
+   const layer=overlay(),title=$id('beytoGatherReviewTitle'),sub=$id('beytoGatherReviewSub'),ans=$id('beytoGatherReviewAnswer'),btn=$id('beytoGatherReviewNext');
+   if(!layer||!title||!sub||!ans||!btn){reviewLock=false;return}
+   layer.classList.add('active');$id('beytoGatherReviewIcon').textContent='✨';title.textContent='امیدوارم درست گفته باشی ...';sub.textContent='پاسخ '+gather.players[pi]+' بررسی شد؛ لحظه‌ای صبر کن تا جواب درست نمایش داده شود.';ans.hidden=true;btn.hidden=true;
+   clearTimeout(reviewTimer);
+   reviewTimer=setTimeout(()=>{
+     if(token!==reviewToken)return;
+     $id('beytoGatherReviewIcon').textContent=correct?'🎉':'📜';
+     title.textContent=correct?'آفرین! پاسخ درست بود':'پاسخ درست این بود';
+     sub.textContent=(correct?'۱۰ امتیاز برای '+gather.players[pi]+' ثبت شد.':'این نوبت امتیازی ثبت نشد.')+(rawLabel?' پاسخ واردشده: '+rawLabel:'');
+     ans.textContent=(q?.answers?.[0]||'پاسخ درست در دسترس نیست');ans.hidden=false;btn.hidden=false;btn.textContent='رفتن به نوبت بعد';awaitingNext=true;reviewLock=false;
+     const box=$id('gatherScoreCards');if(box)box.innerHTML=(Array.isArray(gather.players)?gather.players:[]).map((name,i)=>'<div class="gather-score-card"><div class="score-name">'+esc(name)+'</div><div class="score-value">'+fmt(Number(gather.scores?.[i]||0))+' <small>امتیاز</small></div></div>').join('');
+   },5000);
+ }
+ function disableAnswerControls(disabled){
+   document.querySelectorAll('#gatherChoiceButtons button,#gatherPlay #gatherSubmitBtn,#gatherPlay #gatherAnswer,#gatherPlay #gatherSkipBtn').forEach(el=>el.disabled=disabled);
+ }
+ function scoreAnswer(correct,rawLabel){
+   if(gather.answered||gather.index>=gather.questions.length||reviewLock)return;
+   const q=gather.questions[gather.index];if(!q)return;
+   const pi=gather.index%gather.players.length;
+   stopQuestionTimer();gather.answered=true;disableAnswerControls(true);
+   if(correct)gather.scores[pi]=(Number(gather.scores[pi])||0)+10;
+   const feedback=$id('gatherFeedback');if(feedback){feedback.textContent=correct?'۱۰ امتیاز برای '+gather.players[pi]+'!':'پاسخ درست: '+(q.answers?.[0]||'—');feedback.style.color=correct?'var(--green)':'#fda4af'}
+   const panel=$id('gatherJudgePanel');if(panel)panel.classList.add('hidden');
+   showReview(q,correct,pi,rawLabel||'');
+ }
+ window.checkGathering=function(){
+   if(gather.answered||reviewLock||gather.index>=gather.questions.length)return;
+   const raw=$id('gatherAnswer')?.value.trim()||'';
+   if(!raw)return toast('پاسخ را وارد کن.');
+   const q=gather.questions[gather.index],correct=raw!=='__time_expired__'&&(q.answers||[]).some(a=>norm(a)===norm(raw));
+   scoreAnswer(correct,raw==='__time_expired__'?'':raw);
+ };
+ window.checkGatherChoice=function(index){
+   if(gather.answered||reviewLock||gather.index>=gather.questions.length)return;
+   const q=gather.questions[gather.index];if(!q)return;
+   const chosen=q.choiceOptions?.[Number(index)]||'';
+   document.querySelectorAll('#gatherChoiceButtons .gather-answer-option').forEach((b,i)=>{b.disabled=true;b.classList.toggle('correct',i===Number(q.correctChoice));b.classList.toggle('wrong',i===Number(index)&&Number(index)!==Number(q.correctChoice))});
+   scoreAnswer(Number(index)===Number(q.correctChoice),chosen);
+ };
+ window.timeoutGatherChoice=function(){
+   if(gather.answered||reviewLock)return;
+   const q=gather.questions?.[gather.index];if(!q)return;
+   scoreAnswer(false,'');
+ };
+ window.judgeGatherAnswer=function(correct){
+   if(gather.answered||reviewLock)return;
+   const q=gather.questions?.[gather.index];if(!q)return;
+   scoreAnswer(!!correct,'');
+ };
+ const oldBegin=window.beginGatherTurn;
+ window.beginGatherTurn=function(){
+   if(awaitingNext){
+     clearTimeout(reviewTimer);reviewToken++;const layer=overlay();if(layer)layer.classList.remove('active');
+     awaitingNext=false;reviewLock=false;
+     gather.index++;
+     if(gather.index>=gather.questions.length){endGathering();return}
+     renderGatherQuestion();return;
+   }
+   if(reviewLock||gather.answered)return;
+   if(typeof oldBegin==='function')return oldBegin.apply(this,arguments);
+ };
+ const oldRender=window.renderGatherQuestion;
+ window.renderGatherQuestion=function(){
+   clearTimeout(reviewTimer);reviewToken++;const layer=overlay();if(layer)layer.classList.remove('active');
+   awaitingNext=false;reviewLock=false;
+   const panel=$id('gatherJudgePanel');if(panel)panel.classList.add('hidden');
+   const result=oldRender.apply(this,arguments);
+   disableAnswerControls(false);
+   const btn=$id('gatherBeginBtn');if(btn){btn.textContent='شروع بازی';btn.disabled=false}
+   return result;
+ };
+ const oldStart=window.startGathering;
+ window.startGathering=async function(){
+   clearTimeout(reviewTimer);reviewToken++;awaitingNext=false;reviewLock=false;
+   const layer=overlay();if(layer)layer.classList.remove('active');
+   const result=await oldStart.apply(this,arguments);
+   const btn=$id('gatherBeginBtn');if(btn){btn.textContent='شروع بازی';btn.disabled=false}
+   return result;
+ };
+ const oldSkip=window.skipGathering;
+ window.skipGathering=function(){
+   if(gather.answered||reviewLock)return;
+   const q=gather.questions?.[gather.index];if(!q)return;
+   scoreAnswer(false,'');
+ };
+ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&overlay()?.classList.contains('active'))e.preventDefault()},true);
+})();
+</script>
+
 </body></html>
