@@ -1514,6 +1514,14 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeGraphicsSetting
 @keyframes beytoOptionIn{from{opacity:0;transform:translateY(7px);filter:blur(3px)}to{opacity:1;transform:none;filter:blur(0)}}
 @media(max-width:600px){.beyto-select-trigger{min-height:50px;padding:11px 12px}.beyto-select-menu{max-height:38vh;border-radius:15px}}
 @media(prefers-reduced-motion:reduce){.beyto-select-trigger,.beyto-select-menu,.beyto-select-option{animation:none!important;transition:none!important}}
+
+/* PATCH: keep custom dropdowns visible and correctly layered */
+.beyto-select-ui{display:block!important;width:100%;min-height:54px;visibility:visible!important;opacity:1}
+.beyto-select-ui[hidden],.beyto-select-ui.beyto-parent-hidden{display:none!important}
+.beyto-select-trigger{display:flex!important;visibility:visible!important;opacity:1;pointer-events:auto}
+.beyto-select-menu{z-index:10020}
+.beyto-select-scrim{z-index:10000}
+.field>.beyto-select-ui,.field .beyto-select-ui{margin-top:5px}
 </style>
 
 <script id="beyto-gather-four-choice-polish">
@@ -1749,6 +1757,29 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeGraphicsSetting
  }
  function scan(root=document){root.querySelectorAll?.(SELECTOR).forEach(wrap);document.querySelectorAll('select.beyto-native-select').forEach(sel=>{if(sel._beytoUI)refresh(sel)})}
  function init(){ensureScrim();scan();if(observer)observer.disconnect();observer=new MutationObserver(records=>{let needsScan=false;for(const r of records){if(r.type!=='childList'||!r.addedNodes.length)continue;for(const node of r.addedNodes){if(node.nodeType!==1)continue;if(node.matches?.(SELECTOR)||node.querySelector?.(SELECTOR)){needsScan=true;break}}if(needsScan)break}if(needsScan)scan()});observer.observe(document.body,{subtree:true,childList:true});document.addEventListener('keydown',e=>{if(e.key==='Escape')closeAll()});document.addEventListener('click',e=>{if(opened&&!opened.contains(e.target)&&!e.target.closest('.beyto-select-scrim'))closeAll()});document.addEventListener('click',e=>{const target=e.target.closest('button,[role=button],.game-mode-card');if(target&&!target.classList.contains('beyto-select-trigger')){target.classList.remove('beyto-click-burst');void target.offsetWidth;target.classList.add('beyto-click-burst');setTimeout(()=>target.classList.remove('beyto-click-burst'),500)}},true)}
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
+
+<script id="beyto-select-visibility-fix">
+(function(){
+ function syncOne(sel){
+   const ui=sel&&sel._beytoUI;if(!ui)return;
+   let hidden=sel.disabled?false:false;
+   if(sel.classList.contains('hidden')||sel.hidden)hidden=true;
+   let p=sel.parentElement;
+   while(p&&p!==document.body){if(p.hidden||p.classList.contains('hidden')||getComputedStyle(p).display==='none'){hidden=true;break}p=p.parentElement}
+   ui.classList.toggle('beyto-parent-hidden',hidden);
+ }
+ function syncAll(){document.querySelectorAll('select.beyto-native-select').forEach(syncOne)}
+ function init(){
+   syncAll();
+   const obs=new MutationObserver(records=>{for(const r of records){if(r.type==='attributes'&&(r.attributeName==='class'||r.attributeName==='hidden'||r.attributeName==='style')){if(r.target.matches?.('select.beyto-native-select'))syncOne(r.target);else syncAll()}}});
+   obs.observe(document.body,{subtree:true,attributes:true,attributeFilter:['class','hidden','style']});
+   document.addEventListener('click',()=>requestAnimationFrame(syncAll),true);
+   document.addEventListener('change',e=>{if(e.target.matches?.('select.beyto-native-select'))syncOne(e.target)},true);
+   window.addEventListener('resize',syncAll);
+ }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
 </script>
