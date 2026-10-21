@@ -1971,4 +1971,151 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeGraphicsSetting
 })();
 </script>
 
+
+<style id="beyto-stable-gather-select-and-review-fix">
+/* پایدارسازی انتخاب تنظیمات: کنترل‌های بومی مرورگر برای تایم، دور و تعداد تیم */
+.beyto-select-scrim{display:none!important;pointer-events:none!important}
+.beyto-select-ui{display:none!important;pointer-events:none!important}
+select.beyto-native-select,
+#page-solo select.beyto-native-select,
+#gatherSetup select.beyto-native-select,
+#tournamentSetup select.beyto-native-select{
+ display:block!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;
+ position:relative!important;inset:auto!important;width:100%!important;height:auto!important;min-height:50px!important;
+ clip:auto!important;clip-path:none!important;transform:none!important;margin:5px 0!important;
+ color:#f8fafc!important;background:#15152d!important;border:1px solid #a78bfa99!important;border-radius:15px!important;
+ padding:12px 14px!important;font:700 15px Vazirmatn,sans-serif!important;appearance:auto!important;
+}
+select.beyto-native-select option{color:#f8fafc!important;background:#15152d!important}
+#beytoGatherReviewOverlay{z-index:12000!important}
+#beytoGatherReviewOverlay:not(.active){display:none!important;pointer-events:none!important;visibility:hidden!important}
+#beytoGatherReviewOverlay.active{display:grid!important;pointer-events:auto!important;visibility:visible!important}
+#beytoGatherReviewOverlay .review-answer{white-space:pre-wrap;line-height:2}
+</style>
+<script id="beyto-stable-gather-select-and-review-fix">
+(function(){
+ const $=id=>document.getElementById(id);
+ let reviewTimer=null, reviewToken=0, answerPending=false, answerLocked=false;
+ const oldStart=window.startGathering;
+ function setControlsDisabled(disabled){
+   ['gatherAnswer','gatherSubmitBtn','gatherSkipBtn'].forEach(id=>{const el=$(id);if(el)el.disabled=!!disabled});
+   document.querySelectorAll('#gatherChoiceButtons button').forEach(b=>b.disabled=!!disabled);
+ }
+ function closeReview(){
+   clearTimeout(reviewTimer);reviewToken++;answerPending=false;answerLocked=false;
+   const ov=$('beytoGatherReviewOverlay');if(ov){ov.classList.remove('active');ov.style.display='none';ov.style.pointerEvents='none';ov.setAttribute('aria-hidden','true')}
+ }
+ function revealFullAnswer(q){
+   const answer=String(q?.answers?.[0]||'پاسخ صحیح موجود نیست');
+   const line=String(q?.line||'').replace(/___+/g,answer).replace(/_{2,}/g,answer);
+   return line===String(q?.line||'')?answer:line;
+ }
+ function showReview(q,correct,pi,raw){
+   const ov=$('beytoGatherReviewOverlay'),title=$('beytoGatherReviewTitle'),sub=$('beytoGatherReviewSub'),ans=$('beytoGatherReviewAnswer'),btn=$('beytoGatherReviewNext'),ico=$('beytoGatherReviewIcon');
+   if(!ov||!title||!sub||!ans||!btn){answerLocked=false;setControlsDisabled(false);return}
+   const token=++reviewToken;answerLocked=true;answerPending=false;
+   ov.style.display='grid';ov.style.pointerEvents='auto';ov.setAttribute('aria-hidden','false');ov.classList.add('active');
+   ico.textContent='✨';title.textContent='امیدوارم درست گفته باشی ...';sub.textContent='۵ ثانیه صبر کن؛ پاسخ صحیح شعر نمایش داده می‌شود.';ans.hidden=true;ans.textContent='';btn.hidden=true;
+   clearTimeout(reviewTimer);
+   reviewTimer=setTimeout(()=>{
+     if(token!==reviewToken)return;
+     ico.textContent=correct?'🎉':'📜';title.textContent=correct?'آفرین! پاسخ درست بود':'پاسخ درست شعر';
+     sub.textContent=(correct?'۱۰ امتیاز برای '+(gather.players[pi]||'بازیکن')+' ثبت شد.':'این نوبت امتیازی ندارد.')+(raw?' پاسخ واردشده: '+raw:'');
+     ans.textContent=revealFullAnswer(q);ans.hidden=false;btn.textContent='ادامه؛ نمایش نوبت بعد';btn.hidden=false;answerPending=true;answerLocked=false;
+     const box=$('gatherScoreCards');
+     if(box&&Array.isArray(gather.players))box.innerHTML=gather.players.map((name,i)=>'<div class="gather-score-card"><div class="score-name">'+esc(name)+'</div><div class="score-value">'+fmt(Number(gather.scores?.[i]||0))+' <small>امتیاز</small></div></div>').join('');
+   },5000);
+ }
+ function finishAnswer(correct,raw){
+   if(gather.answered||answerLocked||answerPending||!Array.isArray(gather.questions)||gather.index>=gather.questions.length)return;
+   const q=gather.questions[gather.index];if(!q)return;
+   const pi=gather.index%Math.max(1,gather.players.length);
+   stopQuestionTimer();gather.answered=true;setControlsDisabled(true);
+   if(correct)gather.scores[pi]=(Number(gather.scores[pi])||0)+10;
+   const feedback=$('gatherFeedback');if(feedback){feedback.textContent='';feedback.style.color=correct?'var(--green)':'#fda4af'}
+   const panel=$('gatherJudgePanel');if(panel)panel.classList.add('hidden');
+   showReview(q,!!correct,pi,raw||'');
+ }
+ window.checkGathering=function(){
+   if(gather.answered||answerLocked||answerPending)return;
+   const field=$('gatherAnswer'),raw=field?field.value.trim():'';
+   if(!raw)return toast('پاسخ را وارد کن.');
+   const q=gather.questions?.[gather.index];if(!q)return;
+   const correct=raw!=='__time_expired__'&&(q.answers||[]).some(a=>norm(a)===norm(raw));
+   finishAnswer(correct,raw==='__time_expired__'?'':raw);
+ };
+ window.checkGatherChoice=function(index){
+   if(gather.answered||answerLocked||answerPending)return;
+   const q=gather.questions?.[gather.index];if(!q)return;
+   const correct=Number(index)===Number(q.correctChoice),chosen=q.choiceOptions?.[Number(index)]||'';
+   document.querySelectorAll('#gatherChoiceButtons .gather-answer-option').forEach((b,i)=>{b.classList.toggle('correct',i===Number(q.correctChoice));b.classList.toggle('wrong',i===Number(index)&&!correct)});
+   finishAnswer(correct,chosen);
+ };
+ window.judgeGatherAnswer=function(correct){finishAnswer(!!correct,'')};
+ window.timeoutGatherChoice=function(){if(!gather.answered)finishAnswer(false,'')};
+ window.skipGathering=function(){if(!gather.answered)finishAnswer(false,'')};
+ window.renderGatherQuestion=function(){
+   closeReview();stopQuestionTimer();
+   if(!Array.isArray(gather.questions)||!gather.questions.length){toast('سؤال‌های دورهمی آماده نیستند.');return}
+   if(gather.index>=gather.questions.length){window.endGathering();return}
+   const mount=$('gatherMatchMount'),play=$('gatherPlay');
+   if(mount&&play&&play.parentElement!==mount)mount.appendChild(play);
+   if(play)play.classList.remove('hidden');
+   if(!document.querySelector('[data-page="gather-match"].active'))go('gather-match');
+   gather.answered=false;const q=gather.questions[gather.index],pi=gather.index%Math.max(1,gather.players.length);
+   $('gatherTurn').textContent='نوبت: '+gather.players[pi];
+   $('gatherCounter').textContent='سؤال '+fmt(gather.index+1)+' از '+fmt(gather.questions.length)+' · دور '+fmt(Math.floor(gather.index/Math.max(1,gather.players.length))+1);
+   $('gatherProgress').style.width=(gather.index/gather.questions.length*100)+'%';
+   $('gatherReadyTitle').textContent='نوبت '+gather.players[pi];
+   $('gatherReadyText').textContent=gather.players[pi]+'، برای دیدن سؤال و شروع زمان، «شروع بازی» را بزن.';
+   $('gatherReady').classList.remove('hidden');$('gatherTimer').classList.add('hidden');$('gatherQuestion').classList.add('hidden');
+   $('gatherAnswerField').classList.add('hidden');$('gatherChoiceButtons').classList.add('hidden');$('gatherSubmitBtn').classList.add('hidden');$('gatherSkipBtn').classList.add('hidden');
+   $('gatherAnswer').value='';$('gatherAnswer').disabled=false;$('gatherFeedback').textContent='';
+   setControlsDisabled(false);
+   const panel=$('gatherJudgePanel');if(panel)panel.classList.add('hidden');
+   const begin=$('gatherBeginBtn');if(begin){begin.disabled=false;begin.textContent='شروع بازی'}
+   const scoreBox=$('gatherScoreCards');if(scoreBox&&Array.isArray(gather.players))scoreBox.innerHTML=gather.players.map((name,i)=>'<div class="gather-score-card"><div class="score-name">'+esc(name)+'</div><div class="score-value">'+fmt(Number(gather.scores?.[i]||0))+' <small>امتیاز</small></div></div>').join('');
+ };
+ window.beginGatherTurn=function(){
+   if(answerLocked||answerPending)return;
+   if(!Array.isArray(gather.questions)||!gather.questions.length)return toast('ابتدا دورهمی را شروع کن.');
+   if(gather.index>=gather.questions.length)return window.endGathering();
+   const q=gather.questions[gather.index];if(!q)return;
+   gather.answered=false;setControlsDisabled(false);
+   $('gatherReady').classList.add('hidden');$('gatherTimer').classList.remove('hidden');$('gatherQuestion').classList.remove('hidden');
+   $('gatherQuestion').innerHTML='<div class="poem-line">'+esc(q.line).replace(/___+/g,'<span class="poem-gap">جای خالی</span>')+'</div>';
+   if(gather.mode==='multiple'&&Array.isArray(q.choiceOptions)){
+     $('gatherAnswerField').classList.add('hidden');$('gatherSubmitBtn').classList.add('hidden');
+     $('gatherChoiceButtons').innerHTML=q.choiceOptions.map((a,i)=>'<button type="button" class="gather-answer-option" onclick="checkGatherChoice('+i+')"><span>'+String.fromCharCode(1776+i)+'</span> · '+esc(a)+'</button>').join('');
+     $('gatherChoiceButtons').classList.remove('hidden');
+   }else{
+     $('gatherAnswerField').classList.remove('hidden');$('gatherSubmitBtn').classList.remove('hidden');$('gatherChoiceButtons').classList.add('hidden');
+     $('gatherAnswer').value='';$('gatherAnswer').disabled=false;
+   }
+   $('gatherSkipBtn').classList.remove('hidden');startQuestionTimer('gather');
+   if(gather.mode!=='multiple')$('gatherAnswer').focus();
+ };
+ const beginBase=window.beginGatherTurn;
+ window.startGathering=async function(){closeReview();const result=await oldStart.apply(this,arguments);setControlsDisabled(false);return result};
+ function nextTurn(){
+   if(!answerPending)return;
+   closeReview();gather.index++;
+   if(gather.index>=gather.questions.length){window.endGathering();return}
+   window.renderGatherQuestion();
+ }
+ $('beytoGatherReviewNext')?.addEventListener('click',nextTurn);
+ // Keep every select in a known, clickable native state even after dynamic page moves.
+ function restoreSelects(){
+   document.querySelectorAll('select.beyto-native-select').forEach(sel=>{
+     sel.style.setProperty('display','block','important');sel.style.setProperty('pointer-events','auto','important');
+     if(sel._beytoUI)sel._beytoUI.style.setProperty('display','none','important');
+   });
+   const scrim=document.querySelector('.beyto-select-scrim');if(scrim){scrim.classList.remove('active');scrim.style.setProperty('display','none','important');scrim.style.setProperty('pointer-events','none','important')}
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',restoreSelects);else restoreSelects();
+ document.addEventListener('click',()=>requestAnimationFrame(restoreSelects),true);
+ document.addEventListener('change',e=>{if(e.target.matches('select'))restoreSelects()},true);
+})();
+</script>
+
 </body></html>
