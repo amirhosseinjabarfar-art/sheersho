@@ -1372,6 +1372,105 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeGraphicsSetting
 #gatherResult .gather-final-card.first .final-points{color:#fcd34d}
 @keyframes gatherPanelIn{from{opacity:0;transform:translateY(15px) scale(.985)}to{opacity:1;transform:none}}
 @media(max-width:540px){#gatherJudgePanel .judge-actions{grid-template-columns:1fr}#gatherLiveScores{padding:13px}.gather-score-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* BEYTO ULTRA SELECT — custom animated choice buttons */
+:root{--beyto-cyan:#67e8f9;--beyto-violet:#a78bfa;--beyto-pink:#f0abfc;--beyto-gold:#fcd34d}
+.game-mode-grid{gap:16px!important}
+.game-mode-card{
+ position:relative!important;isolation:isolate!important;overflow:hidden!important;min-height:158px!important;padding:21px 19px!important;
+ display:flex!important;flex-direction:column!important;align-items:flex-start!important;justify-content:center!important;gap:9px!important;
+ border:1px solid #a78bfa66!important;border-radius:23px!important;color:#f8f7ff!important;
+ background:radial-gradient(ellipse at 5% 0%,#a78bfa2e,transparent 54%),linear-gradient(145deg,#17112d 0%,#102438 58%,#25132f 100%)!important;
+ box-shadow:0 12px 32px #0004,inset 0 1px 0 #ffffff17!important;
+ transition:transform .3s cubic-bezier(.2,.9,.2,1),border-color .3s,box-shadow .3s,filter .3s!important;
+ animation:beytoChoiceAppear .55s both;
+}
+.game-mode-card:before{
+ content:"";position:absolute;inset:-70% auto -70% -55%;width:40%;transform:rotate(22deg);
+ background:linear-gradient(90deg,transparent,#ffffff18,transparent);pointer-events:none;z-index:-1;animation:beytoChoiceSweep 4.5s ease-in-out infinite
+}
+.game-mode-card:after{
+ content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;pointer-events:none;opacity:.45;
+ background:linear-gradient(125deg,#67e8f9aa,transparent 28%,#f0abfc66 64%,#a78bfaaa);
+ -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude
+}
+.game-mode-card:hover:not(:disabled){
+ transform:translateY(-6px) scale(1.018)!important;border-color:#67e8f9!important;
+ box-shadow:0 0 0 1px #67e8f944,0 18px 42px #0005,0 0 34px #8b5cf655,inset 0 1px 0 #ffffff22!important;filter:brightness(1.13)
+}
+.game-mode-card:active:not(:disabled){transform:translateY(-1px) scale(.985)!important}
+.game-mode-card.selected{
+ border:1px solid #67e8f9!important;
+ background:radial-gradient(ellipse at 85% 5%,#67e8f933,transparent 50%),linear-gradient(145deg,#18294a,#142e42 55%,#301d47)!important;
+ box-shadow:0 0 0 2px #67e8f91c,0 0 28px #67e8f944,0 16px 38px #0004,inset 0 0 25px #8b5cf51c!important;
+}
+.game-mode-card.selected:after{opacity:1;background:linear-gradient(125deg,#67e8f9,#a78bfa 48%,#f0abfc)}
+.game-mode-card .mode-icon{
+ width:54px!important;height:54px!important;display:grid!important;place-items:center!important;border-radius:17px!important;
+ font-size:28px!important;background:linear-gradient(145deg,#67e8f922,#a78bfa25)!important;border:1px solid #a78bfa77!important;
+ box-shadow:0 0 22px #8b5cf522,inset 0 1px 0 #ffffff22!important;transition:transform .3s,box-shadow .3s!important
+}
+.game-mode-card:hover .mode-icon,.game-mode-card.selected .mode-icon{transform:rotate(-5deg) scale(1.08)!important;box-shadow:0 0 25px #67e8f944!important}
+.game-mode-card b{font:22px Lalezar!important;letter-spacing:.1px;text-shadow:0 2px 15px #a78bfa33}
+.game-mode-card small{font-size:13px!important;line-height:1.8!important;color:#cbd5e1!important}
+.game-mode-card .mode-tag{
+ display:inline-flex!important;align-items:center;gap:6px!important;padding:5px 11px!important;border-radius:999px!important;
+ border:1px solid #a78bfa66!important;background:#8b5cf51a!important;color:#e9d5ff!important;font-size:11px!important;font-weight:900!important
+}
+.game-mode-card.selected .mode-tag{border-color:#67e8f988!important;color:#a5f3fc!important;background:#0891b21b!important}
+.game-mode-card.locked{filter:saturate(.65)!important}
+#soloChoiceButtons,#gatherChoiceButtons{gap:13px!important}
+#soloChoiceButtons .solo-answer-option,#gatherChoiceButtons .gather-answer-option{
+ min-height:82px!important;position:relative!important;isolation:isolate!important;overflow:hidden!important;
+ border:1px solid #a78bfa88!important;border-radius:21px!important;padding:16px!important;
+ background:radial-gradient(ellipse at 10% 0%,#a78bfa25,transparent 60%),linear-gradient(145deg,#21143b,#102a40 65%,#281632)!important;
+ box-shadow:0 10px 27px #0004,inset 0 1px 0 #ffffff18!important;
+ font-family:Vazirmatn,sans-serif!important;font-size:15px!important;font-weight:900!important;color:#f8fafc!important;
+ transition:transform .24s,border-color .24s,box-shadow .24s,background .24s!important;
+}
+#soloChoiceButtons .solo-answer-option:before,#gatherChoiceButtons .gather-answer-option:before{
+ content:"";position:absolute;inset:-70% auto -70% -55%;width:38%;transform:rotate(22deg);
+ background:linear-gradient(90deg,transparent,#ffffff20,transparent);pointer-events:none;animation:beytoChoiceSweep 3.8s ease-in-out infinite;z-index:-1
+}
+#soloChoiceButtons .solo-answer-option:after,#gatherChoiceButtons .gather-answer-option:after{
+ content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:.65;
+ background:linear-gradient(125deg,#67e8f944,transparent 35%,#f0abfc33);mix-blend-mode:screen
+}
+#soloChoiceButtons .solo-answer-option:hover:not(:disabled),#gatherChoiceButtons .gather-answer-option:hover:not(:disabled){
+ transform:translateY(-5px) scale(1.02)!important;border-color:#67e8f9!important;
+ box-shadow:0 0 0 2px #67e8f91b,0 0 28px #8b5cf555,0 15px 32px #0005!important
+}
+#soloChoiceButtons .solo-answer-option:active,#gatherChoiceButtons .gather-answer-option:active{transform:scale(.975)!important}
+#soloChoiceButtons .solo-answer-option.correct,#gatherChoiceButtons .gather-answer-option.correct{
+ border-color:#86efac!important;background:radial-gradient(ellipse at top,#22c55e44,transparent 70%),linear-gradient(135deg,#14532d,#064e3b)!important;
+ box-shadow:0 0 0 2px #4ade8022,0 0 30px #22c55e66!important;animation:beytoAnswerWin .55s both!important
+}
+#soloChoiceButtons .solo-answer-option.wrong,#gatherChoiceButtons .gather-answer-option.wrong{
+ border-color:#fb7185!important;background:linear-gradient(135deg,#881337,#450a0a)!important;animation:beytoAnswerShake .38s both!important
+}
+#page-solo .field select,#gatherSetup .field select,#gatherSetup .field input,#gatherPlay .field input,
+#page-solo select,#gatherSetup select{
+ min-height:49px!important;border-radius:15px!important;border:1px solid #a78bfa77!important;
+ color:#f8fafc!important;background-color:#15152d!important;
+ box-shadow:0 0 0 1px #ffffff05,inset 0 1px 0 #ffffff0c!important;
+ transition:border-color .25s,box-shadow .25s,transform .25s!important
+}
+#page-solo .field select:focus,#gatherSetup .field select:focus,#gatherSetup .field input:focus,#gatherPlay .field input:focus,
+#page-solo select:focus,#gatherSetup select:focus{
+ outline:none!important;border-color:#67e8f9!important;box-shadow:0 0 0 3px #67e8f922,0 0 27px #67e8f944!important;transform:translateY(-2px)
+}
+#page-solo .btn,#gatherSetup .btn,#gatherPlay .btn,#gatherResult .btn,#gatherJudgePanel button{
+ position:relative;overflow:hidden;transition:transform .22s,box-shadow .22s,border-color .22s!important
+}
+#page-solo .btn:hover:not(:disabled),#gatherSetup .btn:hover:not(:disabled),#gatherPlay .btn:hover:not(:disabled),#gatherResult .btn:hover:not(:disabled),#gatherJudgePanel button:hover:not(:disabled){
+ transform:translateY(-3px);box-shadow:0 0 23px #8b5cf544!important
+}
+@keyframes beytoChoiceAppear{from{opacity:0;transform:translateY(17px) scale(.95);filter:blur(4px)}to{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}}
+@keyframes beytoChoiceSweep{0%,20%{left:-55%}70%,100%{left:145%}}
+@keyframes beytoAnswerWin{0%{transform:scale(.96)}45%{transform:scale(1.045)}100%{transform:scale(1)}}
+@keyframes beytoAnswerShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}50%{transform:translateX(5px)}75%{transform:translateX(-3px)}}
+@media(prefers-reduced-motion:reduce){.game-mode-card,#soloChoiceButtons .solo-answer-option,#gatherChoiceButtons .gather-answer-option{animation:none!important;transition:none!important}}
+@media(max-width:600px){.game-mode-card{min-height:140px!important;padding:16px!important}.game-mode-card b{font-size:20px!important}#soloChoiceButtons .solo-answer-option,#gatherChoiceButtons .gather-answer-option{min-height:70px!important;border-radius:17px!important}}
 </style>
 
 <script id="beyto-gather-four-choice-polish">
