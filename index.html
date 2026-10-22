@@ -380,6 +380,7 @@ body.graphics-low *{animation-duration:.01ms!important;animation-iteration-count
 @media(max-width:520px){.topbar .nav{gap:6px}.topbar .nav-auth-actions{gap:5px}}
 </style></head><body>
 <div id="studioIntro" role="status" aria-label="استودیو لایت"><div class="studio-intro-stars"></div><div class="studio-intro-orbit"></div><div class="studio-intro-center"><div class="studio-intro-kicker">A NEW WORLD IS LOADING INTO LIGHT</div><h1 id="studioIntroTitle" class="studio-intro-title" aria-label="استودیو لایت">استودیو لایت</h1><p class="studio-intro-subtitle">خلاقیت، خیال، تجربه‌ای تازه</p></div></div>
+<script id="beyto-intro-startup-fix">(function(){var overlay=document.getElementById('studioIntro');if(!overlay)return;overlay.style.display='grid';overlay.style.opacity='1';overlay.style.visibility='visible';overlay.style.pointerEvents='auto';window.setTimeout(function(){if(overlay.isConnected)overlay.classList.add('is-exiting')},4450);window.setTimeout(function(){if(overlay.isConnected)overlay.remove()},5050)})();</script>
 <canvas id="particles"></canvas><div class="aurora a"></div><div class="aurora b"></div><div class="aurora c"></div>
 <header class="topbar"><div class="wrap nav"><nav class="navlinks" id="mainNavMenu" aria-label="منوی اصلی"><button data-nav="home" class="active" onclick="go('home')">⌂ خانه</button><button data-nav="solo" onclick="go('solo')">🎮 بازی اصلی</button><button data-nav="duel" onclick="go('duel')">⚔️ دوئل شاعران</button><button data-nav="road" onclick="go('road')">🖋️ جاده شعر</button><button data-nav="friends" onclick="go('friends')">👥 دورهمی</button><button data-nav="tournaments" onclick="go('tournaments')">🏆 تورنمنت حذفی</button><button data-nav="store" onclick="go('store')">🛍️ فروشگاه</button><button data-nav="rank" onclick="go('rank')">🏅 لیگ هفتگی</button><button data-nav="guide" onclick="go('guide')">📖 راهنمای کامل</button><button onclick="go('profile')">👤 پروفایل و تنظیمات</button><button onclick="openAuth()">🔐 ورود / ثبت‌نام</button></nav><button class="ghost nav-home-brand" onclick="go('home')" aria-label="خانه بیتو"><span class="brand"><span class="brand-symbol">ب</span><span>بیتو</span></span></button><div class="nav-auth-actions" id="navAuthActions"><button class="nav-auth-cta register" id="navRegisterBtn" onclick="openAuthMode('register')">عضویت</button><button class="nav-auth-cta" id="navLoginBtn" onclick="openAuthMode('login')">ورود</button></div><div class="nav-actions"><span id="navBalance" class="pill hidden" title="موجودی سکه"><span aria-hidden="true">🪙</span> <b id="navCoins">۰</b></span><button id="navAuth" class="icon-nav-btn" onclick="openAuth()" aria-label="ورود و ثبت‌نام" title="ورود / ثبت‌نام">👤</button><button id="navProfile" class="icon-nav-btn secondary hidden" onclick="go('profile')" aria-label="پروفایل" title="پروفایل">👤</button></div></div></header>
 <main class="wrap">
@@ -1195,15 +1196,7 @@ async function toggleAllianceRecording(){if(!allianceCurrent)return toast('اب�
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&document.activeElement?.id==='allianceMessageInput'){e.preventDefault();sendAllianceText()}});
 </script><footer class="jabarfar-studio-footer" aria-label="استودیو لایت"><div class="jabarfar-studio-frame"><p class="jabarfar-studio-text">استودیو لایت</p></div></footer>
 <script>
-(function(){
-  const overlay=document.getElementById('studioIntro');
-  const title=document.getElementById('studioIntroTitle');
-  if(!overlay||!title)return;
-  title.textContent='استودیو لایت';
-  title.setAttribute('dir','rtl');
-  window.setTimeout(()=>overlay.classList.add('is-exiting'),4450);
-  window.setTimeout(()=>{overlay.remove();},5050);
-})();
+(function(){const title=document.getElementById('studioIntroTitle');if(title){title.textContent='استودیو لایت';title.setAttribute('dir','rtl')}})();
 
 // ===== کارت شعر و هدیه بین دوستان =====
 const POEM_GIFT_CARDS={
