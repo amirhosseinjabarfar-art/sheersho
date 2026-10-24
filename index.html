@@ -408,6 +408,29 @@ body.graphics-low *{animation-duration:.01ms!important;animation-iteration-count
 @media(max-width:480px){.beyto-updates-card{border-radius:22px;padding:24px 16px 18px}.beyto-updates-item{grid-template-columns:36px 1fr;padding:11px;gap:9px}.beyto-updates-icon{width:36px;height:36px;font-size:18px}.beyto-updates-item h3{font-size:16px}}
 @media(prefers-reduced-motion:reduce){.beyto-updates-modal,.beyto-updates-card,.beyto-updates-item,.beyto-updates-launch:before{animation:none!important;transition-duration:.01ms!important}}
 </style>
+
+<style id="beyto-updates-fullscreen-polish">
+html.beyto-updates-open,body.beyto-updates-open{overflow:hidden!important;width:100%;height:100%;overscroll-behavior:none}
+#beytoUpdatesModal.beyto-updates-modal{position:fixed;inset:0;width:100vw;height:100vh;height:100dvh;max-height:100dvh;box-sizing:border-box;padding:clamp(12px,2.5vw,28px);overflow:hidden;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 12% 10%,rgba(124,58,237,.22),transparent 42%),radial-gradient(ellipse at 90% 90%,rgba(8,145,178,.19),transparent 42%),rgba(4,3,18,.92);backdrop-filter:blur(0);-webkit-backdrop-filter:blur(0)}
+#beytoUpdatesModal.beyto-updates-modal.is-open{backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px)}
+#beytoUpdatesModal .beyto-updates-card{width:100%;height:100%;max-width:none;max-height:none;min-height:0;box-sizing:border-box;overflow:hidden;display:flex;flex-direction:column;justify-content:center;padding:clamp(18px,3vh,38px) clamp(18px,4vw,52px);border-radius:clamp(20px,3vw,34px);border-color:rgba(196,181,253,.32);background:linear-gradient(145deg,rgba(25,19,55,.82),rgba(7,13,34,.86));box-shadow:0 0 0 1px rgba(255,255,255,.025),0 0 80px rgba(124,58,237,.18),inset 0 1px rgba(255,255,255,.1)}
+#beytoUpdatesModal .beyto-updates-header{text-align:center;flex:0 0 auto}
+#beytoUpdatesModal .beyto-updates-kicker{margin:0 auto 6px}
+#beytoUpdatesModal .beyto-updates-title{margin:0 0 5px;font-size:clamp(27px,4.2vh,48px);line-height:1.2}
+#beytoUpdatesModal .beyto-updates-intro{margin:0 auto clamp(10px,2vh,22px);font-size:clamp(11px,1.6vh,14px);line-height:1.6;text-align:center}
+#beytoUpdatesModal .beyto-updates-close{top:clamp(10px,2vh,22px);left:clamp(10px,2vw,22px);width:clamp(34px,4vh,44px);height:clamp(34px,4vh,44px);font-size:20px;z-index:3}
+#beytoUpdatesModal .beyto-updates-list{flex:0 1 auto;min-height:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(3,minmax(0,1fr));gap:clamp(7px,1.3vh,13px);width:100%;max-width:1080px;margin:0 auto;list-style:none;padding:0}
+#beytoUpdatesModal .beyto-updates-item{min-width:0;min-height:0;box-sizing:border-box;grid-template-columns:clamp(34px,4.5vh,48px) minmax(0,1fr);align-items:center;gap:clamp(8px,1.2vw,14px);padding:clamp(8px,1.5vh,15px);border-radius:clamp(13px,2vh,20px)}
+#beytoUpdatesModal .beyto-updates-item:last-child{grid-column:1/-1}
+#beytoUpdatesModal .beyto-updates-icon{width:clamp(34px,4.5vh,48px);height:clamp(34px,4.5vh,48px);border-radius:14px;font-size:clamp(17px,2.4vh,25px)}
+#beytoUpdatesModal .beyto-updates-item h3{font-size:clamp(15px,2.2vh,22px);line-height:1.25;margin:0 0 3px}
+#beytoUpdatesModal .beyto-updates-item p{font-size:clamp(10px,1.45vh,13px);line-height:1.55}
+#beytoUpdatesModal .beyto-updates-footer{flex:0 0 auto;justify-content:center;margin-top:clamp(8px,1.6vh,18px)}
+#beytoUpdatesModal .beyto-updates-done{font-size:clamp(15px,2vh,19px);padding:clamp(7px,1.2vh,11px) clamp(24px,4vw,48px)}
+@media(max-width:640px){#beytoUpdatesModal.beyto-updates-modal{padding:9px}#beytoUpdatesModal .beyto-updates-card{padding:43px 10px 10px;justify-content:flex-start}#beytoUpdatesModal .beyto-updates-header{margin-bottom:8px}#beytoUpdatesModal .beyto-updates-title{font-size:clamp(24px,4vh,34px)}#beytoUpdatesModal .beyto-updates-intro{font-size:10px;margin-bottom:7px}#beytoUpdatesModal .beyto-updates-list{grid-template-columns:1fr;grid-template-rows:repeat(5,minmax(0,1fr));gap:5px;flex:1 1 auto}#beytoUpdatesModal .beyto-updates-item:last-child{grid-column:auto}#beytoUpdatesModal .beyto-updates-item{grid-template-columns:30px minmax(0,1fr);padding:6px 8px;gap:7px;border-radius:12px}#beytoUpdatesModal .beyto-updates-icon{width:30px;height:30px;border-radius:9px;font-size:16px}#beytoUpdatesModal .beyto-updates-item h3{font-size:clamp(13px,2vh,16px)}#beytoUpdatesModal .beyto-updates-item p{font-size:clamp(9px,1.35vh,11px);line-height:1.4}#beytoUpdatesModal .beyto-updates-footer{margin-top:7px}#beytoUpdatesModal .beyto-updates-done{padding:6px 24px}}
+@media(max-height:650px){#beytoUpdatesModal .beyto-updates-card{padding-top:8px;padding-bottom:8px}#beytoUpdatesModal .beyto-updates-title{font-size:clamp(22px,3.8vh,32px)}#beytoUpdatesModal .beyto-updates-intro{margin-bottom:6px}#beytoUpdatesModal .beyto-updates-list{gap:4px}#beytoUpdatesModal .beyto-updates-item{padding:5px 8px}#beytoUpdatesModal .beyto-updates-footer{margin-top:6px}}
+@media(prefers-reduced-motion:reduce){#beytoUpdatesModal *{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
 </head><body>
 <div id="studioIntro" role="status" aria-label="استودیو لایت"><div class="studio-intro-stars"></div><div class="studio-intro-orbit"></div><div class="studio-intro-center"><div class="studio-intro-kicker">A NEW WORLD IS LOADING INTO LIGHT</div><h1 id="studioIntroTitle" class="studio-intro-title" aria-label="استودیو لایت">استودیو لایت</h1><p class="studio-intro-subtitle">خلاقیت، خیال، تجربه‌ای تازه</p></div></div>
 <canvas id="particles"></canvas><div class="aurora a"></div><div class="aurora b"></div><div class="aurora c"></div>
@@ -509,7 +532,7 @@ body.graphics-low *{animation-duration:.01ms!important;animation-iteration-count
 <div class="dashboard" id="adminDashboard"><div class="dash-inner"><div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><div><span class="pill">مدیریت سامانه</span><h1 class="page-title">پنل مدیریت</h1></div><button class="btn secondary" onclick="closeAdmin()">بستن ×</button></div><div id="adminStatus" class="notice">در حال آماده‌سازی...</div><div class="stats"><div class="stat"><b id="adminUsersCount">۰</b><span>کاربران</span></div><div class="stat"><b id="adminTotalCoins">۰</b><span>مجموع سکه‌ها</span></div><div class="stat"><b id="adminVipCount">۰</b><span>VIP فعال</span></div><div class="stat"><b id="adminGamesCount">۰</b><span>بازی‌ها</span></div></div><div class="glass content"><h3>مدیریت کاربران</h3><div class="field"><label for="adminSearch">جست‌وجو</label><input id="adminSearch" placeholder="نام یا نام کاربری" oninput="renderAdmin()"></div><div class="table-wrap"><table><thead><tr><th>نام</th><th>نام کاربری</th><th>سکه</th><th>پایان VIP</th><th>عملیات</th></tr></thead><tbody id="adminUsersRows"></tbody></table></div><div id="adminUserActions" class="hidden"><h3 id="selectedUserTitle"></h3><div class="columns"><div><div class="field"><label for="coinDelta">تغییر سکه (+ یا -)</label><input id="coinDelta" type="number"><label for="coinReason">دلیل تغییر</label><input id="coinReason" placeholder="دلیل تغییر سکه"></div><button class="btn small" onclick="adjustCoins()">ثبت تغییر سکه</button></div><div><div class="field"><label for="vipDays">مدت VIP</label><select id="vipDays"><option value="30">۳۰ روز</option><option value="90">۹۰ روز</option><option value="180">۱۸۰ روز</option><option value="365">۳۶۵ روز</option><option value="0">لغو VIP</option></select><label for="vipReason">دلیل تغییر</label><input id="vipReason" placeholder="دلیل تغییر VIP"></div><button class="btn secondary small" onclick="setVip()">ثبت VIP</button></div></div></div></div></div></div>
 <script>
 'use strict';const $=id=>document.getElementById(id),fmt=n=>Number(n||0).toLocaleString('fa-IR');const SUPABASE_URL='https://tzrgixjjpkikiklkkrmh.supabase.co',SUPABASE_KEY='sb_publishable_S2W66HL9Ry6m3eEcpEPF5g_aQz_NEaH',AUTH_API=SUPABASE_URL+'/functions/v1/user-auth',ADMIN_API=SUPABASE_URL+'/functions/v1/admin-api',STATE_KEY='shearsho_local_state_v4',TOKEN_KEY='shearsho_access_token',REFRESH_KEY='shearsho_refresh_token';
-let state=loadState(),sessionUser=null,accessToken=localStorage.getItem(TOKEN_KEY)||'',authMode='login',adminPasswordSession='',remoteUsers=[],selectedAdminUser='',remoteProfile=null,remoteOwnedFrames=['default'],remoteFramesLoaded=false,framePurchaseBusy=false,vipInfo={active:false,loaded:false,endsAt:null,status:'unknown'},soloQuestions=[],soloIndex=0,soloScore=0,soloAnswered=false,gather={vip:false,players:[],scores:[],questions:[],index:0,mode:'blank',tieCandidates:[],winner:null},bracket=null,tournamentQuiz=null,tournamentMode='blank',timerInterval=null,timerMode=null,timerTotal=20,timerDeadline=0;
+let state=loadState(),sessionUser=null,accessToken=localStorage.getItem(TOKEN_KEY)||'',authMode='login',adminPasswordSession='',remoteUsers=[],selectedAdminUser='',remoteProfile=null,remoteOwnedFrames=['default'],remoteFramesLoaded=false,framePurchaseBusy=false,vipInfo={active:false,loaded:false,endsAt:null,status:'unknown'},soloQuestions=[],soloIndex=0,soloScore=0,soloAnswered=false,soloFailed=false,gather={vip:false,players:[],scores:[],questions:[],index:0,mode:'blank',tieCandidates:[],winner:null},bracket=null,tournamentQuiz=null,tournamentMode='blank',timerInterval=null,timerMode=null,timerTotal=20,timerDeadline=0;
 let weeklyRows=[],weeklyClaimed=false,weeklyLoading=false,weeklyLastError='',weeklyRefreshTimer=null;
 // توابع پایهٔ لیگ هفتگی؛ در نسخهٔ قبلی فراخوانی می‌شدند اما تعریف نشده بودند.
 function weeklyHeaders(){const h={apikey:SUPABASE_KEY,'Content-Type':'application/json'};if(accessToken)h.Authorization='Bearer '+accessToken;return h}
@@ -1013,7 +1036,7 @@ function beginSoloRun(){
   if(!pool.length){toast('برای این موضوع هنوز سؤال معتبر وجود ندارد.');return;}
   soloQuestions=pool.slice(0,Math.min(requested,pool.length));
   if(soloQuestions.length<requested)toast(`بانک این موضوع ${fmt(soloQuestions.length)} سؤال معتبر دارد؛ بازی با همین تعداد آغاز می‌شود.`);
-  soloIndex=0;soloScore=0;soloAnswered=false;soloSelectedOption=null;
+  soloIndex=0;soloScore=0;soloAnswered=false;soloFailed=false;soloSelectedOption=null;
   $('soloSetup').classList.add('hidden');$('soloResult').classList.add('hidden');$('soloPlay').classList.remove('hidden');
   renderSoloQuestion();
 }function renderSoloQuestion(){
@@ -1048,23 +1071,27 @@ function checkSolo(){
     if(soloSelectedOption===null&&!timedOut)return toast('یکی از چهار گزینه را انتخاب کن.');
     answer=soloSelectedOption===null?'':(soloCurrentOptions[soloSelectedOption]||'');
   }else{
-    answer=$('soloAnswer').value.trim();if(!answer)return toast('پاسخ را وارد کن.');
+    answer=$('soloAnswer').value.trim();if(!answer&&!timedOut)return toast('پاسخ را وارد کن.');
   }
   stopQuestionTimer();soloAnswered=true;const ok=!timedOut&&q.answers.some(a=>norm(a)===norm(answer));
   $('soloAnswer').disabled=true;$('soloSubmit').disabled=true;document.querySelectorAll('#soloChoiceButtons button').forEach(b=>b.disabled=true);
-  if(ok){soloScore+=10;const p=getPlayer();if(p){p.score=(p.score||0)+10;p.level=Math.max(1,Math.floor(p.score/100)+1);saveState();}addWeeklyPoints(10,'solo');}
   showAnswerAnimation('soloQuestion','soloFeedback',q,ok,ok?'۱۰ امتیاز گرفتی!':'');
-  $('soloFeedback').textContent=timedOut?'زمان تمام شد. پاسخ درست: '+q.answers[0]:(ok?'آفرین! پاسخ درست بود؛ ۱۰ امتیاز گرفتی.':'پاسخ درست: '+q.answers[0]);
-  $('soloFeedback').style.color=ok?'var(--green)':'#fda4af';$('soloScore').textContent=fmt(soloScore);
-  const token=shershoSoloRunToken;setTimeout(()=>{if(token!==shershoSoloRunToken||!soloAnswered)return;soloIndex++;renderSoloQuestion();},1250);
-}function skipSolo(){if(soloAnswered)return;stopQuestionTimer();soloAnswered=true;soloIndex++;renderSoloQuestion();}
+  if(ok){
+    soloScore+=10;$('soloFeedback').textContent='آفرین! پاسخ درست بود؛ ۱۰ امتیاز گرفتی.';$('soloFeedback').style.color='var(--green)';$('soloScore').textContent=fmt(soloScore);
+    const token=shershoSoloRunToken;setTimeout(()=>{if(token!==shershoSoloRunToken||!soloAnswered||soloFailed)return;soloIndex++;renderSoloQuestion();},1250);return;
+  }
+  soloFailed=true;soloScore=0;$('soloScore').textContent=fmt(0);
+  $('soloFeedback').textContent=timedOut?'⏳ زمان تمام شد؛ امتیاز این دور صفر شد و بازی به پایان رسید.':'💔 این مرحله را باختی! امتیاز این دور صفر شد و بازی تمام شد.';
+  $('soloFeedback').style.color='#fda4af';
+  const token=shershoSoloRunToken;setTimeout(()=>{if(token===shershoSoloRunToken&&soloFailed)endSolo();},1250);
+}function skipSolo(){if(soloAnswered)return;stopQuestionTimer();soloAnswered=true;soloFailed=true;soloScore=0;$('soloScore').textContent=fmt(0);$('soloAnswer').disabled=true;$('soloSubmit').disabled=true;document.querySelectorAll('#soloChoiceButtons button').forEach(b=>b.disabled=true);$('soloFeedback').textContent='⛔ مرحله رد شد؛ بازی تمام شد و امتیاز این دور صفر شد.';$('soloFeedback').style.color='#fda4af';const token=shershoSoloRunToken;setTimeout(()=>{if(token===shershoSoloRunToken&&soloFailed)endSolo();},700);}
 function endSolo(){
-  stopQuestionTimer();const p=getPlayer();if(p){p.games=(p.games||0)+1;state.history.unshift({userId:p.id,score:soloScore,count:soloQuestions.length,date:new Date().toISOString()});state.history=state.history.slice(0,100);saveState();}
+  stopQuestionTimer();const p=getPlayer();if(p){p.games=(p.games||0)+1;if(!soloFailed&&soloScore>0){p.score=(p.score||0)+soloScore;p.level=Math.max(1,Math.floor(p.score/100)+1);addWeeklyPoints(soloScore,'solo');}state.history.unshift({userId:p.id,score:soloScore,count:soloQuestions.length,date:new Date().toISOString()});state.history=state.history.slice(0,100);saveState();}
   $('soloProgress').style.width='100%';$('soloPlay').classList.add('hidden');$('soloResult').classList.remove('hidden');
-  $('soloResult').innerHTML=`<div style="text-align:center;padding:22px"><div style="font-size:50px">🏆</div><h2 class="bracket-title">چالش تمام شد!</h2><p class="muted">${fmt(soloQuestions.length)} سؤال · امتیاز این دور: <b>${fmt(soloScore)}</b></p><button class="btn" onclick="resetSolo()">بازی دوباره</button> <button class="btn secondary" onclick="go('profile')">پروفایل</button></div>`;
+  $('soloResult').innerHTML=`<div style="text-align:center;padding:22px"><div style="font-size:50px">${soloFailed?'💔':'🏆'}</div><h2 class="bracket-title">${soloFailed?'بازی تمام شد!':'چالش تمام شد!'}</h2><p class="muted">${soloFailed?'باختی! تمام امتیاز این دور از بین رفت.':fmt(soloQuestions.length)+' سؤال · امتیاز این دور:'} <b>${fmt(soloScore)}</b></p><button class="btn" onclick="resetSolo()">بازی دوباره</button> <button class="btn secondary" onclick="go('profile')">پروفایل</button></div>`;
 }
 function resetSolo(){
-  stopQuestionTimer();shershoSoloRunToken++;soloQuestions=[];soloIndex=0;soloScore=0;soloAnswered=false;soloMode='blank';soloSelectedOption=null;soloCurrentOptions=[];
+  stopQuestionTimer();shershoSoloRunToken++;soloQuestions=[];soloIndex=0;soloScore=0;soloAnswered=false;soloFailed=false;soloMode='blank';soloSelectedOption=null;soloCurrentOptions=[];
   $('soloMode').value='blank';$('soloChoiceButtons').classList.add('hidden');$('soloChoiceButtons').innerHTML='';$('soloAnswerField').classList.remove('hidden');$('soloSubmit').classList.remove('hidden');
   $('soloSetup').classList.remove('hidden');$('soloPlay').classList.add('hidden');$('soloResult').classList.add('hidden');$('soloAnswer').value='';$('soloAnswer').disabled=false;$('soloSubmit').disabled=false;
 }function showGatherSetup(vip){
@@ -2238,9 +2265,7 @@ select.beyto-native-select option{color:#f8fafc!important;background:#15152d!imp
 <div id="beytoUpdatesModal" class="beyto-updates-modal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="beytoUpdatesTitle">
   <div class="beyto-updates-card" role="document">
     <button type="button" class="beyto-updates-close" onclick="closeBeytoUpdates()" aria-label="بستن پنجره">×</button>
-    <p class="beyto-updates-kicker">✦ به‌روزرسانی بیتو</p>
-    <h2 id="beytoUpdatesTitle" class="beyto-updates-title">به دنیای تازهٔ بیتو خوش اومدی!</h2>
-    <p class="beyto-updates-intro">چند تغییر مهم برای تجربه‌ای روان‌تر و جذاب‌تر آماده شده‌اند.</p>
+    <div class="beyto-updates-header"><p class="beyto-updates-kicker">✦ 🚀 نسخهٔ تازهٔ بیتو · آپدیت ویژه ✨</p><h2 id="beytoUpdatesTitle" class="beyto-updates-title">آخرین تغییرات بیتو</h2><p class="beyto-updates-intro">🌌 همهٔ قابلیت‌های تازه را یک‌جا ببین و آمادهٔ بازی شو! 🌌</p></div>
     <ul class="beyto-updates-list">
       <li class="beyto-updates-item"><span class="beyto-updates-icon">⚡</span><div><h3>بهبود مشکل بارگذاری</h3><p>رفع مشکل گیرکردن صفحهٔ شروع و بهتر شدن ورود به محیط بازی.</p></div></li>
       <li class="beyto-updates-item"><span class="beyto-updates-icon">🛡️</span><div><h3>اتحاد شاعران</h3><p>بخش اتحادها برای ساختن جمع‌های شعری و همراهی با دیگر شاعران در دسترس است.</p></div></li>
@@ -2261,14 +2286,14 @@ select.beyto-native-select option{color:#f8fafc!important;background:#15152d!imp
     opener=document.activeElement;
     modal.classList.add('is-open');
     modal.setAttribute('aria-hidden','false');
-    document.body.style.overflow='hidden';
+    document.body.classList.add('beyto-updates-open');
     const close=modal.querySelector('.beyto-updates-close');
     if(close)close.focus();
   };
   window.closeBeytoUpdates=function(){
     modal.classList.remove('is-open');
     modal.setAttribute('aria-hidden','true');
-    document.body.style.overflow='';
+    document.body.classList.remove('beyto-updates-open');
     if(opener&&typeof opener.focus==='function')opener.focus();
   };
   modal.addEventListener('click',function(e){if(e.target===modal)window.closeBeytoUpdates()});
