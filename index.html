@@ -378,12 +378,43 @@ body.graphics-low *{animation-duration:.01ms!important;animation-iteration-count
 .topbar .navlinks{display:none!important}
 .topbar .nav{justify-content:space-between}
 @media(max-width:520px){.topbar .nav{gap:6px}.topbar .nav-auth-actions{gap:5px}}
-</style></head><body>
+</style>
+<style id="beyto-updates-style">
+.beyto-updates-launch-wrap{display:flex;justify-content:center;align-items:center;margin:0 auto 12px;padding:8px 12px 0}
+.beyto-updates-launch{position:relative;overflow:hidden;border:1px solid rgba(165,180,252,.38);border-radius:999px;padding:7px 17px;background:rgba(99,102,241,.12);color:#e9e7ff;font:400 15px 'Lalezar',cursive;box-shadow:0 0 18px rgba(139,92,246,.12),inset 0 0 12px rgba(255,255,255,.035);cursor:pointer;transition:transform .25s,border-color .25s,box-shadow .25s;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.beyto-updates-launch:before{content:"";position:absolute;inset:0;transform:translateX(-130%);background:linear-gradient(110deg,transparent,rgba(255,255,255,.18),transparent);animation:beytoUpdatesShimmer 4s ease-in-out infinite}
+.beyto-updates-launch:hover{transform:translateY(-2px);border-color:#c4b5fd;box-shadow:0 0 26px rgba(139,92,246,.27)}
+.beyto-updates-launch span{position:relative;z-index:1}
+.beyto-updates-modal{position:fixed;inset:0;z-index:1000005;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(5,4,18,.62);backdrop-filter:blur(0);-webkit-backdrop-filter:blur(0);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .35s ease,visibility .35s ease,backdrop-filter .45s ease}
+.beyto-updates-modal.is-open{opacity:1;visibility:visible;pointer-events:auto;backdrop-filter:blur(13px);-webkit-backdrop-filter:blur(13px)}
+.beyto-updates-card{position:relative;width:min(100%,560px);max-height:min(86vh,760px);overflow:auto;padding:clamp(22px,5vw,34px);border:1px solid rgba(196,181,253,.25);border-radius:28px;background:linear-gradient(145deg,rgba(28,22,56,.94),rgba(10,16,38,.94));color:#f8fafc;box-shadow:0 30px 100px rgba(0,0,0,.48),0 0 55px rgba(124,58,237,.17),inset 0 1px rgba(255,255,255,.08);transform:translateY(22px) scale(.96);filter:blur(8px);opacity:0;transition:transform .45s cubic-bezier(.2,.8,.2,1),filter .45s ease,opacity .35s ease}
+.beyto-updates-modal.is-open .beyto-updates-card{transform:translateY(0) scale(1);filter:blur(0);opacity:1}
+.beyto-updates-close{position:absolute;top:13px;left:13px;width:36px;height:36px;border:1px solid rgba(255,255,255,.15);border-radius:50%;background:rgba(255,255,255,.07);color:#fff;font-size:18px;cursor:pointer;transition:transform .2s,background .2s}
+.beyto-updates-close:hover{transform:rotate(90deg);background:rgba(255,255,255,.14)}
+.beyto-updates-kicker{display:inline-flex;align-items:center;gap:7px;margin:0 0 8px;padding:5px 10px;border:1px solid rgba(103,232,249,.2);border-radius:999px;background:rgba(34,211,238,.07);color:#a5f3fc;font:500 11px 'Vazirmatn',sans-serif}
+.beyto-updates-title{margin:0 0 8px;font:400 clamp(28px,6vw,40px) 'Lalezar',cursive;color:#fff;text-shadow:0 0 22px rgba(167,139,250,.35)}
+.beyto-updates-intro{margin:0 0 20px;color:#cbd5e1;font:400 13px/1.9 'Vazirmatn',sans-serif}
+.beyto-updates-list{display:grid;gap:10px;margin:0;padding:0;list-style:none}
+.beyto-updates-item{display:grid;grid-template-columns:42px 1fr;gap:12px;align-items:start;padding:13px;border:1px solid rgba(196,181,253,.13);border-radius:17px;background:linear-gradient(120deg,rgba(255,255,255,.065),rgba(255,255,255,.022));animation:beytoUpdateItemIn .5s both}
+.beyto-updates-item:nth-child(2){animation-delay:.07s}.beyto-updates-item:nth-child(3){animation-delay:.14s}.beyto-updates-item:nth-child(4){animation-delay:.21s}.beyto-updates-item:nth-child(5){animation-delay:.28s}
+.beyto-updates-icon{display:grid;place-items:center;width:42px;height:42px;border-radius:13px;background:rgba(139,92,246,.15);font-size:21px;box-shadow:inset 0 0 16px rgba(255,255,255,.035)}
+.beyto-updates-item h3{margin:0 0 3px;font:400 18px 'Lalezar',cursive;color:#f5f3ff}
+.beyto-updates-item p{margin:0;color:#cbd5e1;font:400 12px/1.85 'Vazirmatn',sans-serif}
+.beyto-updates-footer{display:flex;justify-content:flex-end;margin-top:20px}
+.beyto-updates-done{border:1px solid rgba(165,180,252,.3);border-radius:13px;padding:10px 20px;background:linear-gradient(120deg,rgba(124,58,237,.35),rgba(8,145,178,.22));color:white;font:400 17px 'Lalezar',cursive;cursor:pointer;transition:transform .2s,box-shadow .2s}
+.beyto-updates-done:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(124,58,237,.2)}
+@keyframes beytoUpdatesShimmer{0%,65%,100%{transform:translateX(-130%)}85%{transform:translateX(130%)}}
+@keyframes beytoUpdateItemIn{from{opacity:0;transform:translateY(9px);filter:blur(4px)}to{opacity:1;transform:translateY(0);filter:blur(0)}}
+@media(max-width:480px){.beyto-updates-card{border-radius:22px;padding:24px 16px 18px}.beyto-updates-item{grid-template-columns:36px 1fr;padding:11px;gap:9px}.beyto-updates-icon{width:36px;height:36px;font-size:18px}.beyto-updates-item h3{font-size:16px}}
+@media(prefers-reduced-motion:reduce){.beyto-updates-modal,.beyto-updates-card,.beyto-updates-item,.beyto-updates-launch:before{animation:none!important;transition-duration:.01ms!important}}
+</style>
+</head><body>
 <div id="studioIntro" role="status" aria-label="استودیو لایت"><div class="studio-intro-stars"></div><div class="studio-intro-orbit"></div><div class="studio-intro-center"><div class="studio-intro-kicker">A NEW WORLD IS LOADING INTO LIGHT</div><h1 id="studioIntroTitle" class="studio-intro-title" aria-label="استودیو لایت">استودیو لایت</h1><p class="studio-intro-subtitle">خلاقیت، خیال، تجربه‌ای تازه</p></div></div>
 <canvas id="particles"></canvas><div class="aurora a"></div><div class="aurora b"></div><div class="aurora c"></div>
 <header class="topbar"><div class="wrap nav"><nav class="navlinks" id="mainNavMenu" aria-label="منوی اصلی"><button data-nav="home" class="active" onclick="go('home')">⌂ خانه</button><button data-nav="solo" onclick="go('solo')">🎮 بازی اصلی</button><button data-nav="duel" onclick="go('duel')">⚔️ دوئل شاعران</button><button data-nav="road" onclick="go('road')">🖋️ جاده شعر</button><button data-nav="friends" onclick="go('friends')">👥 دورهمی</button><button data-nav="tournaments" onclick="go('tournaments')">🏆 تورنمنت حذفی</button><button data-nav="store" onclick="go('store')">🛍️ فروشگاه</button><button data-nav="rank" onclick="go('rank')">🏅 لیگ هفتگی</button><button data-nav="guide" onclick="go('guide')">📖 راهنمای کامل</button><button onclick="go('profile')">👤 پروفایل و تنظیمات</button><button onclick="openAuth()">🔐 ورود / ثبت‌نام</button></nav><button class="ghost nav-home-brand" onclick="go('home')" aria-label="خانه بیتو"><span class="brand"><span class="brand-symbol">ب</span><span>بیتو</span></span></button><div class="nav-auth-actions" id="navAuthActions"><button class="nav-auth-cta register" id="navRegisterBtn" onclick="openAuthMode('register')">عضویت</button><button class="nav-auth-cta" id="navLoginBtn" onclick="openAuthMode('login')">ورود</button></div><div class="nav-actions"><span id="navBalance" class="pill hidden" title="موجودی سکه"><span aria-hidden="true">🪙</span> <b id="navCoins">۰</b></span><button id="navAuth" class="icon-nav-btn" onclick="openAuth()" aria-label="ورود و ثبت‌نام" title="ورود / ثبت‌نام">👤</button><button id="navProfile" class="icon-nav-btn secondary hidden" onclick="go('profile')" aria-label="پروفایل" title="پروفایل">👤</button></div></div></header>
 <main class="wrap">
 <section class="page active" id="page-home" data-page="home">
+<div class="beyto-updates-launch-wrap"><button type="button" class="beyto-updates-launch" onclick="openBeytoUpdates()" aria-haspopup="dialog" aria-controls="beytoUpdatesModal"><span>✨ آخرین تغییرات</span></button></div>
 <div class="start-game-hero"><button class="start-game-main" onclick="go('start')">شروع</button><div class="start-game-glow"></div></div>
 
 <div class="section home-shortcuts-section"><div class="grid home-mode-cards home-shortcut-cards">
@@ -2203,4 +2234,54 @@ select.beyto-native-select option{color:#f8fafc!important;background:#15152d!imp
 }
 </style>
 
+
+<div id="beytoUpdatesModal" class="beyto-updates-modal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="beytoUpdatesTitle">
+  <div class="beyto-updates-card" role="document">
+    <button type="button" class="beyto-updates-close" onclick="closeBeytoUpdates()" aria-label="بستن پنجره">×</button>
+    <p class="beyto-updates-kicker">✦ به‌روزرسانی بیتو</p>
+    <h2 id="beytoUpdatesTitle" class="beyto-updates-title">به دنیای تازهٔ بیتو خوش اومدی!</h2>
+    <p class="beyto-updates-intro">چند تغییر مهم برای تجربه‌ای روان‌تر و جذاب‌تر آماده شده‌اند.</p>
+    <ul class="beyto-updates-list">
+      <li class="beyto-updates-item"><span class="beyto-updates-icon">⚡</span><div><h3>بهبود مشکل بارگذاری</h3><p>رفع مشکل گیرکردن صفحهٔ شروع و بهتر شدن ورود به محیط بازی.</p></div></li>
+      <li class="beyto-updates-item"><span class="beyto-updates-icon">🛡️</span><div><h3>اتحاد شاعران</h3><p>بخش اتحادها برای ساختن جمع‌های شعری و همراهی با دیگر شاعران در دسترس است.</p></div></li>
+      <li class="beyto-updates-item"><span class="beyto-updates-icon">📜</span><div><h3>بازی شعر و حالت‌های گروهی</h3><p>بخش‌های بازی شعر، جادهٔ شعر، دوئل و دورهمی برای تجربه‌های متفاوت کنار هم قرار گرفته‌اند.</p></div></li>
+      <li class="beyto-updates-item"><span class="beyto-updates-icon">💎</span><div><h3>ظاهر شیشه‌ای و محو</h3><p>کادرهای بلوری، پس‌زمینه‌های محو، نورهای نئونی و انیمیشن‌های نرم برای حس مدرن‌تر.</p></div></li>
+      <li class="beyto-updates-item"><span class="beyto-updates-icon">✨</span><div><h3>ورود و نمایش روان‌تر</h3><p>جلوه‌های بصری و حرکت‌های نرم‌تر هنگام نمایش پنجره‌ها و بخش‌های بازی.</p></div></li>
+    </ul>
+    <div class="beyto-updates-footer"><button type="button" class="beyto-updates-done" onclick="closeBeytoUpdates()">بزن بریم! 🚀</button></div>
+  </div>
+</div>
+<script id="beyto-updates-interactions">
+(function(){
+  const key='beyto_updates_intro_seen_v1';
+  const modal=document.getElementById('beytoUpdatesModal');
+  if(!modal)return;
+  let opener=null;
+  window.openBeytoUpdates=function(){
+    opener=document.activeElement;
+    modal.classList.add('is-open');
+    modal.setAttribute('aria-hidden','false');
+    document.body.style.overflow='hidden';
+    const close=modal.querySelector('.beyto-updates-close');
+    if(close)close.focus();
+  };
+  window.closeBeytoUpdates=function(){
+    modal.classList.remove('is-open');
+    modal.setAttribute('aria-hidden','true');
+    document.body.style.overflow='';
+    if(opener&&typeof opener.focus==='function')opener.focus();
+  };
+  modal.addEventListener('click',function(e){if(e.target===modal)window.closeBeytoUpdates()});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'&&modal.classList.contains('is-open'))window.closeBeytoUpdates()});
+  function showFirstVisit(){
+    let seen=false;
+    try{seen=localStorage.getItem(key)==='1'}catch(e){}
+    if(seen)return;
+    try{localStorage.setItem(key,'1')}catch(e){}
+    setTimeout(function(){window.openBeytoUpdates()},850);
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',showFirstVisit,{once:true});
+  else showFirstVisit();
+})();
+</script>
 </body></html>
