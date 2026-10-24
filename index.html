@@ -15,6 +15,36 @@ html{scroll-behavior:smooth}body{margin:0;min-height:100vh;overflow-x:hidden;bac
 #page-rank .weekly-my-rank{margin:18px 0 4px;padding:15px 18px;text-align:center;border:1px solid #8b5cf655;border-radius:15px;background:linear-gradient(110deg,#2563eb18,#7c3aed20);font-weight:900;font-size:clamp(17px,3vw,22px);color:var(--text)}
 #page-rank #rankRows td:first-child{display:table-cell!important;width:70px;text-align:center;vertical-align:middle;padding:10px 6px}
 #page-rank #rankRows td:nth-child(2){width:auto}
+
+/* تقویت نور، برق و حرکت سکوهای رده‌بندی بیتو */
+#page-rank .weekly-podium{isolation:isolate;position:relative}
+#page-rank .weekly-podium:before{content:"";position:absolute;inset:0;pointer-events:none;z-index:-1;border-radius:24px;background:radial-gradient(ellipse at 50% 15%,#a78bfa20,transparent 62%);animation:rankAuraBreath 3.8s ease-in-out infinite alternate}
+#page-rank .weekly-podium .podium-person{position:relative;isolation:isolate;filter:drop-shadow(0 12px 20px #0005)}
+#page-rank .weekly-podium .podium-person:before{content:"✦  ·  ✧";position:absolute;top:-17px;left:50%;transform:translateX(-50%);white-space:nowrap;letter-spacing:12px;font-size:14px;color:#c4b5fd;text-shadow:0 0 9px currentColor,0 0 22px currentColor;opacity:.75;animation:rankSparkle 2.4s ease-in-out infinite}
+#page-rank .weekly-podium .podium-person.first:before{color:#fde68a;font-size:20px;letter-spacing:15px;top:-23px}
+#page-rank .weekly-podium .podium-person.first .podium-avatar{animation:rankChampionFloat 3.1s ease-in-out infinite;box-shadow:0 0 0 5px #facc1522,0 0 22px #facc1588,0 0 48px #facc1544}
+#page-rank .weekly-podium .podium-person.first .podium-block{position:relative;overflow:hidden;box-shadow:0 0 22px #facc1544,0 0 52px #facc1526,inset 0 1px #fff9;animation:rankGoldPulse 2.8s ease-in-out infinite}
+#page-rank .weekly-podium .podium-person.second .podium-block{box-shadow:0 0 24px #cbd5e144,inset 0 1px #fff8;animation:rankSilverPulse 3.4s ease-in-out infinite}
+#page-rank .weekly-podium .podium-person.third .podium-block{box-shadow:0 0 24px #c0845744,inset 0 1px #fff8;animation:rankBronzePulse 3.7s ease-in-out infinite}
+#page-rank .weekly-podium .podium-block:after{content:"";position:absolute;top:-80%;bottom:-80%;left:-70%;width:42%;transform:rotate(24deg);background:linear-gradient(90deg,transparent,#ffffff42,transparent);animation:rankPodiumSweep 4.8s ease-in-out infinite;pointer-events:none}
+#page-rank .weekly-podium .podium-medal{text-shadow:0 0 9px currentColor,0 0 25px #fcd34d99;animation:rankMedalPulse 1.9s ease-in-out infinite}
+#page-rank .weekly-podium .podium-score{display:inline-block;padding:6px 12px;border:1px solid #c4b5fd55;border-radius:999px;background:linear-gradient(100deg,#7c3aed30,#0891b230,#db277730);color:#fff;font-weight:900;font-size:13px;text-shadow:0 0 12px #c4b5fd;box-shadow:0 0 18px #8b5cf633;animation:rankScoreGlow 2.5s ease-in-out infinite}
+#page-rank .weekly-podium .podium-person.first .podium-score{border-color:#facc15aa;background:linear-gradient(100deg,#facc1530,#f59e0b22);text-shadow:0 0 12px #facc15}
+#page-rank .weekly-podium .podium-frame-wrap{filter:drop-shadow(0 0 10px var(--rank-color,#a78bfa));}
+#page-rank #rankRows .weekly-rank-row{transition:background .25s,transform .25s,box-shadow .25s}
+#page-rank #rankRows .weekly-rank-row:hover{transform:translateX(-3px);background:#a78bfa16;box-shadow:inset -3px 0 #a78bfa,0 0 20px #8b5cf622}
+#page-rank #rankRows .weekly-points-value{display:inline-block;color:#e9d5ff;text-shadow:0 0 12px #a78bfa88;font-size:15px}
+@keyframes rankAuraBreath{from{opacity:.45;filter:hue-rotate(0deg)}to{opacity:1;filter:hue-rotate(22deg)}}
+@keyframes rankSparkle{0%,100%{opacity:.35;filter:brightness(.8);transform:translateX(-50%) scale(.9)}50%{opacity:1;filter:brightness(1.5);transform:translateX(-50%) scale(1.12)}}
+@keyframes rankChampionFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes rankGoldPulse{0%,100%{filter:brightness(1);box-shadow:0 0 22px #facc1544,inset 0 1px #fff9}50%{filter:brightness(1.18);box-shadow:0 0 38px #facc1588,0 0 65px #facc1533,inset 0 1px #fff}}
+@keyframes rankSilverPulse{0%,100%{filter:brightness(1)}50%{filter:brightness(1.13)}}
+@keyframes rankBronzePulse{0%,100%{filter:brightness(1)}50%{filter:brightness(1.12)}}
+@keyframes rankPodiumSweep{0%,35%{left:-70%;opacity:0}48%{opacity:1}75%,100%{left:140%;opacity:0}}
+@keyframes rankMedalPulse{0%,100%{transform:scale(1);filter:brightness(1)}50%{transform:scale(1.1);filter:brightness(1.45)}}
+@keyframes rankScoreGlow{0%,100%{box-shadow:0 0 10px #8b5cf622}50%{box-shadow:0 0 22px #8b5cf666}}
+@media(prefers-reduced-motion:reduce){#page-rank .weekly-podium:before,#page-rank .weekly-podium .podium-person:before,#page-rank .weekly-podium .podium-avatar,#page-rank .weekly-podium .podium-block,#page-rank .weekly-podium .podium-block:after,#page-rank .weekly-podium .podium-medal,#page-rank .weekly-podium .podium-score{animation:none!important}}
+
 /* ورود سکوی قهرمانان با انیمیشن از پایین به بالا */
 @keyframes weeklyPodiumRise{0%{opacity:0;transform:translateY(55px) scale(.96)}70%{opacity:1;transform:translateY(-5px) scale(1.01)}100%{opacity:1;transform:translateY(0) scale(1)}}
 #page-rank .weekly-podium .podium-person{opacity:0;animation:weeklyPodiumRise .75s cubic-bezier(.2,.8,.2,1) forwards}
