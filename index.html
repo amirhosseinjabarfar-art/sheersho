@@ -348,6 +348,34 @@ html{scroll-behavior:smooth}body{margin:0;min-height:100vh;overflow-x:hidden;bac
 @keyframes beytoModalShine{0%,15%{transform:translateX(-65%)}60%,100%{transform:translateX(65%)}}
 @media(max-width:600px){.beyto-clean-links button{min-height:80px;font-size:13px}.beyto-clean-secondary button{min-height:88px;font-size:13px}.beyto-modal-card{padding:24px 16px 18px}.beyto-modal-actions button{flex:1;min-width:110px}}
 @media(prefers-reduced-motion:reduce){.beyto-modal-card,.beyto-modal-emblem,.beyto-modal-emblem .beyto-modal-star,.beyto-frame-art{animation:none!important}}
+
+/* Fullscreen animated Studio Light credits */
+.jabarfar-studio-footer{cursor:pointer;position:relative;transition:filter .25s,transform .25s}
+.jabarfar-studio-footer:hover{filter:brightness(1.18);transform:translateY(-2px)}
+.jabarfar-studio-footer:focus-visible{outline:2px solid #a78bfa;outline-offset:5px}
+.beyto-credits-overlay{position:fixed;inset:0;z-index:100900;display:none;align-items:center;justify-content:center;overflow:hidden;padding:22px;background:radial-gradient(ellipse at 50% 35%,#32206d 0%,#15102f 45%,#070b19 100%);color:#fff;isolation:isolate}
+.beyto-credits-overlay.is-open{display:flex;animation:beytoCreditsFade .45s ease both}
+.beyto-credits-overlay:before,.beyto-credits-overlay:after{content:"";position:absolute;z-index:-1;width:min(75vw,650px);aspect-ratio:1;border-radius:50%;border:1px solid #a78bfa35;box-shadow:0 0 55px #8b5cf620,inset 0 0 65px #7c3aed10;animation:beytoCreditsOrbit 18s linear infinite}
+.beyto-credits-overlay:after{width:min(92vw,800px);border-color:#22d3ee25;animation-duration:25s;animation-direction:reverse}
+.beyto-credits-close{position:absolute;top:max(18px,env(safe-area-inset-top));left:18px;width:44px;height:44px;border:1px solid #ffffff30;border-radius:15px;background:#ffffff12;color:#fff;font-size:27px;cursor:pointer;backdrop-filter:blur(12px);transition:transform .25s,background .25s}
+.beyto-credits-close:hover{transform:rotate(90deg) scale(1.08);background:#ffffff25}
+.beyto-credits-content{width:min(100%,620px);display:flex;flex-direction:column;align-items:center;text-align:center;gap:16px}
+.beyto-credits-mark{display:grid;place-items:center;width:74px;height:74px;border-radius:25px;background:linear-gradient(135deg,#2563eb,#7c3aed 60%,#db2777);font:400 51px/1 Lalezar,Vazirmatn,sans-serif;box-shadow:0 0 25px #8b5cf677,0 0 65px #7c3aed44;animation:beytoCreditsMark 3s ease-in-out infinite}
+.beyto-credits-kicker{margin:0;color:#a5f3fc;font:700 10px/1.5 Vazirmatn,sans-serif;letter-spacing:.24em}
+.beyto-credit-line{width:100%;max-width:500px;padding:20px 18px;border:1px solid #c4b5fd55;border-radius:22px;background:linear-gradient(120deg,#ffffff12,#8b5cf61c,#22d3ee0c);box-shadow:0 12px 32px #03071244,inset 0 1px 0 #ffffff20;display:flex;flex-direction:column;gap:6px;opacity:0;transform:perspective(800px) translateY(35px) rotateX(28deg) rotateZ(-3deg) scale(.75);filter:blur(8px);will-change:transform,opacity;backdrop-filter:blur(16px)}
+.beyto-credit-line.is-visible{animation:beytoCreditEnter .85s cubic-bezier(.18,1.25,.32,1) both,beytoCreditShake .55s ease .72s both}
+.beyto-credit-label{font:600 13px/1.7 Vazirmatn,sans-serif;color:#a5f3fc}
+.beyto-credit-line strong{font:400 clamp(23px,5vw,35px)/1.6 Lalezar,Vazirmatn,sans-serif;color:#fff;text-shadow:0 0 12px #a78bfa,0 0 28px #8b5cf655;overflow-wrap:anywhere}
+.beyto-credits-bottom{margin:4px 0 0;color:#c4b5fd;font:500 12px/1.8 Vazirmatn,sans-serif;opacity:0;animation:beytoCreditsFade .8s ease 3.8s forwards}
+.beyto-credits-particles{position:absolute;inset:0;z-index:-1;pointer-events:none;background-image:radial-gradient(circle,#ffffffbb 1px,transparent 1.7px),radial-gradient(circle,#a78bfa99 1px,transparent 1.8px),radial-gradient(circle,#67e8f999 1px,transparent 1.6px);background-size:97px 113px,137px 151px,181px 167px;background-position:0 0,40px 50px,80px 20px;animation:beytoCreditsParticles 15s linear infinite}
+@keyframes beytoCreditsFade{from{opacity:0}to{opacity:1}}
+@keyframes beytoCreditsOrbit{to{transform:rotate(360deg) scale(1.04)}}
+@keyframes beytoCreditsMark{0%,100%{transform:rotate(-5deg) scale(.96);box-shadow:0 0 25px #8b5cf677,0 0 65px #7c3aed44}50%{transform:rotate(5deg) scale(1.07);box-shadow:0 0 35px #8b5cf6aa,0 0 85px #7c3aed66}}
+@keyframes beytoCreditEnter{0%{opacity:0;transform:perspective(800px) translateY(35px) rotateX(28deg) rotateZ(-9deg) scale(.65);filter:blur(8px)}55%{opacity:1;transform:perspective(800px) translateY(-5px) rotateX(-5deg) rotateZ(4deg) scale(1.04);filter:blur(0)}75%{transform:perspective(800px) translateY(2px) rotateZ(-2deg) scale(.99)}100%{opacity:1;transform:perspective(800px) translateY(0) rotateX(0) rotateZ(0) scale(1);filter:blur(0)}}
+@keyframes beytoCreditShake{0%,100%{translate:0 0}20%{translate:-3px 0}40%{translate:3px 0}60%{translate:-2px 0}80%{translate:2px 0}}
+@keyframes beytoCreditsParticles{to{background-position:0 -220px,40px -310px,80px -270px}}
+@media(max-width:600px){.beyto-credits-content{gap:12px}.beyto-credits-mark{width:62px;height:62px;border-radius:21px;font-size:43px}.beyto-credit-line{padding:16px 12px;border-radius:18px}.beyto-credit-line strong{font-size:25px}}
+@media(prefers-reduced-motion:reduce){.beyto-credits-overlay:before,.beyto-credits-overlay:after,.beyto-credits-mark,.beyto-credits-particles,.beyto-credit-line.is-visible,.beyto-credits-bottom{animation:none!important;opacity:1;filter:none;transform:none}}
 </style>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Lalezar&display=swap');
@@ -1347,7 +1375,7 @@ function sendAllianceSticker(e){$('allianceStickerPicker').classList.add('hidden
 function toggleAllianceStickers(){$('allianceStickerPicker').classList.toggle('hidden')}
 async function toggleAllianceRecording(){if(!allianceCurrent)return toast('ابتدا عضو اتحاد شو.');if(allianceRecording){allianceRecorder.stop();return}if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder)return toast('ضبط ویس در این مرورگر در دسترس نیست.');try{const stream=await navigator.mediaDevices.getUserMedia({audio:true});allianceChunks=[];allianceRecorder=new MediaRecorder(stream);allianceRecorder.ondataavailable=e=>{if(e.data.size)allianceChunks.push(e.data)};allianceRecorder.onstop=async()=>{stream.getTracks().forEach(t=>t.stop());allianceRecording=false;$('allianceVoiceBtn').textContent='◆ ضبط ویس';const blob=new Blob(allianceChunks,{type:allianceRecorder.mimeType||'audio/webm'});try{const path=sessionUser.id+'/'+allianceCurrent.id+'/'+Date.now()+'.webm',u=SUPABASE_URL+'/storage/v1/object/alliance-voice/'+path,up=await fetch(u,{method:'POST',headers:{...allianceHeaders(),'Content-Type':blob.type,'x-upsert':'false'},body:blob}),d=await up.json().catch(()=>({}));if(!up.ok)throw Error(d.message||'آپلود ویس انجام نشد؛ Storage را تنظیم کن.');await sendAllianceMessage('voice',SUPABASE_URL+'/storage/v1/object/public/alliance-voice/'+path)}catch(e){toast(e.message||'ارسال ویس ناموفق بود.')}};allianceRecorder.start();allianceRecording=true;$('allianceVoiceBtn').textContent='◆ پایان ضبط';setTimeout(()=>{if(allianceRecording)allianceRecorder.stop()},60000)}catch(e){toast('اجازه میکروفون داده نشد.')}}
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&document.activeElement?.id==='allianceMessageInput'){e.preventDefault();sendAllianceText()}});
-</script><footer class="jabarfar-studio-footer" aria-label="استودیو لایت"><div class="jabarfar-studio-frame"><p class="jabarfar-studio-text">استودیو لایت</p></div></footer>
+</script><footer class="jabarfar-studio-footer" aria-label="استودیو لایت"><div class="jabarfar-studio-frame"><p class="jabarfar-studio-text">استودیو لایت</p></div></footer><div id="beytoStudioCredits" class="beyto-credits-overlay" aria-hidden="true"><button class="beyto-credits-close" type="button" aria-label="بستن">×</button><div class="beyto-credits-particles" aria-hidden="true"></div><div class="beyto-credits-content"><div class="beyto-credits-mark">ب</div><p class="beyto-credits-kicker">BEYTO · STUDIO LIGHT</p><div class="beyto-credit-line" data-credit="0"><span class="beyto-credit-label">کد نویس</span><strong>امیر حسین جبارفر</strong></div><div class="beyto-credit-line" data-credit="1"><span class="beyto-credit-label">جمع آوری شعر</span><strong>امیر حسین جبارفر</strong></div><div class="beyto-credit-line" data-credit="2"><span class="beyto-credit-label">توسعه دهنده</span><strong>استودیو لایت</strong></div><p class="beyto-credits-bottom">ساخته‌شده با خلاقیت و عشق به شعر</p></div></div>
 <script>
 (function(){
   const overlay=document.getElementById('studioIntro');
@@ -2458,4 +2486,32 @@ function openBeytoVipDialog(feature='این بخش'){showBeytoDialog({title:'ا�
 function openBeytoFrameConfirm(id){const f=FRAMES.find(x=>x.id===id);if(!f)return;const p=getPlayer();const coins=Number(p?.coins??remoteProfile?.coins??0);const price=Number(f.price)||0;const enough=coins>=price;const art=({default:'▧',gold:'♛',royal:'✦',neon:'◇',fire:'✧',diamond:'◆'})[id]||'▧';showBeytoDialog({title:'خرید قاب '+f.name,copy:'آیا از خرید قاب «'+f.name+'» مطمئن هستی؟'+(enough?' بعد از تأیید، سکه‌ها از موجودی حسابت کم می‌شود.':' موجودی سکه‌ات برای خرید این قاب کافی نیست؛ ابتدا سکه جمع کن.'),star:'★',art,primary:enough?'خرید قاب':'سکه نداری',secondary:'بعداً',disabled:!enough,onPrimary:()=>{closeBeytoDialog();buyFrameConfirmed(id)}})}
 document.addEventListener('click',function(e){const btn=e.target.closest('button');if(!btn||btn.dataset.beytoVipChecked)return;const text=(btn.innerText||btn.textContent||'').trim();const onclick=btn.getAttribute('onclick')||'';if(/VIP/i.test(text)&&(/setupGathering\(true\)|tournaments|tournament|Vip|vip/i.test(onclick)||/نیاز به اشتراک|وی.?آی.?پی/i.test(text))){if(/setupGathering\(true\)/.test(onclick)||/tournament/i.test(onclick)){e.preventDefault();e.stopImmediatePropagation();openBeytoVipDialog(text.replace(/[♛★✦◆◇]/g,'').trim()||'این بخش')} }},true);
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeBeytoDialog()});
-</script></body></html>
+</script>
+<script>
+(function(){
+ const footer=document.querySelector('.jabarfar-studio-footer');
+ const overlay=document.getElementById('beytoStudioCredits');
+ if(!footer||!overlay)return;
+ let timers=[];
+ function clearCreditsTimers(){timers.forEach(clearTimeout);timers=[]}
+ function openCredits(){
+  clearCreditsTimers();
+  overlay.classList.add('is-open');overlay.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';
+  const lines=[...overlay.querySelectorAll('.beyto-credit-line')];
+  lines.forEach(line=>line.classList.remove('is-visible'));
+  lines.forEach((line,index)=>timers.push(setTimeout(()=>{line.classList.remove('is-visible');void line.offsetWidth;line.classList.add('is-visible')},350+index*1150)));
+  overlay.querySelector('.beyto-credits-close')?.focus({preventScroll:true});
+ }
+ function closeCredits(){
+  clearCreditsTimers();overlay.classList.remove('is-open');overlay.setAttribute('aria-hidden','true');document.body.style.overflow='';
+  overlay.querySelectorAll('.beyto-credit-line').forEach(line=>line.classList.remove('is-visible'));
+ }
+ footer.setAttribute('role','button');footer.setAttribute('tabindex','0');footer.setAttribute('aria-label','نمایش عوامل ساخت بیتو');
+ footer.addEventListener('click',openCredits);
+ footer.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openCredits()}});
+ overlay.querySelector('.beyto-credits-close')?.addEventListener('click',closeCredits);
+ overlay.addEventListener('click',e=>{if(e.target===overlay)closeCredits()});
+ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&overlay.classList.contains('is-open'))closeCredits()});
+})();
+</script>
+</body></html>
