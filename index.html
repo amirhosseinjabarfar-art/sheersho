@@ -292,6 +292,29 @@ html{scroll-behavior:smooth}body{margin:0;min-height:100vh;overflow-x:hidden;bac
 .beyto-home-clean .market-coming-soon .mobile-download-eyebrow{font-size:10px;color:#64748b}
 .beyto-home-clean .market-coming-soon .mobile-download-copy strong{font:700 12px/1.7 Vazirmatn,sans-serif;color:#334155}
 @media(max-width:600px){.beyto-home-clean{min-height:calc(100svh - 76px);padding:12px 0 20px!important}.beyto-clean-hero{padding:12px 10px 8px;margin-top:auto;margin-bottom:20px}.beyto-clean-mark{width:68px;height:68px;border-radius:22px;margin-bottom:14px}.beyto-clean-mark span{font-size:48px}.beyto-clean-hero h1{margin-top:10px}.beyto-clean-hero p{margin-bottom:20px}.beyto-clean-start{min-width:200px}.beyto-clean-links{gap:2px;margin-bottom:14px}.beyto-clean-links button{padding:8px 9px;font-size:11px}.beyto-home-clean .market-coming-soon{max-width:340px}}
+
+/* Richer glowing navigation and large game shortcuts on Beyto home */
+.beyto-clean-secondary{gap:14px;margin-top:20px}
+.beyto-clean-secondary button{position:relative;isolation:isolate;overflow:hidden;min-width:205px;min-height:88px;flex-direction:column;gap:5px;padding:13px 18px;border:1px solid #a78bfa88;border-radius:19px;background:linear-gradient(135deg,#18133b,#28205c 58%,#31164c);color:#f8fafc;font-size:15px;box-shadow:0 0 0 1px #7c3aed18,0 10px 26px #4c1d9530,inset 0 1px 0 #ffffff20;animation:beytoGamePulse 4s ease-in-out infinite}
+.beyto-clean-secondary button:nth-child(2){border-color:#34d39980;background:linear-gradient(135deg,#102f37,#114b56 58%,#123b50);box-shadow:0 10px 26px #0891b230,inset 0 1px 0 #ffffff20;animation-delay:1.2s}
+.beyto-clean-secondary button:before{content:"";position:absolute;z-index:-1;inset:-60%;background:linear-gradient(110deg,transparent 42%,#ffffff18 49%,transparent 57%);transform:translateX(-65%);animation:beytoCardShine 5s ease-in-out infinite}
+.beyto-clean-secondary button span{display:grid;place-items:center;width:35px;height:35px;border-radius:12px;background:#a78bfa22;border:1px solid #c4b5fd66;color:#ddd6fe;font-size:20px}
+.beyto-clean-secondary button:nth-child(2) span{background:#34d3991a;border-color:#6ee7b766;color:#a7f3d0}
+.beyto-clean-secondary button:hover{transform:translateY(-4px) scale(1.015);border-color:#c4b5fd;box-shadow:0 0 22px #8b5cf655,0 16px 32px #4c1d9540}
+.beyto-clean-links{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;width:min(100%,760px);margin:0 auto 22px}
+.beyto-clean-links button{position:relative;isolation:isolate;overflow:hidden;min-height:86px;flex-direction:column;gap:8px;padding:12px 8px;border:1px solid var(--home-accent,#c4b5fd88);border-radius:18px;background:linear-gradient(145deg,var(--home-tint,#f5f3ff),#ffffff 72%);color:var(--home-ink,#4338ca);font-size:13px;box-shadow:0 7px 18px #312e8110,inset 0 1px 0 #ffffff;transition:transform .25s,border-color .25s,box-shadow .25s}
+.beyto-clean-links button:nth-child(1){--home-accent:#c4b5fd;--home-tint:#f3e8ff;--home-ink:#6d28d9}
+.beyto-clean-links button:nth-child(2){--home-accent:#fcd34d;--home-tint:#fffbeb;--home-ink:#b45309}
+.beyto-clean-links button:nth-child(3){--home-accent:#7dd3fc;--home-tint:#f0f9ff;--home-ink:#0369a1}
+.beyto-clean-links button:nth-child(4){--home-accent:#6ee7b7;--home-tint:#ecfdf5;--home-ink:#047857}
+.beyto-clean-links button:before{content:"";position:absolute;z-index:-1;inset:-70%;background:linear-gradient(115deg,transparent 43%,#ffffffd9 50%,transparent 57%);transform:translateX(-70%);transition:transform .3s}
+.beyto-clean-links button:hover{background:linear-gradient(145deg,var(--home-tint),#fff);border-color:var(--home-accent);transform:translateY(-4px);box-shadow:0 0 18px color-mix(in srgb,var(--home-accent) 50%,transparent),0 12px 25px #312e8114}
+.beyto-clean-links button:hover:before{transform:translateX(70%)}
+.beyto-clean-links button span{display:grid;place-items:center;width:36px;height:36px;border-radius:12px;background:#ffffffc9;border:1px solid var(--home-accent);color:var(--home-ink);font-size:20px;box-shadow:0 4px 12px #312e8110}
+@keyframes beytoGamePulse{0%,100%{filter:saturate(1);box-shadow:0 0 0 1px #7c3aed18,0 10px 26px #4c1d9530,inset 0 1px 0 #ffffff20}50%{filter:saturate(1.2);box-shadow:0 0 22px #8b5cf633,0 12px 30px #4c1d9540,inset 0 1px 0 #ffffff26}}
+@keyframes beytoCardShine{0%,20%{transform:translateX(-70%)}60%,100%{transform:translateX(70%)}}
+@media(max-width:600px){.beyto-clean-secondary{width:100%;gap:9px;margin-top:16px}.beyto-clean-secondary button{min-width:0;flex:1;min-height:80px;padding:10px 7px;font-size:12px}.beyto-clean-links{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-bottom:16px}.beyto-clean-links button{min-height:72px;flex-direction:row;justify-content:flex-start;padding:10px 12px;gap:10px;font-size:12px}.beyto-clean-links button span{width:32px;height:32px;flex:none}.beyto-clean-hero{margin-bottom:16px}}
+@media(prefers-reduced-motion:reduce){.beyto-clean-secondary button,.beyto-clean-secondary button:before{animation:none}}
 </style>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Lalezar&display=swap');
