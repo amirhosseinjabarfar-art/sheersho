@@ -1581,11 +1581,14 @@ function beginSoloRun(){
   $('soloAnswer').value='';$('soloAnswer').disabled=false;$('soloSubmit').disabled=false;$('soloFeedback').textContent='';
   const choiceBox=$('soloChoiceButtons'),answerField=$('soloAnswerField');
   if(soloMode==='multiple'){
-    const correct=q.answers[0],source=[...(soloQuestions||[]),...(typeof getPlayablePoemQuestions==='function'?getPlayablePoemQuestions():[]),...(Array.isArray(poems)?poems:[])],all=[];
-    source.forEach(item=>(item.answers||[]).forEach(a=>{a=String(a||'').trim();if(a&&norm(a)!==norm(correct)&&!all.some(x=>norm(x)===norm(a)))all.push(a)}));
-    const fallbacks=['دانا','توانا','خرد','جهان','دل','دانش','خداوند','آزادی','بهار','زندگی'];
-    for(const a of shuffle(all)){if(all.filter(x=>norm(x)!==norm(correct)).length>=3)break;}
-    const distractors=shuffle(all).slice(0,3);for(const a of fallbacks){if(distractors.length>=3)break;if(norm(a)!==norm(correct)&&!distractors.some(x=>norm(x)===norm(a)))distractors.push(a)}
+    const correct=String(q.answers[0]||'').trim(),source=[...(soloQuestions||[]),...(typeof getPlayablePoemQuestions==='function'?getPlayablePoemQuestions():[]),...(Array.isArray(poems)?poems:[])],all=[];
+    const addDistractor=a=>{a=String(a||'').trim();if(a&&norm(a)!==norm(correct)&&!all.some(x=>norm(x)===norm(a)))all.push(a)};
+    source.forEach(item=>(item.answers||[]).forEach(addDistractor));
+    // Prefer plausible near-misses: same length, shared first/last character, or similar word length.
+    const scoreCandidate=a=>{const c=norm(correct),v=norm(a);let score=Math.abs(v.length-c.length)*3;if(c[0]===v[0])score-=2;if(c.slice(-1)===v.slice(-1))score-=1;if(c.slice(0,2)===v.slice(0,2))score-=2;if(c.slice(-2)===v.slice(-2))score-=2;if(c.length>3&&v.length>3&&c.includes(v.slice(0,Math.min(3,v.length))))score-=1;return score};
+    const distractors=shuffle(all).sort((a,b)=>scoreCandidate(a)-scoreCandidate(b)).slice(0,3);
+    const fallbacks=['دانا','توانا','خرد','جهان','دل','دانش','خداوند','آزادی','بهار','زندگی','بینش','روان','هنر','سخن','مهر','وفا','زمان','جان'];
+    for(const a of shuffle(fallbacks).sort((a,b)=>scoreCandidate(a)-scoreCandidate(b))){if(distractors.length>=3)break;if(norm(a)!==norm(correct)&&!distractors.some(x=>norm(x)===norm(a)))distractors.push(a)}
     soloCurrentOptions=shuffle([correct,...distractors]).slice(0,4);
     choiceBox.innerHTML=soloCurrentOptions.map((a,i)=>`<button type="button" class="game-mode-card" onclick="chooseSoloOption(${i})"><span class="mode-icon">${['①','②','③','④'][i]}</span><b>${esc(a)}</b></button>`).join('');
     choiceBox.classList.remove('hidden');answerField.classList.add('hidden');$('soloSubmit').classList.add('hidden');
