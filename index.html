@@ -953,7 +953,7 @@ async function supportUploadImage(ticketId,file){if(!file)return null;if(!/^imag
 async function supportInsertMessage(ticketId,text,file){let path=null;if(file)path=await supportUploadImage(ticketId,file);const payload={ticket_id:ticketId,user_id:sessionUser.id,sender_role:'user',message:(text||'').trim(),attachment_path:path};const r=await fetch(SUPABASE_URL+'/rest/v1/ss_support_messages',{method:'POST',headers:supportHeaders({'Content-Type':'application/json','Prefer':'return=representation'}),body:JSON.stringify(payload)});const d=await r.json().catch(()=>({}));if(!r.ok)throw Error(d.message||d.details||d.hint||'ذخیره پیام انجام نشد.');return Array.isArray(d)?d[0]:d}
 async function supportCreateTicket(){
  const subjectEl=$('supportNewSubject'),messageEl=$('supportNewMessage'),imageEl=$('supportNewImage'),btn=$('supportCreateBtn');
- if(!subjectEl||!messageEl||!btn){console.error('Support form elements missing');toast('فرم پشتیبانی بارگذاری نشده؛ صفحه را تازه‌سازی کن.');return}
+ if(!subjectEl||!messageEl||!btn){toast('فرم پشتیبانی بارگذاری نشده؛ صفحه را تازه‌سازی کن.');return}
  if(!sessionUser||!accessToken){openAuth();toast('برای ارسال تیکت ابتدا وارد حساب شو.');return}
  const subject=subjectEl.value.trim(),message=messageEl.value.trim(),file=imageEl?.files?.[0]||null;
  if(subject.length<3||subject.length>100){subjectEl.focus();toast('موضوع باید بین ۳ تا ۱۰۰ نویسه باشد.');return}
@@ -968,12 +968,21 @@ async function supportCreateTicket(){
   const raw=await response.text();let data={};try{data=raw?JSON.parse(raw):{}}catch{data={message:raw}}
   if(!response.ok||!data.success||!data.ticket?.id){console.error('support-api rejected ticket',response.status,data);throw Error(data.error||data.message||('ارسال تیکت ناموفق بود (HTTP '+response.status+').'))}
   const ticket=data.ticket;
+  // Open the chat immediately from the confirmed server response. Ticket-list refresh must not block the chat pane.
   supportCurrentTicket=ticket;
+  supportTicketsCache=[ticket,...supportTicketsCache.filter(t=>t.id!==ticket.id)];
+  $('supportChatTitle').textContent=ticket.subject;
+  $('supportChatStatus').textContent='ثبت شد · در انتظار پاسخ پشتیبانی';
+  $('supportReplyText').disabled=false;
+  $('supportReplyImage').disabled=false;
+  $('supportReplyBtn').disabled=false;
+  const box=$('supportMessages');
+  if(box)box.innerHTML='<div class="support-message"><div class="support-message-bubble">'+esc(message||'تصویر پیوست شد.')+'</div><div class="support-message-meta"><span>شما</span><span>همین الان</span></div></div>';
+  supportRenderTicketList();
   subjectEl.value='';messageEl.value='';if(imageEl)imageEl.value='';
-  toast('تیکت با موفقیت در صندوق پشتیبانی ثبت شد.');
-  await supportLoadTickets();
-  if(supportTicketsCache.some(t=>t.id===ticket.id))await supportOpenTicket(ticket.id);
-  else {supportCurrentTicket=ticket;$('supportChatTitle').textContent=ticket.subject;$('supportChatStatus').textContent='ثبت شد · در انتظار پاسخ پشتیبانی';const box=$('supportMessages');if(box)box.innerHTML='<div class="support-message"><div class="support-message-bubble">'+esc(message||'تصویر پیوست شد.')+'</div><div class="support-message-meta"><span>شما</span><span>همین الان</span></div></div>'}
+  toast('تیکت ثبت شد و گفت‌وگو باز شد.');
+  // Load the server-confirmed message/ticket list in the background, without hiding the open chat if list access fails.
+  Promise.resolve().then(async()=>{try{await supportLoadTickets();if(supportCurrentTicket?.id===ticket.id){supportCurrentTicket=ticket;await supportLoadMessages(ticket.id);supportRenderTicketList()}}catch(e){console.warn('support background refresh',e)}});
   if(typeof adminLoadSupport==='function'&&adminPasswordSession&&$('adminSupportPanel')&&!$('adminSupportPanel').classList.contains('hidden'))adminLoadSupport();
  }catch(error){console.error('supportCreateTicket',error);toast(error?.message||'ارسال تیکت انجام نشد؛ دوباره تلاش کن.')}
  finally{btn.disabled=false;btn.innerHTML=original}
