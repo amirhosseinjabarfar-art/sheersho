@@ -796,8 +796,9 @@ button,.ghost,.answer,.game-mode-card{font-family:'Lalezar','Vazirmatn',sans-ser
 <button class="arena-card arena-party" onclick="go('friends')"><small>02 / PARTY</small><i>♧</i><b>دورهمی</b><span>رقابت تیمی، نوبتی و پرهیجان</span><em>↗</em></button>
 <button class="arena-card arena-cup" onclick="go('tournaments')"><small>03 / CUP</small><i>♛</i><b>تورنمنت حذفی</b><span>جدول بساز و برای قهرمانی بجنگ</span><label>VIP</label><em>↗</em></button>
 <button class="arena-card arena-duel" onclick="go('duel')"><small>04 / DUEL</small><i>⚔</i><b>دوئل شاعران</b><span>سرعت و دقتت را محک بزن</span><em>↗</em></button>
+<button class="arena-card arena-store" onclick="go('store')"><small>05 / STORE</small><i>✧</i><b>فروشگاه بیتو</b><span>قاب‌های ویژه، سکه‌ها و اشتراک VIP</span><em>↗</em></button>
 </div>
-<div class="arena-shortcuts"><button onclick="go('rank')"><i>♛</i><span><b>تالار قهرمانان</b><small>رتبه‌بندی و رکوردها</small></span><em>←</em></button><button onclick="go('store')"><i>✧</i><span><b>خزانه بیتو</b><small>قاب‌ها، سکه‌ها و VIP</small></span><em>←</em></button><button onclick="openGraphicsSettings()"><i>⚙</i><span><b>تنظیمات میدان</b><small>کیفیت جلوه‌ها</small></span><em>←</em></button></div>
+<div class="arena-shortcuts"><button onclick="go('rank')"><i>♛</i><span><b>تالار قهرمانان</b><small>رتبه‌بندی و رکوردها</small></span><em>←</em></button><button onclick="openGraphicsSettings()"><i>⚙</i><span><b>تنظیمات میدان</b><small>کیفیت جلوه‌ها</small></span><em>←</em></button></div>
 <div class="beyto-support-launch glass"><div class="beyto-support-symbol">✉</div><div class="beyto-support-copy"><strong>پشتیبانی بیتو</strong><span>برای پرسش یا گزارش مشکل با ما گفتگو کن.</span></div><button class="beyto-support-open" onclick="openSupportPage()">گفتگو با پشتیبانی ←</button></div>
 <section class="section home-mobile-download" aria-label="اپلیکیشن بیتو"><div class="mobile-download-card market-coming-soon"><span class="mobile-download-icon market-logo" aria-label="نشان بازار"><svg viewBox="0 0 64 64" width="42" height="42" role="img" aria-label="بازار"><path d="M13 23 19 9h26l6 14" fill="#fff"/><path d="M10 23h44l-3 30H13z" fill="#25a55b"/><path d="M10 23h44l-3 8H13z" fill="#f5bd42"/><path d="M20 31h24v22H20z" fill="#fff"/><path d="M25 36h14v17H25z" fill="#dff5e7"/></svg></span><span class="mobile-download-copy"><span class="mobile-download-eyebrow">اپلیکیشن بیتو</span><strong id="mobileDownloadTitle">به زودی اپ در پلتفرم بازار ...</strong></span></div></section>
 <div id="graphicsSettingsOverlay" class="graphics-settings-overlay hidden"><div class="graphics-settings-card"><button class="graphics-settings-close" onclick="closeGraphicsSettings()" aria-label="بستن">×</button><h2>تنظیمات گرافیک</h2><div class="graphics-options" role="group" aria-label="تنظیمات گرافیک"><button class="graphics-option" data-graphics="low" onclick="setGraphicsLevel('low')">◆ گرافیک کم</button><button class="graphics-option" data-graphics="medium" onclick="setGraphicsLevel('medium')">✦ گرافیک متوسط</button><button class="graphics-option" data-graphics="max" onclick="setGraphicsLevel('max')">◆ گرافیک مکس</button></div></div></div></section><section class="page" id="page-support" data-page="support">
@@ -952,25 +953,29 @@ async function supportUploadImage(ticketId,file){if(!file)return null;if(!/^imag
 async function supportInsertMessage(ticketId,text,file){let path=null;if(file)path=await supportUploadImage(ticketId,file);const payload={ticket_id:ticketId,user_id:sessionUser.id,sender_role:'user',message:(text||'').trim(),attachment_path:path};const r=await fetch(SUPABASE_URL+'/rest/v1/ss_support_messages',{method:'POST',headers:supportHeaders({'Content-Type':'application/json','Prefer':'return=representation'}),body:JSON.stringify(payload)});const d=await r.json().catch(()=>({}));if(!r.ok)throw Error(d.message||d.details||d.hint||'ذخیره پیام انجام نشد.');return Array.isArray(d)?d[0]:d}
 async function supportCreateTicket(){
  const subjectEl=$('supportNewSubject'),messageEl=$('supportNewMessage'),imageEl=$('supportNewImage'),btn=$('supportCreateBtn');
- if(!subjectEl||!messageEl||!btn){console.error('Support form elements missing');toast('فرم پشتیبانی درست بارگذاری نشده است؛ صفحه را تازه سازی کن.');return}
+ if(!subjectEl||!messageEl||!btn){console.error('Support form elements missing');toast('فرم پشتیبانی بارگذاری نشده؛ صفحه را تازه‌سازی کن.');return}
  if(!sessionUser||!accessToken){openAuth();toast('برای ارسال تیکت ابتدا وارد حساب شو.');return}
  const subject=subjectEl.value.trim(),message=messageEl.value.trim(),file=imageEl?.files?.[0]||null;
- if(subject.length<3){subjectEl.focus();toast('موضوع را حداقل در ۳ نویسه بنویس.');return}
+ if(subject.length<3||subject.length>100){subjectEl.focus();toast('موضوع باید بین ۳ تا ۱۰۰ نویسه باشد.');return}
  if(!message&&!file){messageEl.focus();toast('متن پیام را بنویس یا یک تصویر پیوست کن.');return}
+ if(message.length>5000){toast('پیام حداکثر ۵۰۰۰ نویسه باشد.');return}
  if(file&&(!/^image\/(jpeg|png|webp|gif)$/.test(file.type)||file.size>5*1024*1024)){toast('تصویر باید JPG، PNG، WEBP یا GIF و حداکثر ۵ مگابایت باشد.');return}
- btn.disabled=true;const original=btn.innerHTML;btn.innerHTML='در حال ارسال…';
+ btn.disabled=true;const original=btn.innerHTML;btn.innerHTML='در حال ارسال امن…';
  try{
-  const response=await fetch(SUPABASE_URL+'/rest/v1/ss_support_tickets?select=id,user_id,subject,status,created_at,updated_at,last_message_at',{method:'POST',headers:supportHeaders({'Content-Type':'application/json','Prefer':'return=representation'}),body:JSON.stringify({user_id:sessionUser.id,subject,status:'open'})});
+  let imageBase64='',imageMime='';
+  if(file){imageMime=file.type;imageBase64=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result||''));reader.onerror=()=>reject(new Error('خواندن فایل تصویر ناموفق بود.'));reader.readAsDataURL(file)})}
+  const response=await fetch(SUPABASE_URL+'/functions/v1/support-api',{method:'POST',headers:{apikey:SUPABASE_KEY,Authorization:'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({action:'create-ticket',subject,message,image_base64:imageBase64,image_mime:imageMime})});
   const raw=await response.text();let data={};try{data=raw?JSON.parse(raw):{}}catch{data={message:raw}}
-  if(!response.ok){console.error('Ticket create failed',response.status,data);throw Error(data.message||data.details||data.hint||('ساخت تیکت ناموفق بود (HTTP '+response.status+').'))}
-  const ticket=Array.isArray(data)?data[0]:data;
-  if(!ticket?.id)throw Error('سرور تیکت را ثبت کرد اما شناسه برنگرداند؛ دوباره فهرست را تازه سازی کن.');
+  if(!response.ok||!data.success||!data.ticket?.id){console.error('support-api rejected ticket',response.status,data);throw Error(data.error||data.message||('ارسال تیکت ناموفق بود (HTTP '+response.status+').'))}
+  const ticket=data.ticket;
   supportCurrentTicket=ticket;
-  try{await supportInsertMessage(ticket.id,message,file)}catch(messageError){console.error('Ticket message failed',messageError);toast('تیکت ساخته شد، اما پیام اول ذخیره نشد: '+(messageError.message||'خطای نامشخص'));await supportLoadTickets();await supportOpenTicket(ticket.id);return}
   subjectEl.value='';messageEl.value='';if(imageEl)imageEl.value='';
-  toast('تیکت با موفقیت ثبت شد.');
-  await supportLoadTickets();await supportOpenTicket(ticket.id);
- }catch(error){console.error('supportCreateTicket',error);toast(error?.message||'ارسال تیکت انجام نشد؛ اتصال را بررسی کن.')}
+  toast('تیکت با موفقیت در صندوق پشتیبانی ثبت شد.');
+  await supportLoadTickets();
+  if(supportTicketsCache.some(t=>t.id===ticket.id))await supportOpenTicket(ticket.id);
+  else {supportCurrentTicket=ticket;$('supportChatTitle').textContent=ticket.subject;$('supportChatStatus').textContent='ثبت شد · در انتظار پاسخ پشتیبانی';const box=$('supportMessages');if(box)box.innerHTML='<div class="support-message"><div class="support-message-bubble">'+esc(message||'تصویر پیوست شد.')+'</div><div class="support-message-meta"><span>شما</span><span>همین الان</span></div></div>'}
+  if(typeof adminLoadSupport==='function'&&adminPasswordSession&&$('adminSupportPanel')&&!$('adminSupportPanel').classList.contains('hidden'))adminLoadSupport();
+ }catch(error){console.error('supportCreateTicket',error);toast(error?.message||'ارسال تیکت انجام نشد؛ دوباره تلاش کن.')}
  finally{btn.disabled=false;btn.innerHTML=original}
 }
 async function supportOpenTicket(id){const t=supportTicketsCache.find(x=>x.id===id);if(!t)return;supportCurrentTicket=t;supportRenderTicketList();$('supportChatTitle').textContent=t.subject;$('supportChatStatus').textContent=t.status==='closed'?'این تیکت بسته شده است.':t.status==='answered'?'پاسخ پشتیبانی ثبت شده است.':'در انتظار پاسخ پشتیبانی';$('supportReplyText').disabled=t.status==='closed';$('supportReplyImage').disabled=t.status==='closed';$('supportReplyBtn').disabled=t.status==='closed';await supportLoadMessages(id)}
@@ -2762,18 +2767,18 @@ select.beyto-native-select option{color:#f8fafc!important;background:#15152d!imp
     <button type="button" class="beyto-updates-close" onclick="closeBeytoUpdates()" aria-label="بستن پنجره">×</button>
     <div class="beyto-updates-header"><p class="beyto-updates-kicker">✦ ➤ نسخهٔ تازهٔ بیتو · آپدیت ویژه ✦</p><h2 id="beytoUpdatesTitle" class="beyto-updates-title">آخرین تغییرات بیتو</h2><p class="beyto-updates-intro">◆ همهٔ قابلیت های تازه را یک جا ببین و آمادهٔ بازی شو! ◆</p></div>
     <ul class="beyto-updates-list">
-      <li class="beyto-updates-item"><span class="beyto-updates-icon">◆</span><div><h3>بهبود مشکل بارگذاری</h3><p>رفع مشکل گیرکردن صفحهٔ شروع و بهتر شدن ورود به محیط بازی.</p></div></li>
-      <li class="beyto-updates-item"><span class="beyto-updates-icon">◇</span><div><h3>اتحاد شاعران</h3><p>بخش اتحادها برای ساختن جمع های شعری و همراهی با دیگر شاعران در دسترس است.</p></div></li>
-      <li class="beyto-updates-item"><span class="beyto-updates-icon">§</span><div><h3>بازی شعر و حالت های گروهی</h3><p>بخش های بازی شعر، جادهٔ شعر، دوئل و دورهمی برای تجربه های متفاوت کنار هم قرار گرفته اند.</p></div></li>
-      <li class="beyto-updates-item"><span class="beyto-updates-icon">◆</span><div><h3>ظاهر شیشه ای و محو</h3><p>کادرهای بلوری، پس زمینه های محو، نورهای نئونی و انیمیشن های نرم برای حس مدرن تر.</p></div></li>
-      <li class="beyto-updates-item"><span class="beyto-updates-icon">✦</span><div><h3>ورود و نمایش روان تر</h3><p>جلوه های بصری و حرکت های نرم تر هنگام نمایش پنجره ها و بخش های بازی.</p></div></li>
+      <li class="beyto-updates-item"><span class="beyto-updates-icon">✧</span><div><h3>فروشگاه در میدان اصلی</h3><p>کارت فروشگاه کنار دورهمی، تورنمنت و دوئل قرار گرفت؛ میان‌بر خزانه حذف شد.</p></div></li>
+      <li class="beyto-updates-item"><span class="beyto-updates-icon">✉</span><div><h3>ارسال مطمئن تیکت پشتیبانی</h3><p>ثبت درخواست و پیام اول از مسیر امن سرور انجام می‌شود تا تیکت در صندوق مدیریت قابل دریافت باشد.</p></div></li>
+      <li class="beyto-updates-item"><span class="beyto-updates-icon">⚙</span><div><h3>تنظیمات گرافیک واقعی</h3><p>حالت‌های کم، متوسط و مکس روی انیمیشن‌ها، تاری و جلوه‌های بصری اعمال می‌شوند.</p></div></li>
+      <li class="beyto-updates-item"><span class="beyto-updates-icon">♛</span><div><h3>تالار قهرمانان با تم یکپارچه</h3><p>کادرها، جدول رتبه‌بندی، نشان‌ها و سکوی قهرمانان با تم نئونی بیتو هماهنگ شدند.</p></div></li>
+      <li class="beyto-updates-item"><span class="beyto-updates-icon">✦</span><div><h3>بهبود نمایش در موبایل</h3><p>کارت‌ها و تنظیمات در صفحه‌های کوچک بهتر چیده می‌شوند و حرکت‌ها نرم‌تر هستند.</p></div></li>
     </ul>
     <div class="beyto-updates-footer"><button type="button" class="beyto-updates-done" onclick="closeBeytoUpdates()">بزن بریم! ➤</button></div>
   </div>
 </div>
 <script id="beyto-updates-interactions">
 (function(){
-  const key='beyto_updates_intro_seen_v3';
+  const key='beyto_updates_intro_seen_v4';
   const modal=document.getElementById('beytoUpdatesModal');
   if(!modal)return;
   let opener=null;
@@ -3374,5 +3379,69 @@ body .page .progress span{background:linear-gradient(90deg,#d7ff67,#65e8d5)!impo
 @media(prefers-reduced-motion:reduce){
  .page.beyto-page-enter{animation:none!important;will-change:auto!important}
 }
+</style>
+
+<style id="beyto-current-release-replacement">
+/* Current release: remove the obsolete vault shortcut and apply the Arena design consistently */
+.arena-cards{grid-template-columns:repeat(auto-fit,minmax(min(100%,205px),1fr))!important}
+.arena-store{--accent:#ffd166}
+.arena-store>i{background:#ffd16618!important;border-color:#ffd16666!important}
+.arena-shortcuts{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+#page-home .arena-shortcuts button{min-width:0}
+.graphics-settings-overlay{background:radial-gradient(ellipse at 20% 15%,#8a75ff33,transparent 40%),radial-gradient(ellipse at 85% 90%,#65e8d522,transparent 42%),#05080ff0!important;backdrop-filter:blur(18px)!important;-webkit-backdrop-filter:blur(18px)!important}
+.graphics-settings-card{width:min(530px,100%)!important;padding:30px 22px!important;border-radius:17px!important;border:1px solid #d7ff6755!important;background:linear-gradient(145deg,#192337,#101726 70%,#21182e)!important;box-shadow:8px 8px 0 #8a75ff,0 30px 80px #0009!important;animation:arenaAuthEnter .32s ease both}
+.graphics-settings-card h2{font:34px 'Lalezar',cursive!important;color:#d7ff67!important}
+.graphics-settings-close{border-radius:9px!important;background:#ffffff09!important;border-color:#ffffff20!important}
+.graphics-settings-card .graphics-options{display:grid!important;gap:11px!important}
+.graphics-settings-card .graphics-option{min-height:52px!important;border:1px solid #ffffff1e!important;border-radius:10px!important;background:#101827!important;color:#eef1fa!important;font:18px 'Lalezar',cursive!important;box-shadow:3px 3px 0 #303a50!important}
+.graphics-settings-card .graphics-option:hover{transform:translate(-2px,-2px)!important;border-color:#d7ff6780!important}
+.graphics-settings-card .graphics-option.active{background:#d7ff6714!important;color:#eaffaa!important;border-color:#d7ff67!important;box-shadow:4px 4px 0 #8a75ff!important}
+body.graphics-low .arena-ring,body.graphics-low .arena-float,body.graphics-low .arena-emblem,body.graphics-low .arena-live-dot,body.graphics-low .arena-orbit-symbol{animation:none!important;filter:none!important}
+body.graphics-low .arena-ring{border-style:solid!important}
+body.graphics-low .arena-art,body.graphics-low .arena-hero,body.graphics-low .arena-cards{filter:none!important}
+body.graphics-low .arena-card,body.graphics-low .arena-shortcuts button,body.graphics-low .graphics-settings-card{box-shadow:none!important}
+body.graphics-medium .arena-ring{animation-duration:70s!important}
+body.graphics-medium .arena-emblem,body.graphics-medium .arena-float{animation-duration:9s!important}
+body.graphics-medium .arena-card:before{transition:none!important}
+body.graphics-max .arena-emblem{filter:drop-shadow(12px 15px 0 #252b40) drop-shadow(0 0 26px #8a75ff55)!important}
+body.graphics-max .arena-ring{box-shadow:0 0 22px #d7ff6710!important}
+body.graphics-max .arena-card:hover{box-shadow:0 14px 32px #0005,0 0 22px color-mix(in srgb,var(--accent) 20%,transparent)!important}
+#page-rank .rank-championship-head{padding:25px 0 12px!important}
+#page-rank .rank-championship-head h1{font:clamp(38px,6vw,58px) 'Lalezar',cursive!important;color:#d7ff67!important;text-shadow:4px 4px 0 #8a75ff,0 0 25px #d7ff6720!important}
+#page-rank .rank-championship-head .pill{display:inline-flex!important;background:#d7ff6710!important;border-color:#d7ff6744!important;color:#d7ff67!important}
+#page-rank .rank-championship-head p{display:block!important;color:#9da9bd!important;font:13px/2 'Vazirmatn',sans-serif!important}
+#page-rank .weekly-podium{padding:20px 12px 0!important;border:1px solid #ffffff12!important;border-radius:15px!important;background:radial-gradient(ellipse at 50% 0%,#d7ff6714,transparent 60%),radial-gradient(ellipse at 15% 70%,#8a75ff15,transparent 45%),#0d1420!important}
+#page-rank .glass.content{border-radius:14px!important;border:1px solid #ffffff17!important;background:linear-gradient(145deg,#151e2d,#0d1420 82%)!important;box-shadow:0 16px 40px #0003,inset 0 1px #ffffff08!important}
+#page-rank .section-head h2{font:27px 'Lalezar',cursive!important;color:#fff!important}
+#page-rank .weekly-table-wrap{border:1px solid #ffffff18!important;border-radius:11px!important}
+#page-rank .weekly-compact-table th{background:#d7ff6712!important;color:#d7ff67!important;font:16px 'Lalezar',cursive!important}
+#page-rank .weekly-compact-table td{background:#0e1623!important;color:#edf1f8!important;border-bottom:1px solid #ffffff0e!important;font:13px 'Vazirmatn',sans-serif!important}
+#page-rank .weekly-compact-table tr:hover td{background:#d7ff6708!important}
+#page-rank .weekly-my-rank{border:1px solid #d7ff6733!important;border-radius:11px!important;background:linear-gradient(110deg,#d7ff670b,#8a75ff14)!important;color:#eaffaa!important;font:18px 'Lalezar',cursive!important}
+#page-rank .notice{border-radius:10px!important;border-color:#d7ff672c!important;background:#d7ff6708!important;color:#aab6ca!important}
+#page-rank .podium-name{font:17px 'Lalezar',cursive!important;color:#fff!important}
+#page-rank .podium-score{font:12px 'Vazirmatn',sans-serif!important}
+#page-support .support-new-ticket .support-send-btn:disabled{opacity:.6!important;cursor:wait!important}
+#page-support .support-ticket-item{width:100%;text-align:right;touch-action:manipulation}
+#page-support .support-messages{overscroll-behavior:contain}
+@media(max-width:760px){
+ .arena-cards{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ .arena-shortcuts{grid-template-columns:1fr!important}
+ #page-rank .weekly-podium{gap:6px!important;padding:16px 5px 0!important;min-height:300px!important}
+ #page-rank .podium-person .podium-avatar{width:58px!important;height:58px!important}
+ #page-rank .podium-person.first .podium-avatar{width:72px!important;height:72px!important}
+ #page-rank .podium-name{font-size:13px!important}
+ #page-rank .podium-score{font-size:10px!important}
+ #page-rank .podium-block{min-height:110px!important;padding:12px 4px!important}
+ #page-rank .podium-person.first .podium-block{min-height:150px!important}
+ #page-rank .podium-person.second .podium-block{min-height:128px!important}
+ #page-rank .podium-person.third .podium-block{min-height:112px!important}
+ #page-rank .weekly-compact-table th,#page-rank .weekly-compact-table td{padding:8px 6px!important;font-size:12px!important;overflow-wrap:anywhere}
+ #page-support .support-layout{grid-template-columns:minmax(0,1fr)!important}
+ #page-support .support-new-ticket{margin:8px!important;padding:13px!important}
+ #page-support .support-composer-bottom{flex-wrap:wrap!important;gap:8px!important}
+}
+@media(max-width:420px){.arena-cards{gap:8px!important}.arena-card{padding:11px!important;min-height:175px!important}.arena-card>b{font-size:19px!important}.arena-card>span{font-size:10px!important}.arena-card>i{width:40px!important;height:40px!important;margin:12px 0 8px!important}}
+@media(prefers-reduced-motion:reduce){.graphics-settings-card{animation:none!important}body.graphics-max .arena-emblem,body.graphics-medium .arena-emblem{animation:none!important}}
 </style>
 </body></html>
