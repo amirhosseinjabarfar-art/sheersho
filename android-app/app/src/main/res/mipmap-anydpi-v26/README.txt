@@ -1,1 +1,0 @@
-Adaptive launcher icon resources for Android 8.0 and later. The mipmap-anydpi fallback resources cover earlier Android versions.
