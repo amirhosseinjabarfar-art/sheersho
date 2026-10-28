@@ -3381,6 +3381,15 @@ body .page .progress span{background:linear-gradient(90deg,#d7ff67,#65e8d5)!impo
 }
 </style>
 
+<style id="beyto-home-cards-inline-fix">
+/* Keep all main game/store cards beside each other, with the same compact rhythm as the original arena */
+#page-home .arena-cards{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;align-items:stretch!important;gap:12px!important;width:100%!important}
+#page-home .arena-card{width:100%!important;min-width:0!important;height:100%!important;min-height:198px!important}
+#page-home .arena-card>small,#page-home .arena-card>b,#page-home .arena-card>span{max-width:100%;overflow-wrap:anywhere}
+@media(min-width:761px) and (max-width:1120px){#page-home .arena-cards{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
+@media(max-width:760px){#page-home .arena-cards{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:9px!important}#page-home .arena-card{min-height:174px!important;padding:12px!important}}
+@media(max-width:370px){#page-home .arena-cards{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important}#page-home .arena-card{padding:9px!important;min-height:160px!important}#page-home .arena-card>b{font-size:17px!important}#page-home .arena-card>span{font-size:10px!important}}
+</style>
 <style id="beyto-current-release-replacement">
 /* Current release: remove the obsolete vault shortcut and apply the Arena design consistently */
 .arena-cards{grid-template-columns:repeat(auto-fit,minmax(min(100%,205px),1fr))!important}
