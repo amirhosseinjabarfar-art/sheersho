@@ -97,6 +97,15 @@ html{scroll-behavior:smooth}body{margin:0;min-height:100vh;overflow-x:hidden;bac
 .answer-stage-title{font-family:'Lalezar','Vazirmatn',sans-serif;font-size:clamp(38px,10vw,62px);line-height:1.2;margin:8px 0;color:#fff;text-shadow:0 0 22px currentColor;}
 .answer-stage.correct .answer-stage-title{color:#86efac}.answer-stage.wrong .answer-stage-title{color:#fda4af}
 .answer-stage-sub{font-size:16px;color:#e9d5ff;line-height:1.9}
+/* Beyto answer feedback: headline-only typography matching the home hero */
+.answer-stage{background:transparent!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;padding:18px}
+.answer-stage-card{min-width:0!important;width:auto!important;max-width:94vw!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;animation:answerHeroIn .42s cubic-bezier(.2,1.4,.35,1) both!important}
+.answer-stage-icon,.answer-stage-sub{display:none!important}
+.answer-stage-title{font-family:'Lalezar','Vazirmatn',cursive!important;font-size:clamp(58px,7.5vw,96px)!important;line-height:1.05!important;font-weight:400!important;margin:0!important;color:#fff!important;text-shadow:5px 5px 0 #8a75ff,0 0 28px rgba(215,255,103,.24)!important}
+.answer-stage.correct .answer-stage-title{color:#d7ff67!important;text-shadow:5px 5px 0 #8a75ff,0 0 32px rgba(215,255,103,.48)!important}
+.answer-stage.wrong .answer-stage-title{color:#ff6d91!important;text-shadow:5px 5px 0 #8a75ff,0 0 32px rgba(255,109,145,.42)!important}
+@keyframes answerHeroIn{0%{opacity:0;transform:translateY(14px) scale(.88);filter:blur(8px)}100%{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}}
+@media(prefers-reduced-motion:reduce){.answer-stage-card{animation:none!important}}
 @keyframes answerPop{0%{opacity:0;transform:scale(.15) rotate(-9deg);filter:blur(10px)}65%{opacity:1;transform:scale(1.18) rotate(2deg);filter:blur(0)}100%{transform:scale(1) rotate(0)}}
 @keyframes answerGlow{0%,100%{background-position:0% 50%;box-shadow:0 0 0 2px rgba(255,255,255,.2),0 0 18px rgba(168,85,247,.55)}50%{background-position:100% 50%;box-shadow:0 0 0 2px rgba(255,255,255,.45),0 0 32px rgba(236,72,153,.8)}}
 @keyframes badgeIn{from{opacity:0;transform:scale(0) rotate(-90deg)}to{opacity:1;transform:scale(1) rotate(0)}}
