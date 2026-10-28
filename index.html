@@ -673,7 +673,7 @@ html.beyto-updates-open,body.beyto-updates-open{overflow:hidden!important;width:
         <label for="supportNewSubject">موضوع</label><input id="supportNewSubject" maxlength="100" placeholder="مثلاً مشکل ورود به بازی">
         <label for="supportNewMessage">پیام</label><textarea id="supportNewMessage" rows="3" maxlength="5000" placeholder="مشکل را کوتاه توضیح بده..."></textarea>
         <label class="support-file-label" for="supportNewImage">افزودن تصویر <span>PNG / JPG / WEBP · تا ۵ مگابایت</span></label><input id="supportNewImage" class="support-file" type="file" accept="image/png,image/jpeg,image/webp,image/gif">
-        <button class="support-send-btn" id="supportCreateBtn" onclick="supportCreateTicket()">ارسال تیکت <span>↗</span></button>
+        <button class="support-send-btn" id="supportCreateBtn" type="button" onclick="supportCreateTicket()">ارسال تیکت <span>↗</span></button>
       </div>
     </aside>
     <section class="support-chat-panel">
@@ -812,7 +812,29 @@ async function supportLoadTickets(){if(!sessionUser||!accessToken){if($('support
 async function supportSignImage(path){if(!path)return null;try{const encoded=path.split('/').map(encodeURIComponent).join('/');const d=await supportFetch(SUPABASE_URL+'/storage/v1/object/sign/beyto-support/'+encoded,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({expiresIn:3600})});const u=d.signedURL||d.signedUrl;if(!u)return null;return u.startsWith('http')?u:SUPABASE_URL+'/storage/v1'+(u.startsWith('/')?u:'/'+u)}catch(e){console.warn('support image URL',e);return null}}
 async function supportUploadImage(ticketId,file){if(!file)return null;if(!/^image\/(jpeg|png|webp|gif)$/.test(file.type))throw Error('فقط تصویر JPG، PNG، WEBP یا GIF قابل ارسال است.');if(file.size>5*1024*1024)throw Error('حجم تصویر باید کمتر از ۵ مگابایت باشد.');const clean=(file.name||'image').replace(/[^a-zA-Z0-9._-]/g,'_').slice(-80);const path=sessionUser.id+'/'+ticketId+'/'+crypto.randomUUID()+'-'+clean;const url=SUPABASE_URL+'/storage/v1/object/beyto-support/'+path.split('/').map(encodeURIComponent).join('/');const r=await fetch(url,{method:'POST',headers:supportHeaders({'Content-Type':file.type,'x-upsert':'false'}),body:file});if(!r.ok){const d=await r.json().catch(()=>({}));throw Error(d.message||d.error||'بارگذاری تصویر انجام نشد.')}return path}
 async function supportInsertMessage(ticketId,text,file){let path=null;if(file)path=await supportUploadImage(ticketId,file);const payload={ticket_id:ticketId,user_id:sessionUser.id,sender_role:'user',message:(text||'').trim(),attachment_path:path};const r=await fetch(SUPABASE_URL+'/rest/v1/ss_support_messages',{method:'POST',headers:supportHeaders({'Content-Type':'application/json','Prefer':'return=representation'}),body:JSON.stringify(payload)});const d=await r.json().catch(()=>({}));if(!r.ok)throw Error(d.message||d.details||d.hint||'ذخیره پیام انجام نشد.');return Array.isArray(d)?d[0]:d}
-async function supportCreateTicket(){if(!sessionUser||!accessToken){openAuth();toast('برای ارسال تیکت ابتدا وارد حساب شو.');return}const subject=$('supportNewSubject').value.trim(),message=$('supportNewMessage').value.trim(),file=$('supportNewImage').files?.[0]||null;if(subject.length<3){toast('موضوع را حداقل در ۳ نویسه بنویس.');return}if(!message&&!file){toast('متن پیام یا یک تصویر اضافه کن.');return}const btn=$('supportCreateBtn');btn.disabled=true;try{const r=await fetch(SUPABASE_URL+'/rest/v1/ss_support_tickets?select=id,user_id,subject,status,created_at,updated_at,last_message_at',{method:'POST',headers:supportHeaders({'Content-Type':'application/json','Prefer':'return=representation'}),body:JSON.stringify({user_id:sessionUser.id,subject,status:'open'})});const d=await r.json().catch(()=>({}));if(!r.ok)throw Error(d.message||d.details||'ساخت تیکت انجام نشد.');const ticket=Array.isArray(d)?d[0]:d;if(!ticket?.id)throw Error('شناسه تیکت از سرور دریافت نشد.');supportCurrentTicket=ticket;await supportInsertMessage(ticket.id,message,file);$('supportNewSubject').value='';$('supportNewMessage').value='';$('supportNewImage').value='';toast('تیکت ارسال شد. پاسخ در همین صفحه نمایش داده می شود.');await supportLoadTickets();await supportOpenTicket(ticket.id)}catch(e){console.error('supportCreateTicket',e);toast(e.message||'ارسال تیکت ناموفق بود.')}finally{btn.disabled=false}}
+async function supportCreateTicket(){
+ const subjectEl=$('supportNewSubject'),messageEl=$('supportNewMessage'),imageEl=$('supportNewImage'),btn=$('supportCreateBtn');
+ if(!subjectEl||!messageEl||!btn){console.error('Support form elements missing');toast('فرم پشتیبانی درست بارگذاری نشده است؛ صفحه را تازه سازی کن.');return}
+ if(!sessionUser||!accessToken){openAuth();toast('برای ارسال تیکت ابتدا وارد حساب شو.');return}
+ const subject=subjectEl.value.trim(),message=messageEl.value.trim(),file=imageEl?.files?.[0]||null;
+ if(subject.length<3){subjectEl.focus();toast('موضوع را حداقل در ۳ نویسه بنویس.');return}
+ if(!message&&!file){messageEl.focus();toast('متن پیام را بنویس یا یک تصویر پیوست کن.');return}
+ if(file&&(!/^image\/(jpeg|png|webp|gif)$/.test(file.type)||file.size>5*1024*1024)){toast('تصویر باید JPG، PNG، WEBP یا GIF و حداکثر ۵ مگابایت باشد.');return}
+ btn.disabled=true;const original=btn.innerHTML;btn.innerHTML='در حال ارسال…';
+ try{
+  const response=await fetch(SUPABASE_URL+'/rest/v1/ss_support_tickets?select=id,user_id,subject,status,created_at,updated_at,last_message_at',{method:'POST',headers:supportHeaders({'Content-Type':'application/json','Prefer':'return=representation'}),body:JSON.stringify({user_id:sessionUser.id,subject,status:'open'})});
+  const raw=await response.text();let data={};try{data=raw?JSON.parse(raw):{}}catch{data={message:raw}}
+  if(!response.ok){console.error('Ticket create failed',response.status,data);throw Error(data.message||data.details||data.hint||('ساخت تیکت ناموفق بود (HTTP '+response.status+').'))}
+  const ticket=Array.isArray(data)?data[0]:data;
+  if(!ticket?.id)throw Error('سرور تیکت را ثبت کرد اما شناسه برنگرداند؛ دوباره فهرست را تازه سازی کن.');
+  supportCurrentTicket=ticket;
+  try{await supportInsertMessage(ticket.id,message,file)}catch(messageError){console.error('Ticket message failed',messageError);toast('تیکت ساخته شد، اما پیام اول ذخیره نشد: '+(messageError.message||'خطای نامشخص'));await supportLoadTickets();await supportOpenTicket(ticket.id);return}
+  subjectEl.value='';messageEl.value='';if(imageEl)imageEl.value='';
+  toast('تیکت با موفقیت ثبت شد.');
+  await supportLoadTickets();await supportOpenTicket(ticket.id);
+ }catch(error){console.error('supportCreateTicket',error);toast(error?.message||'ارسال تیکت انجام نشد؛ اتصال را بررسی کن.')}
+ finally{btn.disabled=false;btn.innerHTML=original}
+}
 async function supportOpenTicket(id){const t=supportTicketsCache.find(x=>x.id===id);if(!t)return;supportCurrentTicket=t;supportRenderTicketList();$('supportChatTitle').textContent=t.subject;$('supportChatStatus').textContent=t.status==='closed'?'این تیکت بسته شده است.':t.status==='answered'?'پاسخ پشتیبانی ثبت شده است.':'در انتظار پاسخ پشتیبانی';$('supportReplyText').disabled=t.status==='closed';$('supportReplyImage').disabled=t.status==='closed';$('supportReplyBtn').disabled=t.status==='closed';await supportLoadMessages(id)}
 async function supportLoadMessages(id){const box=$('supportMessages');if(!box)return;try{const rows=await supportFetch(SUPABASE_URL+'/rest/v1/ss_support_messages?select=id,ticket_id,user_id,sender_role,message,attachment_path,image_url,created_at&ticket_id=eq.'+encodeURIComponent(id)+'&order=created_at.asc&limit=500');if(!Array.isArray(rows)||!rows.length){box.innerHTML=supportEmpty('اولین پیام این گفت و گو را بفرست.');return}const items=await Promise.all(rows.map(async m=>{let image=m.image_url&&/^https?:\/\//i.test(m.image_url)?m.image_url:null;if(!image&&m.attachment_path)image=await supportSignImage(m.attachment_path);return {...m,image_signed_url:image}}));box.innerHTML=items.map(m=>'<div class="support-message '+(m.sender_role==='admin'?'mine':'')+'"><div class="support-message-bubble">'+esc(m.message||'')+(m.image_signed_url?'<img class="support-message-image" src="'+esc(m.image_signed_url)+'" alt="تصویر پیوست" loading="lazy">':'')+'</div><div class="support-message-meta"><span>'+(m.sender_role==='admin'?'پشتیبانی بیتو':'شما')+'</span><span>'+supportDate(m.created_at)+'</span></div></div>').join('');box.scrollTop=box.scrollHeight}catch(e){console.error('supportLoadMessages',e);box.innerHTML=supportEmpty('پیام ها دریافت نشدند؛ دوباره تازه سازی کن.')}}
 async function supportSendReply(){if(!sessionUser||!supportCurrentTicket)return;const text=$('supportReplyText').value.trim(),file=$('supportReplyImage').files?.[0]||null;if(!text&&!file){toast('پیام یا تصویر اضافه کن.');return}if(supportCurrentTicket.status==='closed'){toast('این تیکت بسته شده است.');return}const btn=$('supportReplyBtn');btn.disabled=true;try{await supportInsertMessage(supportCurrentTicket.id,text,file);$('supportReplyText').value='';$('supportReplyImage').value='';await supportLoadTickets();await supportOpenTicket(supportCurrentTicket.id)}catch(e){console.error('supportSendReply',e);toast(e.message||'پیام ارسال نشد.')}finally{btn.disabled=false}}
@@ -3052,5 +3074,47 @@ body{
 @keyframes byAuthFade{from{opacity:0}to{opacity:1}}
 @media(max-width:680px){#authModal{padding:14px;align-items:center}#authModal .modal{width:100%;min-height:0;padding:28px 22px 24px;border-radius:22px!important}#authModal .modal:before{position:relative;inset:auto;width:calc(100% + 44px);height:115px;flex:none;margin:-28px -22px 25px;font-size:56px}#authModal .modal:after{top:103px;left:0;width:100%;font-size:11px}#authModal .close{top:10px;left:10px}#authModal #authTitle{font-size:25px}}
 @media(prefers-reduced-motion:reduce){#authModal,#authModal *{animation:none!important;transition:none!important}}
+</style>
+
+<style id="beyto-lalezar-glow-v4">
+@import url('https://fonts.googleapis.com/css2?family=Lalezar&display=swap');
+/* جلوه های نورانی سبک: فقط سایه، opacity و transform؛ بدون ذرات و انیمیشن پس زمینه */
+body,body button,body input,body textarea,body select,body option,body label,body p,body h1,body h2,body h3,body small,body strong,body span,body a,body div{
+ font-family:'Lalezar',sans-serif!important;
+}
+:root{--by4-violet:#a18bff;--by4-blue:#53d6ff;--by4-pink:#f58bff;--by4-ink:#080b19}
+body{background:radial-gradient(ellipse at 15% 0%,rgba(104,73,245,.18),transparent 38%),radial-gradient(ellipse at 100% 70%,rgba(38,183,234,.12),transparent 34%),#080b19!important}
+.page.active{animation:by4-page-in .24s ease-out both}
+@keyframes by4-page-in{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+.page .glass,.page .content,.page .panel,.page .card,.page article.glass,.page .feature,.page .mode-card,.page .price-card{
+ border-color:rgba(151,133,255,.22)!important;
+ box-shadow:0 10px 28px rgba(0,0,0,.22),0 0 0 1px rgba(91,130,255,.025),0 0 22px rgba(105,85,255,.055)!important;
+}
+.page .btn,.page button.btn,.page .primary-btn,.page .support-send-btn{
+ position:relative;overflow:hidden;border:1px solid rgba(177,164,255,.28)!important;
+ box-shadow:0 5px 17px rgba(93,86,240,.16),inset 0 1px 0 rgba(255,255,255,.1)!important;
+}
+.page .btn:hover,.page button.btn:hover,.page .primary-btn:hover,.page .support-send-btn:hover{
+ box-shadow:0 7px 22px rgba(91,114,255,.27),0 0 13px rgba(83,214,255,.12)!important;
+}
+#authModal{background:radial-gradient(ellipse at 18% 18%,rgba(119,77,255,.3),transparent 40%),radial-gradient(ellipse at 86% 78%,rgba(39,199,245,.2),transparent 40%),#070a16!important}
+#authModal .modal{border-color:rgba(168,146,255,.36)!important;box-shadow:0 25px 80px rgba(0,0,0,.48),0 0 36px rgba(109,83,255,.16),inset 0 1px 0 rgba(255,255,255,.08)!important}
+#authModal .modal:before{background:linear-gradient(145deg,#8b62ff 0%,#5858ed 48%,#19a9d2 100%);box-shadow:inset -1px 0 rgba(255,255,255,.16)}
+#authModal #authSubmit{box-shadow:0 7px 25px rgba(105,92,255,.28),0 0 18px rgba(82,181,255,.13)!important}
+#page-home .start-game-hero{box-shadow:0 12px 34px rgba(43,74,202,.28),0 0 25px rgba(92,112,255,.12)!important;border-color:rgba(133,155,255,.42)!important}
+#page-support .support-page-head{border-color:rgba(161,139,255,.42)!important;background:linear-gradient(120deg,#251d55 0%,#202d69 54%,#124a68 100%)!important;box-shadow:0 12px 35px rgba(70,65,210,.22),0 0 25px rgba(91,102,255,.12)!important}
+#page-support .support-sidebar,#page-support .support-chat-panel{border-color:rgba(136,155,255,.24)!important;box-shadow:0 10px 28px rgba(0,0,0,.22),0 0 19px rgba(99,93,255,.07)!important}
+#page-support .support-new-ticket{border-color:rgba(110,213,255,.23)!important;box-shadow:inset 0 0 22px rgba(65,163,220,.035)!important}
+#page-support .support-send-btn{background:linear-gradient(110deg,#8a63f7,#5279f4 60%,#2b9ed1)!important;box-shadow:0 5px 19px rgba(102,92,255,.3),0 0 12px rgba(82,183,255,.13)!important}
+#page-support .support-ticket-item.active{box-shadow:0 0 0 1px rgba(158,134,255,.18),0 0 17px rgba(129,103,255,.12)!important}
+#page-support .support-agent-avatar{background:linear-gradient(135deg,#9b70ff,#418ef5 65%,#38c4d8);box-shadow:0 0 19px rgba(105,112,255,.23)}
+#page-support .support-live-dot{box-shadow:0 0 0 4px rgba(94,214,176,.08),0 0 12px rgba(94,214,176,.48)}
+@media(max-width:680px){
+ body{background:#080b19!important}
+ .page.active{animation:none}
+ .page .glass,.page .content,.page .panel,.page .card,.page article.glass{box-shadow:0 6px 16px rgba(0,0,0,.18)!important}
+ #authModal .modal{box-shadow:0 12px 35px rgba(0,0,0,.34),0 0 20px rgba(109,83,255,.1)!important}
+}
+@media(prefers-reduced-motion:reduce){.page,.page *,.page *:before,.page *:after{animation:none!important;transition:none!important}}
 </style>
 </body></html>
