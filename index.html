@@ -3462,4 +3462,18 @@ body.graphics-max .arena-card:hover{box-shadow:0 14px 32px #0005,0 0 22px color-
 @media(max-width:420px){.arena-cards{gap:8px!important}.arena-card{padding:11px!important;min-height:175px!important}.arena-card>b{font-size:19px!important}.arena-card>span{font-size:10px!important}.arena-card>i{width:40px!important;height:40px!important;margin:12px 0 8px!important}}
 @media(prefers-reduced-motion:reduce){.graphics-settings-card{animation:none!important}body.graphics-max .arena-emblem,body.graphics-medium .arena-emblem{animation:none!important}}
 </style>
+<style id="beyto-duel-nudge-theme">
+#duelInviteNudge.duel-nudge{box-sizing:border-box;isolation:isolate;overflow:hidden;top:max(76px,calc(env(safe-area-inset-top) + 64px));padding:16px 18px;border-radius:14px;border:1px solid #d7ff6770;background:linear-gradient(125deg,#151f2dF7,#17142cf7 58%,#21152df7);box-shadow:5px 5px 0 #8a75ff,0 18px 55px #0008,0 0 25px #d7ff6714;backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);font-family:'Lalezar','Vazirmatn',sans-serif;color:#f2f4fa}
+#duelInviteNudge.duel-nudge:before{content:"";position:absolute;inset:0 auto 0 0;width:4px;background:linear-gradient(180deg,#d7ff67,#8a75ff,#65e8d5);pointer-events:none}
+#duelInviteNudge.duel-nudge>div:first-child{min-width:0;position:relative}
+#duelInviteNudge.duel-nudge>div:first-child>b{font:clamp(19px,3vw,24px)/1.5 'Lalezar',cursive;color:#d7ff67;text-shadow:0 0 18px #d7ff6722}
+#duelInviteNudge.duel-nudge #duelNudgeText{font:14px/1.9 'Vazirmatn',sans-serif;color:#c0cadd;overflow-wrap:anywhere}
+#duelInviteNudge .duel-nudge-actions{align-items:center;flex-shrink:0}
+#duelInviteNudge .duel-nudge-actions .btn{min-height:40px;border-radius:9px!important;font:16px 'Lalezar',cursive!important;touch-action:manipulation;transition:transform .18s,border-color .18s,box-shadow .18s}
+#duelInviteNudge #duelNudgeYes{background:linear-gradient(135deg,#d7ff67,#a8db51)!important;color:#182015!important;border:1px solid #eaffac!important;box-shadow:3px 3px 0 #65a342!important}
+#duelInviteNudge #duelNudgeNo{background:#ffffff08!important;color:#e5e7ef!important;border:1px solid #ffffff24!important;box-shadow:3px 3px 0 #30394c!important}
+#duelInviteNudge .duel-nudge-actions .btn:active{transform:translateY(1px) scale(.98)}
+@media(max-width:600px){#duelInviteNudge.duel-nudge{top:max(68px,calc(env(safe-area-inset-top) + 58px));width:calc(100vw - 20px);padding:13px 14px;gap:10px;border-radius:12px;max-height:calc(100dvh - 90px);overflow-y:auto}#duelInviteNudge .duel-nudge-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}#duelInviteNudge .duel-nudge-actions .btn{width:100%;min-width:0;white-space:normal;font-size:15px!important;padding:9px 7px!important}}
+@media(prefers-reduced-motion:reduce){#duelInviteNudge.duel-nudge{animation:none!important}#duelInviteNudge .duel-nudge-actions .btn{transition:none!important}}
+</style>
 </body></html>
