@@ -962,26 +962,43 @@ async function supportCreateTicket(){
  if(file&&(!/^image\/(jpeg|png|webp|gif)$/.test(file.type)||file.size>5*1024*1024)){toast('تصویر باید JPG، PNG، WEBP یا GIF و حداکثر ۵ مگابایت باشد.');return}
  btn.disabled=true;const original=btn.innerHTML;btn.innerHTML='در حال ارسال امن…';
  try{
-  let imageBase64='',imageMime='';
-  if(file){imageMime=file.type;imageBase64=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result||''));reader.onerror=()=>reject(new Error('خواندن فایل تصویر ناموفق بود.'));reader.readAsDataURL(file)})}
-  const response=await fetch(SUPABASE_URL+'/functions/v1/support-api',{method:'POST',headers:{apikey:SUPABASE_KEY,Authorization:'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({action:'create-ticket',subject,message,image_base64:imageBase64,image_mime:imageMime})});
-  const raw=await response.text();let data={};try{data=raw?JSON.parse(raw):{}}catch{data={message:raw}}
-  if(!response.ok||!data.success||!data.ticket?.id){console.error('support-api rejected ticket',response.status,data);throw Error(data.error||data.message||('ارسال تیکت ناموفق بود (HTTP '+response.status+').'))}
-  const ticket=data.ticket;
-  // Open the chat immediately from the confirmed server response. Ticket-list refresh must not block the chat pane.
+  if(file)throw new Error('برای اطمینان از ثبت تیکت، فعلاً تصویر را حذف کن و پیام متنی را ارسال کن. ارسال پیوست به سرویس جداگانه نیاز دارد.');
+  let ticket=null,insertedMessage=null,edgeError=null;
+  // Primary: secure server function. Keep a timeout so a stalled function cannot leave the form stuck.
+  try{
+   const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),12000);
+   let response;
+   try{response=await fetch(SUPABASE_URL+'/functions/v1/support-api',{method:'POST',headers:{apikey:SUPABASE_KEY,Authorization:'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({action:'create-ticket',subject,message,image_base64:'',image_mime:''}),signal:controller.signal})}
+   finally{clearTimeout(timeout)}
+   const raw=await response.text();let data={};try{data=raw?JSON.parse(raw):{}}catch{data={message:raw}}
+   if(!response.ok||!data.success||!data.ticket?.id)throw Error(data.error||data.message||('تابع پشتیبانی پاسخ معتبر نداد (HTTP '+response.status+').'));
+   ticket=data.ticket;insertedMessage=data.message||null;
+  }catch(e){edgeError=e;console.warn('support-api unavailable; trying authenticated RLS fallback',e)}
+  // Fallback uses only the signed-in user's access token and existing RLS policies; no service-role key is exposed.
+  if(!ticket){
+   const headers={apikey:SUPABASE_KEY,Authorization:'Bearer '+accessToken,'Content-Type':'application/json',Prefer:'return=representation'};
+   const createResponse=await fetch(SUPABASE_URL+'/rest/v1/ss_support_tickets?select=id,user_id,subject,status,created_at,updated_at,last_message_at',{method:'POST',headers,body:JSON.stringify({user_id:sessionUser.id,subject,status:'open'})});
+   const createRaw=await createResponse.text();let created;try{created=JSON.parse(createRaw)}catch{created=null}
+   if(!createResponse.ok||!Array.isArray(created)||!created[0]?.id){console.error('support ticket REST fallback failed',createResponse.status,createRaw,edgeError);throw Error('ثبت تیکت در Supabase انجام نشد. '+(created?.message||created?.hint||('خطای '+createResponse.status)))}
+   ticket=created[0];
+   const messageResponse=await fetch(SUPABASE_URL+'/rest/v1/ss_support_messages?select=id,ticket_id,user_id,sender_role,message,attachment_path,created_at',{method:'POST',headers,body:JSON.stringify({ticket_id:ticket.id,user_id:sessionUser.id,sender_role:'user',message,attachment_path:null})});
+   const messageRaw=await messageResponse.text();let messages;try{messages=JSON.parse(messageRaw)}catch{messages=null}
+   if(!messageResponse.ok||!Array.isArray(messages)||!messages[0]?.id){console.error('support first message REST fallback failed',messageResponse.status,messageRaw);throw Error('تیکت ساخته شد اما پیام ذخیره نشد. شناسه تیکت: '+ticket.id+'؛ لطفاً این شناسه را به پشتیبانی بده.')}
+   insertedMessage=messages[0];
+  }
+  // Open chat immediately from the confirmed database result.
   supportCurrentTicket=ticket;
   supportTicketsCache=[ticket,...supportTicketsCache.filter(t=>t.id!==ticket.id)];
   $('supportChatTitle').textContent=ticket.subject;
   $('supportChatStatus').textContent='ثبت شد · در انتظار پاسخ پشتیبانی';
-  $('supportReplyText').disabled=false;
-  $('supportReplyImage').disabled=false;
-  $('supportReplyBtn').disabled=false;
+  if($('supportReplyText'))$('supportReplyText').disabled=false;
+  if($('supportReplyImage'))$('supportReplyImage').disabled=false;
+  if($('supportReplyBtn'))$('supportReplyBtn').disabled=false;
   const box=$('supportMessages');
-  if(box)box.innerHTML='<div class="support-message"><div class="support-message-bubble">'+esc(message||'تصویر پیوست شد.')+'</div><div class="support-message-meta"><span>شما</span><span>همین الان</span></div></div>';
+  if(box)box.innerHTML='<div class="support-message"><div class="support-message-bubble">'+esc(insertedMessage?.message||message||'پیام ثبت شد.')+'</div><div class="support-message-meta"><span>شما</span><span>همین الان</span></div></div>';
   supportRenderTicketList();
   subjectEl.value='';messageEl.value='';if(imageEl)imageEl.value='';
-  toast('تیکت ثبت شد و گفت‌وگو باز شد.');
-  // Load the server-confirmed message/ticket list in the background, without hiding the open chat if list access fails.
+  toast('تیکت در Supabase ثبت شد و گفت‌وگو باز شد.');
   Promise.resolve().then(async()=>{try{await supportLoadTickets();if(supportCurrentTicket?.id===ticket.id){supportCurrentTicket=ticket;await supportLoadMessages(ticket.id);supportRenderTicketList()}}catch(e){console.warn('support background refresh',e)}});
   if(typeof adminLoadSupport==='function'&&adminPasswordSession&&$('adminSupportPanel')&&!$('adminSupportPanel').classList.contains('hidden'))adminLoadSupport();
  }catch(error){console.error('supportCreateTicket',error);toast(error?.message||'ارسال تیکت انجام نشد؛ دوباره تلاش کن.')}
