@@ -1262,13 +1262,20 @@ function expandPoemBlanks(bank){
   if(!raw||typeof raw.line!=='string')continue;
   const full=raw.line.includes('___')&&Array.isArray(raw.answers)&&raw.answers.length
    ?raw.line.replace('___',String(raw.answers[0])):raw.line;
-  const re=/[آ-یءؤئإأۀٔ ]+/g;let m;
-  while((m=re.exec(full))!==null){
-   const answer=m[0].replace(/[،؛:!؟?…«»"'().]/g,'').trim();
-   if(answer.length<2)continue;
-   const line=full.slice(0,m.index)+'___'+full.slice(m.index+m[0].length);
-   if(line===full||!line.includes('___'))continue;
-   out.push({cat:raw.cat||'classic',line,answers:[answer],hint:'جای خالی را با همان واژه ای که در بیت یا عبارت آمده کامل کن.'});
+  /* Create blanks for only one or two consecutive words, never an entire verse. */
+  const words=[...full.matchAll(/[آ-یءؤئإأۀٔ]+/g)];
+  if(words.length<2)continue;
+  for(let i=0;i<words.length;i++){
+   for(const span of [1,2]){
+    if(i+span>words.length||span>=words.length)continue;
+    const first=words[i],last=words[i+span-1];
+    const start=first.index,end=last.index+last[0].length;
+    const answer=full.slice(start,end).trim().replace(/[،؛:!؟?…«»"'().]+$/g,'').trim();
+    if(!answer||answer.split(/\s+/).length>2)continue;
+    const line=full.slice(0,start)+'___'+full.slice(end);
+    if(!line.includes('___'))continue;
+    out.push({cat:raw.cat||'classic',line,answers:[answer],hint:span===1?'یک واژه از بیت را کامل کن.':'دو واژه از بیت را کامل کن.'});
+   }
   }
  }
  return out;
