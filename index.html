@@ -3493,4 +3493,14 @@ body.graphics-max .arena-card:hover{box-shadow:0 14px 32px #0005,0 0 22px color-
 @media(max-width:600px){#duelInviteNudge.duel-nudge{top:max(68px,calc(env(safe-area-inset-top) + 58px));width:calc(100vw - 20px);padding:13px 14px;gap:10px;border-radius:12px;max-height:calc(100dvh - 90px);overflow-y:auto}#duelInviteNudge .duel-nudge-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}#duelInviteNudge .duel-nudge-actions .btn{width:100%;min-width:0;white-space:normal;font-size:15px!important;padding:9px 7px!important}}
 @media(prefers-reduced-motion:reduce){#duelInviteNudge.duel-nudge{animation:none!important}#duelInviteNudge .duel-nudge-actions .btn{transition:none!important}}
 </style>
+<style id="beyto-remove-podium-curve">
+/* Remove the curved/glassy aura over the leaderboard podiums only */
+#page-rank .weekly-podium:before,
+#page-rank .weekly-podium:after,
+#page-rank .podium-person:before,
+#page-rank .podium-person:after,
+#page-rank .podium-block:before,
+#page-rank .podium-block:after{content:none!important;display:none!important;animation:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+#page-rank .weekly-podium{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+</style>
 </body></html>
