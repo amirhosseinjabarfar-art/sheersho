@@ -1,0 +1,19 @@
+{
+  "name": "بیتو | دنیای شعر و رقابت",
+  "short_name": "بیتو",
+  "lang": "fa",
+  "dir": "rtl",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#090615",
+  "theme_color": "#090615",
+  "icons": [
+    {
+      "src": "./beyto-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
