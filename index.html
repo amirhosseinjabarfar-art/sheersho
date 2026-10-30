@@ -2517,15 +2517,16 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeGraphicsSetting
    stopSuspenseMusic();
    try{
      const Ctx=window.AudioContext||window.webkitAudioContext;if(!Ctx)return;
-     const ctx=new Ctx(),master=ctx.createGain();master.gain.setValueAtTime(.0001,ctx.currentTime);master.gain.exponentialRampToValueAtTime(.12,ctx.currentTime+.18);master.connect(ctx.destination);
-     const nodes=[],notes=[196,207.65,233.08,261.63,233.08,277.18,311.13,349.23,311.13,392];
+     const ctx=new Ctx(),master=ctx.createGain();master.gain.setValueAtTime(.0001,ctx.currentTime);master.gain.exponentialRampToValueAtTime(.16,ctx.currentTime+.22);master.connect(ctx.destination);
+     const nodes=[],notes=[196,233.08,261.63,293.66,261.63,311.13,349.23,392,349.23,440,493.88,523.25];
      notes.forEach((hz,i)=>{
-       const start=ctx.currentTime+i*.46,osc=ctx.createOscillator(),gain=ctx.createGain();
-       osc.type='triangle';osc.frequency.setValueAtTime(hz,start);
-       gain.gain.setValueAtTime(.0001,start);gain.gain.exponentialRampToValueAtTime(.23,start+.08);gain.gain.exponentialRampToValueAtTime(.0001,start+.43);
-       osc.connect(gain);gain.connect(master);osc.start(start);osc.stop(start+.45);nodes.push(osc);
+       const start=ctx.currentTime+i*.37,osc=ctx.createOscillator(),gain=ctx.createGain();
+       osc.type='sawtooth';osc.frequency.setValueAtTime(hz,start);
+       gain.gain.setValueAtTime(.0001,start);gain.gain.exponentialRampToValueAtTime(i>8?.13:.095,start+.055);gain.gain.exponentialRampToValueAtTime(.0001,start+.34);
+       osc.connect(gain);gain.connect(master);osc.start(start);osc.stop(start+.36);nodes.push(osc);
+       const sub=ctx.createOscillator(),subGain=ctx.createGain();sub.type='sine';sub.frequency.setValueAtTime(58+(i%3)*8,start);sub.frequency.exponentialRampToValueAtTime(38,start+.2);subGain.gain.setValueAtTime(.0001,start);subGain.gain.exponentialRampToValueAtTime(i%3===0?.17:.09,start+.025);subGain.gain.exponentialRampToValueAtTime(.0001,start+.22);sub.connect(subGain);subGain.connect(master);sub.start(start);sub.stop(start+.23);nodes.push(sub);
      });
-     suspenseAudio={ctx,nodes,stopTimer:setTimeout(stopSuspenseMusic,4900)};
+     suspenseAudio={ctx,nodes,stopTimer:setTimeout(stopSuspenseMusic,4700)};
      if(ctx.state==='suspended')ctx.resume().catch(()=>{});
    }catch(e){stopSuspenseMusic()}
  }
