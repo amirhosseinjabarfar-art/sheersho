@@ -3713,7 +3713,7 @@ body.graphics-max .arena-card:hover{box-shadow:0 14px 32px #0005,0 0 22px color-
    const out=c.createGain();out.gain.value=.42;out.connect(c.destination);
    const now=c.currentTime;
    if(correct){
-     [659.25,880,1174.66].forEach((f,i)=>tone(c,f,out,now,.16,.18,'sine'));
+     [659.25,880,1174.66].forEach((f,i)=>tone(c,f,out,now+i*.075,.16,.18,'sine'));
    }else{
      tone(c,260,out,now,.19,.15,'triangle',190);
      setTimeout(()=>{try{const cc=audio();tone(cc,185,out,cc.currentTime,.2,.12,'triangle',135)}catch(e){}},105);
