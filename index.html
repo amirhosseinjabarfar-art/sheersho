@@ -2713,7 +2713,7 @@ select.beyto-native-select option{color:#f8fafc!important;background:#15152d!imp
    window.beytoStopReviewMusic?.();window.beytoStartReviewMusic?.();
    reviewTimer=setTimeout(()=>{
      if(token!==reviewToken)return;
-     window.beytoStopReviewMusic?.();window.beytoPlayAnswerSound?.(!!correct);
+     window.beytoStopReviewMusic?.();
      ico.textContent=correct?'✦':'§';title.textContent=correct?'آفرین! پاسخ درست بود':'پاسخ درست شعر';
      sub.textContent=(correct?'۱۰ امتیاز برای '+(gather.players[pi]||'بازیکن')+' ثبت شد.':'این نوبت امتیازی ندارد.')+(raw?' پاسخ واردشده: '+raw:'');
      ans.textContent=revealFullAnswer(q);ans.hidden=false;btn.textContent='ادامه؛ نمایش نوبت بعد';btn.hidden=false;answerPending=true;answerLocked=false;
@@ -3652,76 +3652,76 @@ body.graphics-max .arena-card:hover{box-shadow:0 14px 32px #0005,0 0 22px color-
 <style id="beyto-profile-portrait-rank-fix">#page-rank .weekly-row-profile{overflow:visible!important;border:0!important;background:transparent!important}#page-rank .weekly-row-profile .avatar-wrap{width:42px;height:42px;margin:0}#page-rank .weekly-row-profile .avatar-core{font-size:18px}#page-rank .weekly-row-profile .avatar-core img{width:100%;height:100%;object-fit:cover;display:block}#page-rank .weekly-row-profile .avatar-frame{inset:-5px}</style>
 <script id="beyto-original-game-audio">
 (function(){
- let ctx=null, musicNodes=[], musicTimer=null, musicGain=null;
- function audio(){
-   const C=window.AudioContext||window.webkitAudioContext;if(!C)return null;
-   if(!ctx)ctx=new C();
+ let ctx=null,activeNodes=[],master=null,safetyTimer=null,unlocked=false;
+ function getAudio(){
+   const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return null;
+   if(!ctx)ctx=new AC();
    if(ctx.state==='suspended')ctx.resume().catch(()=>{});
    return ctx;
  }
- function tone(c,f,t,when,d,v,type='sine',endF){
-   const o=c.createOscillator(),g=c.createGain(),now=when;
-   o.type=type;o.frequency.setValueAtTime(f,now);
-   if(endF)o.frequency.exponentialRampToValueAtTime(Math.max(1,endF),now+d);
-   g.gain.setValueAtTime(.0001,now);g.gain.exponentialRampToValueAtTime(v,now+.012);
-   g.gain.exponentialRampToValueAtTime(.0001,now+d);
-   o.connect(g);g.connect(t);o.start(now);o.stop(now+d+.025);musicNodes.push(o);
+ // بازکردن صدای مرورگر با اولین لمس/کلیک کاربر؛ برای پخش موسیقی حتی در پایان زمان سؤال
+ function unlockAudio(){
+   const c=getAudio();if(!c||unlocked)return;
+   if(c.state==='running')unlocked=true;
+   else c.resume().then(()=>{unlocked=c.state==='running'}).catch(()=>{});
  }
- function drum(c,t,kind,when){
-   const o=c.createOscillator(),g=c.createGain(),now=when;
-   o.type='sine';o.frequency.setValueAtTime(kind==='kick'?115:kind==='snare'?190:900,now);
-   if(kind==='kick')o.frequency.exponentialRampToValueAtTime(42,now+.16);
-   g.gain.setValueAtTime(kind==='hat'?.0001:.0001,now);
-   g.gain.exponentialRampToValueAtTime(kind==='hat'?.055:.19,now+.004);
-   g.gain.exponentialRampToValueAtTime(.0001,now+(kind==='kick'?.19:kind==='snare'?.11:.035));
-   o.connect(g);g.connect(t);o.start(now);o.stop(now+(kind==='kick'?.2:kind==='snare'?.12:.04));musicNodes.push(o);
+ ['pointerdown','touchstart','keydown'].forEach(ev=>document.addEventListener(ev,unlockAudio,{passive:true,capture:true}));
+ function remember(node){activeNodes.push(node);return node}
+ function oscillator(c,destination,freq,start,duration,volume,type='sawtooth',endFreq){
+   const o=remember(c.createOscillator()),g=c.createGain();
+   o.type=type;o.frequency.setValueAtTime(freq,start);
+   if(endFreq)o.frequency.exponentialRampToValueAtTime(Math.max(1,endFreq),start+duration);
+   g.gain.setValueAtTime(.0001,start);g.gain.exponentialRampToValueAtTime(volume,start+.018);
+   g.gain.setValueAtTime(volume,start+Math.max(.025,duration*.58));
+   g.gain.exponentialRampToValueAtTime(.0001,start+duration);
+   o.connect(g);g.connect(destination);o.start(start);o.stop(start+duration+.035);
+ }
+ function noiseHit(c,destination,start,duration,volume,frequency){
+   const length=Math.ceil(c.sampleRate*duration),buffer=c.createBuffer(1,length,c.sampleRate),data=buffer.getChannelData(0);
+   for(let i=0;i<length;i++)data[i]=(Math.random()*2-1)*(1-i/length);
+   const src=remember(c.createBufferSource()),filter=c.createBiquadFilter(),gain=c.createGain();
+   src.buffer=buffer;filter.type='highpass';filter.frequency.value=frequency;
+   gain.gain.setValueAtTime(volume,start);gain.gain.exponentialRampToValueAtTime(.0001,start+duration);
+   src.connect(filter);filter.connect(gain);gain.connect(destination);src.start(start);src.stop(start+duration);
  }
  window.beytoStopReviewMusic=function(){
-   if(musicTimer){clearTimeout(musicTimer);musicTimer=null}
-   try{musicGain?.gain.setTargetAtTime(.0001,ctx.currentTime,.025)}catch(e){}
-   musicNodes.forEach(n=>{try{n.stop()}catch(e){}});
-   musicNodes=[];musicGain=null;
+   if(safetyTimer){clearTimeout(safetyTimer);safetyTimer=null}
+   if(master&&ctx){try{const t=ctx.currentTime;master.gain.cancelScheduledValues(t);master.gain.setValueAtTime(Math.max(.0001,master.gain.value),t);master.gain.exponentialRampToValueAtTime(.0001,t+.075);activeNodes.forEach(n=>{try{n.stop(t+.09)}catch(e){}})}catch(e){}}
+   activeNodes=[];master=null;
  };
  window.beytoStartReviewMusic=function(){
    window.beytoStopReviewMusic();
-   const c=audio();if(!c)return;
+   const c=getAudio();if(!c)return;
    try{
-     const master=c.createGain();master.gain.value=.24;master.connect(c.destination);musicGain=master;
-     const start=c.currentTime+.035,beat=.34;
-     const chords=[[220,261.63,329.63],[196,246.94,293.66],[174.61,220,261.63],[196,246.94,293.66]];
-     const melody=[659.25,783.99,880,783.99,698.46,783.99,987.77,880,783.99,659.25,587.33,659.25,783.99,880,987.77,1174.66];
-     chords.forEach((ch,bar)=>{
-       ch.forEach((hz,j)=>{
-         const o=c.createOscillator(),g=c.createGain(),st=start+bar*beat*4;
-         o.type='triangle';o.frequency.value=hz;
-         g.gain.setValueAtTime(.0001,st);g.gain.linearRampToValueAtTime(j===0?.075:.045,st+.07);
-         g.gain.setTargetAtTime(.0001,st+beat*3.65,.12);
-         o.connect(g);g.connect(master);o.start(st);o.stop(st+beat*4);musicNodes.push(o);
-       });
+     const start=c.currentTime+.045,beat=.29;
+     master=c.createGain();master.gain.setValueAtTime(.0001,start);master.gain.linearRampToValueAtTime(.78,start+.12);master.connect(c.destination);
+     const low=c.createBiquadFilter();low.type='lowpass';low.frequency.value=1500;
+     const pad=c.createGain();pad.gain.value=.48;pad.connect(low);low.connect(master);
+     const chords=[[146.83,220,293.66],[130.81,196,261.63],[116.54,174.61,233.08],[130.81,196,261.63]];
+     chords.forEach((ch,bar)=>ch.forEach((hz,j)=>{
+       const st=start+bar*beat*4,o=remember(c.createOscillator()),g=c.createGain();
+       o.type='triangle';o.frequency.value=hz;
+       g.gain.setValueAtTime(.0001,st);g.gain.linearRampToValueAtTime(j===0?.16:.085,st+.18);g.gain.setTargetAtTime(.0001,st+beat*3.7,.18);
+       o.connect(g);g.connect(pad);o.start(st);o.stop(st+beat*4+.05);
+     }));
+     const riff=[587.33,698.46,783.99,880,783.99,987.77,1046.5,1174.66,1046.5,987.77,1174.66,1318.51,1174.66,1396.91,1567.98,1760,1567.98,1760];
+     riff.forEach((hz,i)=>{
+       const st=start+i*beat*.48;
+       oscillator(c,master,hz,st,.22,i>13?.12:.095,'sawtooth',hz*1.012);
+       oscillator(c,master,hz/2,st,.18,.045,'triangle');
+       if(i%2===0){
+         oscillator(c,master,105,st,.16,.24,'sine',43);
+         noiseHit(c,master,st,.055,.055,5500);
+       }else noiseHit(c,master,st,.12,.075,1100);
      });
-     melody.forEach((hz,i)=>{
-       const st=start+i*beat*.48,o=c.createOscillator(),g=c.createGain();
-       o.type='sawtooth';o.frequency.value=hz;
-       g.gain.setValueAtTime(.0001,st);g.gain.exponentialRampToValueAtTime(.045,st+.018);
-       g.gain.exponentialRampToValueAtTime(.0001,st+.22);
-       o.connect(g);g.connect(master);o.start(st);o.stop(st+.24);musicNodes.push(o);
-       if(i%2===0)drum(c,master,'kick',st);
-       else drum(c,master,'hat',st);
-       if(i%4===2)drum(c,master,'snare',st);
-     });
-     musicTimer=setTimeout(()=>window.beytoStopReviewMusic(),5100);
-   }catch(e){window.beytoStopReviewMusic()}
- };
- window.beytoPlayAnswerSound=function(correct){
-   const c=audio();if(!c)return;
-   const out=c.createGain();out.gain.value=.42;out.connect(c.destination);
-   const now=c.currentTime;
-   if(correct){
-     [659.25,880,1174.66].forEach((f,i)=>tone(c,f,out,now+i*.075,.16,.18,'sine'));
-   }else{
-     tone(c,260,out,now,.19,.15,'triangle',190);
-     setTimeout(()=>{try{const cc=audio();tone(cc,185,out,cc.currentTime,.2,.12,'triangle',135)}catch(e){}},105);
-   }
+     // ضربان بم و بالا رفتن تدریجی شدت برای حس تعلیق
+     for(let i=0;i<9;i++){
+       const st=start+i*beat*.96;
+       oscillator(c,master,55,st,.25,.19,'sine',38);
+       if(i>4)noiseHit(c,master,st,.16,.045,1800);
+     }
+     safetyTimer=setTimeout(()=>window.beytoStopReviewMusic(),6500);
+   }catch(e){console.warn('پخش موسیقی انتظار بیتو:',e);window.beytoStopReviewMusic()}
  };
  document.addEventListener('visibilitychange',()=>{if(document.hidden)window.beytoStopReviewMusic()});
 })();
