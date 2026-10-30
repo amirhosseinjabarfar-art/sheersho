@@ -2691,7 +2691,7 @@ select.beyto-native-select option{color:#f8fafc!important;background:#15152d!imp
    document.querySelectorAll('#gatherChoiceButtons button').forEach(b=>b.disabled=!!disabled);
  }
  function closeReview(){
-   clearTimeout(reviewTimer);reviewToken++;answerPending=false;answerLocked=false;
+   clearTimeout(reviewTimer);reviewToken++;window.beytoStopReviewMusic?.();answerPending=false;answerLocked=false;
    const ov=$('beytoGatherReviewOverlay');if(ov){ov.classList.remove('active');ov.style.display='none';ov.style.pointerEvents='none';ov.setAttribute('aria-hidden','true')}
  }
  function revealFullAnswer(q){
@@ -2706,8 +2706,10 @@ select.beyto-native-select option{color:#f8fafc!important;background:#15152d!imp
    ov.style.display='grid';ov.style.pointerEvents='auto';ov.setAttribute('aria-hidden','false');ov.classList.add('active');
    ico.textContent='✦';title.textContent='امیدوارم درست گفته باشی ...';sub.textContent='۵ ثانیه صبر کن؛ پاسخ صحیح شعر نمایش داده می شود.';ans.hidden=true;ans.textContent='';btn.hidden=true;
    clearTimeout(reviewTimer);
+   window.beytoStopReviewMusic?.();window.beytoStartReviewMusic?.();
    reviewTimer=setTimeout(()=>{
      if(token!==reviewToken)return;
+     window.beytoStopReviewMusic?.();window.beytoPlayAnswerSound?.(!!correct);
      ico.textContent=correct?'✦':'§';title.textContent=correct?'آفرین! پاسخ درست بود':'پاسخ درست شعر';
      sub.textContent=(correct?'۱۰ امتیاز برای '+(gather.players[pi]||'بازیکن')+' ثبت شد.':'این نوبت امتیازی ندارد.')+(raw?' پاسخ واردشده: '+raw:'');
      ans.textContent=revealFullAnswer(q);ans.hidden=false;btn.textContent='ادامه؛ نمایش نوبت بعد';btn.hidden=false;answerPending=true;answerLocked=false;
@@ -3643,4 +3645,81 @@ body.graphics-max .arena-card:hover{box-shadow:0 14px 32px #0005,0 0 22px color-
 #page-rank .podium-block:after{content:none!important;display:none!important;animation:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
 #page-rank .weekly-podium{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
 </style>
-<style id="beyto-profile-portrait-rank-fix">#page-rank .weekly-row-profile{overflow:visible!important;border:0!important;background:transparent!important}#page-rank .weekly-row-profile .avatar-wrap{width:42px;height:42px;margin:0}#page-rank .weekly-row-profile .avatar-core{font-size:18px}#page-rank .weekly-row-profile .avatar-core img{width:100%;height:100%;object-fit:cover;display:block}#page-rank .weekly-row-profile .avatar-frame{inset:-5px}</style></body></html>
+<style id="beyto-profile-portrait-rank-fix">#page-rank .weekly-row-profile{overflow:visible!important;border:0!important;background:transparent!important}#page-rank .weekly-row-profile .avatar-wrap{width:42px;height:42px;margin:0}#page-rank .weekly-row-profile .avatar-core{font-size:18px}#page-rank .weekly-row-profile .avatar-core img{width:100%;height:100%;object-fit:cover;display:block}#page-rank .weekly-row-profile .avatar-frame{inset:-5px}</style>
+<script id="beyto-original-game-audio">
+(function(){
+ let ctx=null, musicNodes=[], musicTimer=null, musicGain=null;
+ function audio(){
+   const C=window.AudioContext||window.webkitAudioContext;if(!C)return null;
+   if(!ctx)ctx=new C();
+   if(ctx.state==='suspended')ctx.resume().catch(()=>{});
+   return ctx;
+ }
+ function tone(c,f,t,d,v,type='sine',endF){
+   const o=c.createOscillator(),g=c.createGain(),now=c.currentTime;
+   o.type=type;o.frequency.setValueAtTime(f,now);
+   if(endF)o.frequency.exponentialRampToValueAtTime(Math.max(1,endF),now+d);
+   g.gain.setValueAtTime(.0001,now);g.gain.exponentialRampToValueAtTime(v,now+.012);
+   g.gain.exponentialRampToValueAtTime(.0001,now+d);
+   o.connect(g);g.connect(t);o.start(now);o.stop(now+d+.025);musicNodes.push(o);
+ }
+ function drum(c,t,kind,when){
+   const o=c.createOscillator(),g=c.createGain(),now=when;
+   o.type='sine';o.frequency.setValueAtTime(kind==='kick'?115:kind==='snare'?190:900,now);
+   if(kind==='kick')o.frequency.exponentialRampToValueAtTime(42,now+.16);
+   g.gain.setValueAtTime(kind==='hat'?.0001:.0001,now);
+   g.gain.exponentialRampToValueAtTime(kind==='hat'?.055:.19,now+.004);
+   g.gain.exponentialRampToValueAtTime(.0001,now+(kind==='kick'?.19:kind==='snare'?.11:.035));
+   o.connect(g);g.connect(t);o.start(now);o.stop(now+(kind==='kick'?.2:kind==='snare'?.12:.04));musicNodes.push(o);
+ }
+ window.beytoStopReviewMusic=function(){
+   if(musicTimer){clearTimeout(musicTimer);musicTimer=null}
+   try{musicGain?.gain.setTargetAtTime(.0001,ctx.currentTime,.025)}catch(e){}
+   musicNodes.forEach(n=>{try{n.stop()}catch(e){}});
+   musicNodes=[];musicGain=null;
+ };
+ window.beytoStartReviewMusic=function(){
+   window.beytoStopReviewMusic();
+   const c=audio();if(!c)return;
+   try{
+     const master=c.createGain();master.gain.value=.24;master.connect(c.destination);musicGain=master;
+     const start=c.currentTime+.035,beat=.34;
+     const chords=[[220,261.63,329.63],[196,246.94,293.66],[174.61,220,261.63],[196,246.94,293.66]];
+     const melody=[659.25,783.99,880,783.99,698.46,783.99,987.77,880,783.99,659.25,587.33,659.25,783.99,880,987.77,1174.66];
+     chords.forEach((ch,bar)=>{
+       ch.forEach((hz,j)=>{
+         const o=c.createOscillator(),g=c.createGain(),st=start+bar*beat*4;
+         o.type='triangle';o.frequency.value=hz;
+         g.gain.setValueAtTime(.0001,st);g.gain.linearRampToValueAtTime(j===0?.075:.045,st+.07);
+         g.gain.setTargetAtTime(.0001,st+beat*3.65,.12);
+         o.connect(g);g.connect(master);o.start(st);o.stop(st+beat*4);musicNodes.push(o);
+       });
+     });
+     melody.forEach((hz,i)=>{
+       const st=start+i*beat*.48,o=c.createOscillator(),g=c.createGain();
+       o.type='sawtooth';o.frequency.value=hz;
+       g.gain.setValueAtTime(.0001,st);g.gain.exponentialRampToValueAtTime(.045,st+.018);
+       g.gain.exponentialRampToValueAtTime(.0001,st+.22);
+       o.connect(g);g.connect(master);o.start(st);o.stop(st+.24);musicNodes.push(o);
+       if(i%2===0)drum(c,master,'kick',st);
+       else drum(c,master,'hat',st);
+       if(i%4===2)drum(c,master,'snare',st);
+     });
+     musicTimer=setTimeout(()=>window.beytoStopReviewMusic(),5100);
+   }catch(e){window.beytoStopReviewMusic()}
+ };
+ window.beytoPlayAnswerSound=function(correct){
+   const c=audio();if(!c)return;
+   const out=c.createGain();out.gain.value=.42;out.connect(c.destination);
+   const now=c.currentTime;
+   if(correct){
+     [659.25,880,1174.66].forEach((f,i)=>tone(c,f,out,now,.16,.18,'sine'));
+   }else{
+     tone(c,260,out,now,.19,.15,'triangle',190);
+     setTimeout(()=>{try{const cc=audio();tone(cc,185,out,cc.currentTime,.2,.12,'triangle',135)}catch(e){}},105);
+   }
+ };
+ document.addEventListener('visibilitychange',()=>{if(document.hidden)window.beytoStopReviewMusic()});
+})();
+</script>
+</body></html>
