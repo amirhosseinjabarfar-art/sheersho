@@ -3655,8 +3655,8 @@ body.graphics-max .arena-card:hover{box-shadow:0 14px 32px #0005,0 0 22px color-
    if(ctx.state==='suspended')ctx.resume().catch(()=>{});
    return ctx;
  }
- function tone(c,f,t,d,v,type='sine',endF){
-   const o=c.createOscillator(),g=c.createGain(),now=c.currentTime;
+ function tone(c,f,t,when,d,v,type='sine',endF){
+   const o=c.createOscillator(),g=c.createGain(),now=when;
    o.type=type;o.frequency.setValueAtTime(f,now);
    if(endF)o.frequency.exponentialRampToValueAtTime(Math.max(1,endF),now+d);
    g.gain.setValueAtTime(.0001,now);g.gain.exponentialRampToValueAtTime(v,now+.012);
