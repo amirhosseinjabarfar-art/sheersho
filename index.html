@@ -3806,7 +3806,7 @@ body.graphics-max .arena-card:hover{box-shadow:0 14px 32px #0005,0 0 22px color-
    ui.box.hidden=false;ui.next.hidden=true;
    $('gatherManualSimilarity').textContent='شباهت نسبت به جواب درست: '+fmt(manualPending.similarity)+'٪';
    const yes=$('gatherManualCorrect'),no=$('gatherManualWrong'),count=$('gatherManualCountdown');
-   yes.disabled=true;no.disabled=true;
+   yes.hidden=false;no.hidden=false;yes.disabled=true;no.disabled=true;
    let remain=5;count.textContent='امکان تأیید تا '+remain+' ثانیه دیگر';
    const start=Date.now();manualTimer=setInterval(()=>{
      if(!manualPending||manualPending.token!==token){clearInterval(manualTimer);return}
