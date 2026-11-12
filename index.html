@@ -4026,3 +4026,27 @@ body.graphics-max .arena-card:hover{box-shadow:0 14px 32px #0005,0 0 22px color-
  };
 })();
 </script>
+
+<style id="beyto-gather-input-visibility-v3">
+#gatherAnswerField{display:none!important}
+</style>
+<script id="beyto-gather-input-visibility-v3">
+(function(){
+ const $=id=>document.getElementById(id);
+ const render=window.renderGatherQuestion;
+ window.renderGatherQuestion=function(){
+   if(typeof render==='function')render.apply(this,arguments);
+   const field=$('gatherAnswerField');
+   if(field)field.style.setProperty('display','none','important');
+   $('gatherSkipBtn')?.remove();
+ };
+ const begin=window.beginGatherTurn;
+ window.beginGatherTurn=function(){
+   if(typeof begin==='function')begin.apply(this,arguments);
+   if(gather.mode!=='multiple'&&gather.mode!=='truefalse'){
+     const field=$('gatherAnswerField');
+     if(field)field.style.setProperty('display','block','important');
+   }
+ };
+})();
+</script>
