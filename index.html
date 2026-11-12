@@ -3904,7 +3904,7 @@ body.graphics-max .arena-card:hover{box-shadow:0 14px 32px #0005,0 0 22px color-
 <script id="beyto-gather-input-mirror-final">
 (function(){
  const $=id=>document.getElementById(id);
- function maskFor(answer){return String(answer||'').split(/(\\s+)/).map(part=>/^\\s+$/.test(part)?part:'—'.repeat([...part].length)).join('')}
+ function maskFor(answer){return String(answer||'').split(' ').map(part=>part?'—'.repeat([...part].length):' ').join('')}
  function syncMirror(){
    const input=$('gatherAnswer'),mirror=$('gatherInlineAnswer');
    if(!input||!mirror)return;
