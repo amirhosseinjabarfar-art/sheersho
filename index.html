@@ -3966,3 +3966,63 @@ body.graphics-max .arena-card:hover{box-shadow:0 14px 32px #0005,0 0 22px color-
 .gather-final-card.first{border-color:#facc15!important;box-shadow:0 0 24px #facc1525}
 </style>
 </body></html>
+
+<style id="beyto-gather-live-layout-v2">
+#gatherAnswerField{display:block!important;margin-top:18px!important}
+#gatherAnswerField.hidden{display:block!important}
+#gatherAnswerField input{display:block!important;width:100%;box-sizing:border-box;text-align:center}
+#gatherTimer:not(.hidden){display:flex!important;visibility:visible!important;opacity:1!important}
+.gather-poem-stack{display:flex;flex-direction:column;align-items:center;gap:18px;width:100%;direction:rtl}
+.gather-poem-stack .poem-line{width:100%;text-align:center;line-height:2.1}
+.gather-answer-line{display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:.55em;min-height:2.4em;width:100%;direction:rtl;text-align:center;font-size:clamp(1.1rem,3vw,1.45rem);font-weight:900;letter-spacing:.04em}
+.gather-answer-line .gather-inline-mirror{display:inline-block;min-width:5em;max-width:100%;padding:0 .25em .12em;border-bottom:2px dashed var(--by-cyan,#67e8f9);color:var(--by-cyan,#67e8f9);white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.55}
+.gather-answer-line .gather-inline-mirror:empty:before{content:attr(data-mask);color:var(--muted,#94a3b8)}
+.gather-answer-line .gather-inline-mirror.has-value{border-bottom-style:solid;color:var(--green,#86efac);text-shadow:0 0 12px #22c55e55}
+</style>
+<script id="beyto-gather-live-layout-v2">
+(function(){
+ const $=id=>document.getElementById(id);
+ const originalBegin=window.beginGatherTurn;
+ function makeMask(answer){
+   return String(answer||'').trim().split(/\\s+/).filter(Boolean).map(w=>'—'.repeat([...w].length)).join('　')||'————';
+ }
+ function setupMirror(){
+   const q=gather.questions?.[gather.index],host=$('gatherQuestion'),input=$('gatherAnswer'),field=$('gatherAnswerField');
+   if(!q||!host||!input||!field||gather.mode==='multiple'||gather.mode==='truefalse')return false;
+   const mask=makeMask(q.answers?.[0]);
+   const poem=esc(q.line).replace(/___+/g,'').replace(/\\s{2,}/g,' ').trim();
+   host.innerHTML='<div class="gather-poem-stack"><div class="poem-line">'+poem+'</div><div class="gather-answer-line"><span id="gatherInlineAnswer" class="gather-inline-mirror" aria-live="polite" data-mask="'+esc(mask)+'">'+esc(mask)+'</span></div></div>';
+   field.classList.remove('hidden');field.style.setProperty('display','block','important');
+   input.value='';input.disabled=false;input.placeholder='پاسخت را اینجا بنویس';
+   const mirror=$('gatherInlineAnswer');
+   input.oninput=function(){
+     if(!mirror)return;
+     mirror.textContent=input.value||'';
+     mirror.classList.toggle('has-value',!!input.value.length);
+   };
+   $('gatherSubmitBtn')?.classList.remove('hidden');
+   $('gatherChoiceButtons')?.classList.add('hidden');
+   $('gatherSkipBtn')?.remove();
+   return true;
+ }
+ window.beginGatherTurn=function(){
+   if(typeof originalBegin==='function')originalBegin.apply(this,arguments);
+   if(gather.mode==='multiple'||gather.mode==='truefalse')return;
+   if(setupMirror()){
+     const timer=$('gatherTimer');
+     if(timer)timer.classList.remove('hidden');
+     // Restart the selected duration after the answer UI is ready, avoiding a timer
+     // that starts before the player can see or use the input.
+     if(typeof window.startQuestionTimer==='function')window.startQuestionTimer('gather');
+     $('gatherAnswer')?.focus();
+   }
+ };
+ const priorRender=window.renderGatherQuestion;
+ window.renderGatherQuestion=function(){
+   if(typeof priorRender==='function')priorRender.apply(this,arguments);
+   $('gatherSkipBtn')?.remove();
+   const field=$('gatherAnswerField');
+   if(field)field.style.setProperty('display','block','important');
+ };
+})();
+</script>
